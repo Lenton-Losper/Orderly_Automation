@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "compact-retina-427919-h5",
+  "private_key_id": "512402c934e41ca93b21b1b712daea52a2125d4d",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCrG/9s46zmB0b9\nJo9VVYC3DjoomPhv5O/3p1O/R0dU4fSZaX8jflKRHKE5OVRq75hpfH3eg7GcrD/X\nJPJ9PeXUgZig3aTkSyfzOSU4FTJ/lwZ8zbboP0/jPs5+YhZbHxhG22R1AoQ03spU\nhZBUrJTTJyCZqH4OW9a8mxyPT/DHRKgeMyReM8gXePRZv331si700F8vie4i8J8r\nb7FSwEURwdH7W7gGXrzlICp3uo1YDmbRYhKv5PE9+5AYjXtrdLax/OerTjVs+DuO\n9XSHl6ZJL+KVLJvcLhSuRsbYFHO5OhW56fvzSGuMn1aWJA2H870VATbmo8Kcydz/\ns4rhHcolAgMBAAECggEAFpKHdBBm3yOHoF6lWu8AH2Xvkyp235/2bhezSxD2noJ+\nV3ycyoxgDQeXVyqycbbwxr2nByMdW5s3gsS7fn0bZBjCjzoeBgXKG+JmgAr/0egU\n8YLbxbCQc9x1tiNvao7kD3jivDLcSPM5AsRp4Vmw+lf3i324P2GrJs9ZiahUjZzQ\nFiNeyJmHr9ihEVEzA8PpEN/X/kYTkteCXgvqMPepud6wEnJbxnf3VOL7PWXDq7Xs\n6n3eYiQakFMKdWTfxM9irIn04n5mFZWkbea8khKj69tPLNwuHxQYwIJMJyzcV//o\niMc2Lz6hpUlufyfCcTqiIvr9l3PIkuYsh687h2+6MQKBgQDk01cYaZrHvPMEp8J7\nXouQN41DlmCaAmMspO3ERs7smKKeDtxCBRmNTeRJRQzC3mVxKFdH+2v/6n+i3KOp\nfx98v6eAwhFMCBowXPIzAzcvlrKQHu4dS1/vWBwaiH571U4RsDmGVXRCmWMgx7Ve\njaDvoqKg5pkaEce9mHudShgN2QKBgQC/bf54t3yNPtAdJj9E62zkNmrVp3YdKDvs\nNZKp7/M4W/j96Ob5QoZ4Ah6bDbl4aOH05JS8wgyim6R4ZE6y+XXyXWMz8AZ0hVBm\ncI+CGpYHnMr17FYQrCEqKPbhCJ+IM90TfTkooTmBkBTKMr7/9rGikSVnx4h9FXI3\nZGIDc9ZTLQKBgAtgHkJOba1kTUh79oUfjBydRl6HyUGewMNlZ5SMWJkWdW8aGgUG\nL+EAcErcLeg6Ghzn/n7LlvDf/XxhL5mrgis3c+JIw4deF78zv66diE7LVREpGHlI\nV/qUDMGc63zIe9sRQarV8LOm4HCuvOt4avm+wgrxq8bJ/34DaJHHLy7xAoGAA17q\ndjG07b/HZlwADTSgDDyxEOYL/GNy+qvO01M4Uyu7bK0nNAhp2b8fztclBuvB3tAP\nlmtMUaiv8rbBdAFUhFoEnyuA0ZhvW/5raH0TWzr1j/MDaPO++cES58+BD6LqJ6ey\n0/ZSzuc8lnriRhuP8S7hG7y1uI4iHruTxj/J7FkCgYAVGiNnPn344AvwsOIVpc4M\ndk2FbTLEdzM0Qkj3FT47i99UGQ7ezGXqauvEtscogBx8YFlS+fGlOcnB2w5hoec4\nHiD9Iw4wgBO2UjACTcn/4R7L7va77OmvskT6bjt36r7LtrviNGjHlqM0zHJhm5AY\nqAhN50uGq3xsfBOt4XRs8g==\n-----END PRIVATE KEY-----\n",
+  "client_email": "llosperofficial@compact-retina-427919-h5.iam.gserviceaccount.com",
+  "client_id": "113649092634028315085",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/llosperofficial%40compact-retina-427919-h5.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}
