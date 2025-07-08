@@ -1,0 +1,7 @@
+# Firebase credentials
+lllfarming-firebase-adminsdk-fbsvc-c9ce466038.json
+
+# Node.js defaults
+node_modules/
+.env
+.DS_Store
