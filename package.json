@@ -3,7 +3,9 @@
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "^6.17.16",
     "baileys": "^6.7.16",
-    "google-spreadsheet": "^4.1.4",
+    "dotenv": "^17.0.1",
+    "firebase-admin": "^13.4.0",
+    "google-spreadsheet": "^3.3.0",
     "pino": "^9.7.0",
     "qrcode-terminal": "^0.12.0"
   }

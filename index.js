@@ -1,40 +1,46 @@
+require('dotenv').config();
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const { Boom } = require('@hapi/boom');
-const { GoogleSpreadsheet } = require('google-spreadsheet');
-const P = require('pino'); // Added proper logger
-const creds = require('./creds.json');
+const admin = require('firebase-admin');
+const path = require('path');
 
-// Spreadsheet config
-const SHEET_ID = '1c9JReDZUrkWQtd9Yn-r_bhLLxH7gWYVpHyBStIWqEAw';
+// Initialize Firebase
+const serviceAccount = require('./lllfarming-firebase-adminsdk-fbsvc-c9ce466038.json');
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount)
+});
+const db = admin.firestore();
+const ordersCollection = db.collection('orders');
 
-// Use pino logger (required by Baileys)
-const logger = P({ level: 'info' });
-
-async function logOrderToSheet(name, order) {
+// Function to log order to Firestore
+async function logOrderToFirebase(name, order, msgId) {
     try {
-        const doc = new GoogleSpreadsheet(SHEET_ID);
-        await doc.useServiceAccountAuth(creds);
-        await doc.loadInfo();
-        const sheet = doc.sheetsByIndex[0];
-        await sheet.addRow({
-            Name: name,
-            Order: order,
-            Time: new Date().toLocaleString()
+        const existing = await ordersCollection.doc(msgId).get();
+        if (existing.exists) {
+            console.log('Message already processed.');
+            return false;
+        }
+
+        await ordersCollection.doc(msgId).set({
+            name,
+            order,
+            timestamp: new Date().toISOString()
         });
-        console.log('✅ Order logged to sheet');
+
+        console.log('✅ Order logged to Firebase');
+        return true;
     } catch (error) {
-        console.error('❌ Error logging to sheet:', error);
+        console.error('❌ Firebase logging error:', error);
+        return false;
     }
 }
 
 async function startBot() {
     try {
         const { state, saveCreds } = await useMultiFileAuthState('auth');
-
         const sock = makeWASocket({
             auth: state,
             printQRInTerminal: true,
-            logger,
             markOnlineOnConnect: false
         });
 
@@ -46,44 +52,57 @@ async function startBot() {
                 const shouldReconnect = (lastDisconnect?.error instanceof Boom) &&
                     lastDisconnect.error.output.statusCode !== DisconnectReason.loggedOut;
 
-                console.log('Connection closed. Reconnecting:', shouldReconnect);
+                console.log('🔌 Connection closed. Reconnecting:', shouldReconnect);
                 if (shouldReconnect) {
                     setTimeout(startBot, 5000);
                 }
             } else if (connection === 'open') {
-                console.log('✅ Bot connected successfully!');
+                console.log('✅ Bot connected to WhatsApp');
             }
         });
 
         sock.ev.on('messages.upsert', async ({ messages }) => {
-            try {
-                const msg = messages[0];
-                if (!msg.message) return;
+            const msg = messages[0];
+            if (!msg.message) return;
 
-                // Ignore group messages
-                if (msg.key.remoteJid.endsWith('@g.us')) return;
+            // Ignore own messages
+            if (msg.key.fromMe) return;
 
-                const sender = msg.pushName || 'Anonymous';
-                const messageText = msg.message.conversation ||
-                    msg.message.extendedTextMessage?.text || '';
+            // Ignore group messages
+            if (msg.key.remoteJid.endsWith('@g.us')) return;
 
-                if (messageText) {
-                    console.log(`📩 ${sender}: ${messageText}`);
-                    await logOrderToSheet(sender, messageText);
-                    await sock.sendMessage(msg.key.remoteJid, {
-                        text: `✅ Thanks ${sender}, your order has been received and logged!`
-                    });
-                }
-            } catch (err) {
-                console.error('❌ Error handling message:', err);
+            // Check timestamp: only process messages from today
+            const messageTimestamp = msg.messageTimestamp?.low || msg.messageTimestamp;
+            const msgDate = new Date(messageTimestamp * 1000).toDateString();
+            const today = new Date().toDateString();
+            if (msgDate !== today) {
+                console.log('⏳ Ignoring old message');
+                return;
+            }
+
+            const sender = msg.pushName || 'Anonymous';
+            const messageText =
+                msg.message.conversation ||
+                msg.message.extendedTextMessage?.text ||
+                '';
+
+            if (!messageText.trim()) return;
+
+            const msgId = msg.key.id;
+
+            const wasLogged = await logOrderToFirebase(sender, messageText, msgId);
+
+            if (wasLogged) {
+                await sock.sendMessage(msg.key.remoteJid, {
+                    text: `✅ Thanks ${sender}, your order has been received and logged!`
+                });
             }
         });
 
     } catch (err) {
-        console.error('❌ Bot startup error:', err);
+        console.error('💥 Fatal bot error:', err);
         setTimeout(startBot, 10000);
     }
 }
 
-// Start bot
-startBot().catch(err => console.error('❌ Fatal startup error:', err));
+startBot().catch(console.error);
