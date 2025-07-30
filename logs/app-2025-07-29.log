@@ -1,0 +1,354 @@
+{"timestamp":"2025-07-29T13:52:18.116Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":6792}
+{"timestamp":"2025-07-29T13:52:18.117Z","level":"INFO","message":"🚀 WhatsApp Bot initializing...","meta":{},"pid":6792}
+{"timestamp":"2025-07-29T13:52:18.117Z","level":"INFO","message":"🔌 Initializing Firebase database...","meta":{},"pid":6792}
+{"timestamp":"2025-07-29T13:52:20.571Z","level":"INFO","message":"✅ Firebase database connected","meta":{},"pid":6792}
+{"timestamp":"2025-07-29T13:52:20.572Z","level":"INFO","message":"🏢 Initializing Business Manager...","meta":{},"pid":6792}
+{"timestamp":"2025-07-29T13:52:20.572Z","level":"ERROR","message":"❌ Business Manager initialization failed","meta":{"error":"businessManager.initialize is not a function"},"pid":6792}
+{"timestamp":"2025-07-29T13:52:20.573Z","level":"ERROR","message":"❌ Failed to initialize WhatsApp Bot","meta":{"error":"Business Manager initialization failed: businessManager.initialize is not a function","stack":"Error: Business Manager initialization failed: businessManager.initialize is not a function\n    at WhatsAppBot.initializeBusinessManager (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:96:19)\n    at WhatsAppBot.initialize (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:48:24)\n    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at async startBot (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:391:9)"},"pid":6792}
+{"timestamp":"2025-07-29T13:52:20.574Z","level":"INFO","message":"🛑 Bot shutdown initiated...","meta":{},"pid":6792}
+{"timestamp":"2025-07-29T13:52:20.575Z","level":"INFO","message":"📊 Bot Statistics","meta":{"bot":{"messagesProcessed":0,"sessionsCreated":0,"ordersCompleted":0,"errorsHandled":0,"uptime":2,"sessionsActive":0,"memoryUsage":{"heapUsed":34.74,"heapTotal":61.5,"external":3.24,"rss":77.91}},"rateLimiter":{"activeUsers":0,"activeBusinesses":0,"globalRequests":0,"blockedUsers":0,"suspiciousUsers":0,"recentBlocks":0},"security":{"threatsDetected":0,"usersBlocked":0,"messagesBlocked":0,"alertsSent":0,"startTime":1753797138116,"activeThreats":0,"blockedUsers":0,"whitelistedUsers":0,"suspiciousPatterns":0,"uptime":2459},"duplicateChecker":{"totalProcessedMessages":0,"activeUsers":0,"activeBusinesses":0,"recentMessages":0,"topUsers":{},"topBusinesses":{},"memoryUsage":{"processedMessages":0,"userHistories":0,"businessHistories":0}}},"pid":6792}
+{"timestamp":"2025-07-29T13:52:20.577Z","level":"INFO","message":"🧹 Shutting down middleware...","meta":{},"pid":6792}
+{"timestamp":"2025-07-29T13:52:20.577Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":6792}
+{"timestamp":"2025-07-29T13:52:20.578Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1753797138116,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":2462}","meta":{},"pid":6792}
+{"timestamp":"2025-07-29T13:52:20.578Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":6792}
+{"timestamp":"2025-07-29T13:52:20.600Z","level":"INFO","message":"🗑️ Shutting down session manager...","meta":{},"pid":6792}
+{"timestamp":"2025-07-29T13:52:20.629Z","level":"INFO","message":"📱 Shutting down WhatsApp service...","meta":{},"pid":6792}
+{"timestamp":"2025-07-29T13:52:20.630Z","level":"INFO","message":"📝 Shutting down logger...","meta":{},"pid":6792}
+{"timestamp":"2025-07-29T13:55:12.497Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":14000}
+{"timestamp":"2025-07-29T13:55:12.498Z","level":"INFO","message":"🚀 WhatsApp Bot initializing...","meta":{},"pid":14000}
+{"timestamp":"2025-07-29T13:55:12.498Z","level":"INFO","message":"🔌 Initializing Firebase database...","meta":{},"pid":14000}
+{"timestamp":"2025-07-29T13:55:12.646Z","level":"INFO","message":"✅ Firebase database connected","meta":{},"pid":14000}
+{"timestamp":"2025-07-29T13:55:12.646Z","level":"INFO","message":"🏢 Initializing Business Manager...","meta":{},"pid":14000}
+{"timestamp":"2025-07-29T13:55:18.413Z","level":"INFO","message":"✅ Business Manager initialized","meta":{},"pid":14000}
+{"timestamp":"2025-07-29T13:55:18.413Z","level":"INFO","message":"📱 Initializing WhatsApp service...","meta":{},"pid":14000}
+{"timestamp":"2025-07-29T13:55:18.453Z","level":"ERROR","message":"❌ WhatsApp service initialization failed","meta":{"error":"Cannot read properties of undefined (reading 'child')"},"pid":14000}
+{"timestamp":"2025-07-29T13:55:18.454Z","level":"ERROR","message":"❌ Failed to initialize WhatsApp Bot","meta":{"error":"WhatsApp service initialization failed: Cannot read properties of undefined (reading 'child')","stack":"Error: WhatsApp service initialization failed: Cannot read properties of undefined (reading 'child')\n    at WhatsAppBot.initializeWhatsApp (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:107:19)\n    at async WhatsAppBot.initialize (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:51:13)\n    at async startBot (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:391:9)"},"pid":14000}
+{"timestamp":"2025-07-29T13:55:18.455Z","level":"INFO","message":"🛑 Bot shutdown initiated...","meta":{},"pid":14000}
+{"timestamp":"2025-07-29T13:55:18.456Z","level":"INFO","message":"📊 Bot Statistics","meta":{"bot":{"messagesProcessed":0,"sessionsCreated":0,"ordersCompleted":0,"errorsHandled":0,"uptime":6,"sessionsActive":0,"memoryUsage":{"heapUsed":44.99,"heapTotal":71.98,"external":3.04,"rss":109.91}},"rateLimiter":{"activeUsers":0,"activeBusinesses":0,"globalRequests":0,"blockedUsers":0,"suspiciousUsers":0,"recentBlocks":0},"security":{"threatsDetected":0,"usersBlocked":0,"messagesBlocked":0,"alertsSent":0,"startTime":1753797312497,"activeThreats":0,"blockedUsers":0,"whitelistedUsers":0,"suspiciousPatterns":0,"uptime":5959},"duplicateChecker":{"totalProcessedMessages":0,"activeUsers":0,"activeBusinesses":0,"recentMessages":0,"topUsers":{},"topBusinesses":{},"memoryUsage":{"processedMessages":0,"userHistories":0,"businessHistories":0}}},"pid":14000}
+{"timestamp":"2025-07-29T13:55:18.458Z","level":"INFO","message":"🧹 Shutting down middleware...","meta":{},"pid":14000}
+{"timestamp":"2025-07-29T13:55:18.459Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":14000}
+{"timestamp":"2025-07-29T13:55:18.459Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1753797312497,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":5962}","meta":{},"pid":14000}
+{"timestamp":"2025-07-29T13:55:18.459Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":14000}
+{"timestamp":"2025-07-29T13:55:18.462Z","level":"INFO","message":"🗑️ Shutting down session manager...","meta":{},"pid":14000}
+{"timestamp":"2025-07-29T13:55:18.466Z","level":"INFO","message":"📱 Shutting down WhatsApp service...","meta":{},"pid":14000}
+{"timestamp":"2025-07-29T13:55:18.467Z","level":"INFO","message":"📝 Shutting down logger...","meta":{},"pid":14000}
+{"timestamp":"2025-07-29T13:55:32.958Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":11644}
+{"timestamp":"2025-07-29T13:55:32.958Z","level":"INFO","message":"🚀 WhatsApp Bot initializing...","meta":{},"pid":11644}
+{"timestamp":"2025-07-29T13:55:32.958Z","level":"INFO","message":"🔌 Initializing Firebase database...","meta":{},"pid":11644}
+{"timestamp":"2025-07-29T13:55:33.097Z","level":"INFO","message":"✅ Firebase database connected","meta":{},"pid":11644}
+{"timestamp":"2025-07-29T13:55:33.098Z","level":"INFO","message":"🏢 Initializing Business Manager...","meta":{},"pid":11644}
+{"timestamp":"2025-07-29T13:55:35.366Z","level":"INFO","message":"✅ Business Manager initialized","meta":{},"pid":11644}
+{"timestamp":"2025-07-29T13:55:35.367Z","level":"INFO","message":"📱 Initializing WhatsApp service...","meta":{},"pid":11644}
+{"timestamp":"2025-07-29T13:55:35.380Z","level":"ERROR","message":"❌ WhatsApp service initialization failed","meta":{"error":"Cannot read properties of undefined (reading 'child')"},"pid":11644}
+{"timestamp":"2025-07-29T13:55:35.381Z","level":"ERROR","message":"❌ Failed to initialize WhatsApp Bot","meta":{"error":"WhatsApp service initialization failed: Cannot read properties of undefined (reading 'child')","stack":"Error: WhatsApp service initialization failed: Cannot read properties of undefined (reading 'child')\n    at WhatsAppBot.initializeWhatsApp (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:107:19)\n    at async WhatsAppBot.initialize (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:51:13)\n    at async startBot (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:391:9)"},"pid":11644}
+{"timestamp":"2025-07-29T13:55:35.382Z","level":"INFO","message":"🛑 Bot shutdown initiated...","meta":{},"pid":11644}
+{"timestamp":"2025-07-29T13:55:35.383Z","level":"INFO","message":"📊 Bot Statistics","meta":{"bot":{"messagesProcessed":0,"sessionsCreated":0,"ordersCompleted":0,"errorsHandled":0,"uptime":2,"sessionsActive":0,"memoryUsage":{"heapUsed":44.92,"heapTotal":71.98,"external":3.04,"rss":109.85}},"rateLimiter":{"activeUsers":0,"activeBusinesses":0,"globalRequests":0,"blockedUsers":0,"suspiciousUsers":0,"recentBlocks":0},"security":{"threatsDetected":0,"usersBlocked":0,"messagesBlocked":0,"alertsSent":0,"startTime":1753797332958,"activeThreats":0,"blockedUsers":0,"whitelistedUsers":0,"suspiciousPatterns":0,"uptime":2424},"duplicateChecker":{"totalProcessedMessages":0,"activeUsers":0,"activeBusinesses":0,"recentMessages":0,"topUsers":{},"topBusinesses":{},"memoryUsage":{"processedMessages":0,"userHistories":0,"businessHistories":0}}},"pid":11644}
+{"timestamp":"2025-07-29T13:55:35.386Z","level":"INFO","message":"🧹 Shutting down middleware...","meta":{},"pid":11644}
+{"timestamp":"2025-07-29T13:55:35.386Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":11644}
+{"timestamp":"2025-07-29T13:55:35.386Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1753797332958,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":2428}","meta":{},"pid":11644}
+{"timestamp":"2025-07-29T13:55:35.387Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":11644}
+{"timestamp":"2025-07-29T13:55:35.389Z","level":"INFO","message":"🗑️ Shutting down session manager...","meta":{},"pid":11644}
+{"timestamp":"2025-07-29T13:55:35.394Z","level":"INFO","message":"📱 Shutting down WhatsApp service...","meta":{},"pid":11644}
+{"timestamp":"2025-07-29T13:55:35.395Z","level":"INFO","message":"📝 Shutting down logger...","meta":{},"pid":11644}
+{"timestamp":"2025-07-29T13:57:12.222Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":8692}
+{"timestamp":"2025-07-29T13:57:12.223Z","level":"INFO","message":"🚀 WhatsApp Bot initializing...","meta":{},"pid":8692}
+{"timestamp":"2025-07-29T13:57:12.223Z","level":"INFO","message":"🔌 Initializing Firebase database...","meta":{},"pid":8692}
+{"timestamp":"2025-07-29T13:57:12.366Z","level":"INFO","message":"✅ Firebase database connected","meta":{},"pid":8692}
+{"timestamp":"2025-07-29T13:57:12.366Z","level":"INFO","message":"🏢 Initializing Business Manager...","meta":{},"pid":8692}
+{"timestamp":"2025-07-29T13:57:14.728Z","level":"INFO","message":"✅ Business Manager initialized","meta":{},"pid":8692}
+{"timestamp":"2025-07-29T13:57:14.728Z","level":"INFO","message":"📱 Initializing WhatsApp service...","meta":{},"pid":8692}
+{"timestamp":"2025-07-29T13:57:14.743Z","level":"ERROR","message":"❌ WhatsApp service initialization failed","meta":{"error":"Cannot read properties of undefined (reading 'child')"},"pid":8692}
+{"timestamp":"2025-07-29T13:57:14.743Z","level":"ERROR","message":"❌ Failed to initialize WhatsApp Bot","meta":{"error":"WhatsApp service initialization failed: Cannot read properties of undefined (reading 'child')","stack":"Error: WhatsApp service initialization failed: Cannot read properties of undefined (reading 'child')\n    at WhatsAppBot.initializeWhatsApp (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:107:19)\n    at async WhatsAppBot.initialize (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:51:13)\n    at async startBot (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:391:9)"},"pid":8692}
+{"timestamp":"2025-07-29T13:57:14.745Z","level":"INFO","message":"🛑 Bot shutdown initiated...","meta":{},"pid":8692}
+{"timestamp":"2025-07-29T13:57:14.746Z","level":"INFO","message":"📊 Bot Statistics","meta":{"bot":{"messagesProcessed":0,"sessionsCreated":0,"ordersCompleted":0,"errorsHandled":0,"uptime":3,"sessionsActive":0,"memoryUsage":{"heapUsed":44.82,"heapTotal":71.73,"external":3.04,"rss":109.82}},"rateLimiter":{"activeUsers":0,"activeBusinesses":0,"globalRequests":0,"blockedUsers":0,"suspiciousUsers":0,"recentBlocks":0},"security":{"threatsDetected":0,"usersBlocked":0,"messagesBlocked":0,"alertsSent":0,"startTime":1753797432222,"activeThreats":0,"blockedUsers":0,"whitelistedUsers":0,"suspiciousPatterns":0,"uptime":2524},"duplicateChecker":{"totalProcessedMessages":0,"activeUsers":0,"activeBusinesses":0,"recentMessages":0,"topUsers":{},"topBusinesses":{},"memoryUsage":{"processedMessages":0,"userHistories":0,"businessHistories":0}}},"pid":8692}
+{"timestamp":"2025-07-29T13:57:14.748Z","level":"INFO","message":"🧹 Shutting down middleware...","meta":{},"pid":8692}
+{"timestamp":"2025-07-29T13:57:14.748Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":8692}
+{"timestamp":"2025-07-29T13:57:14.749Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1753797432222,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":2527}","meta":{},"pid":8692}
+{"timestamp":"2025-07-29T13:57:14.749Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":8692}
+{"timestamp":"2025-07-29T13:57:14.753Z","level":"INFO","message":"🗑️ Shutting down session manager...","meta":{},"pid":8692}
+{"timestamp":"2025-07-29T13:57:14.757Z","level":"INFO","message":"📱 Shutting down WhatsApp service...","meta":{},"pid":8692}
+{"timestamp":"2025-07-29T13:57:14.757Z","level":"INFO","message":"📝 Shutting down logger...","meta":{},"pid":8692}
+{"timestamp":"2025-07-29T13:58:47.808Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":12112}
+{"timestamp":"2025-07-29T13:58:47.809Z","level":"INFO","message":"🚀 WhatsApp Bot initializing...","meta":{},"pid":12112}
+{"timestamp":"2025-07-29T13:58:47.809Z","level":"INFO","message":"🔌 Initializing Firebase database...","meta":{},"pid":12112}
+{"timestamp":"2025-07-29T13:58:47.991Z","level":"INFO","message":"✅ Firebase database connected","meta":{},"pid":12112}
+{"timestamp":"2025-07-29T13:58:47.992Z","level":"INFO","message":"🏢 Initializing Business Manager...","meta":{},"pid":12112}
+{"timestamp":"2025-07-29T13:58:50.422Z","level":"INFO","message":"✅ Business Manager initialized","meta":{},"pid":12112}
+{"timestamp":"2025-07-29T13:58:50.422Z","level":"INFO","message":"📱 Initializing WhatsApp service...","meta":{},"pid":12112}
+{"timestamp":"2025-07-29T13:58:50.439Z","level":"ERROR","message":"❌ WhatsApp service initialization failed","meta":{"error":"Cannot read properties of undefined (reading 'child')"},"pid":12112}
+{"timestamp":"2025-07-29T13:58:50.439Z","level":"ERROR","message":"❌ Failed to initialize WhatsApp Bot","meta":{"error":"WhatsApp service initialization failed: Cannot read properties of undefined (reading 'child')","stack":"Error: WhatsApp service initialization failed: Cannot read properties of undefined (reading 'child')\n    at WhatsAppBot.initializeWhatsApp (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:107:19)\n    at async WhatsAppBot.initialize (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:51:13)\n    at async startBot (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:391:9)"},"pid":12112}
+{"timestamp":"2025-07-29T13:58:50.441Z","level":"INFO","message":"🛑 Bot shutdown initiated...","meta":{},"pid":12112}
+{"timestamp":"2025-07-29T13:58:50.442Z","level":"INFO","message":"📊 Bot Statistics","meta":{"bot":{"messagesProcessed":0,"sessionsCreated":0,"ordersCompleted":0,"errorsHandled":0,"uptime":3,"sessionsActive":0,"memoryUsage":{"heapUsed":45.25,"heapTotal":71.98,"external":3.05,"rss":109.67}},"rateLimiter":{"activeUsers":0,"activeBusinesses":0,"globalRequests":0,"blockedUsers":0,"suspiciousUsers":0,"recentBlocks":0},"security":{"threatsDetected":0,"usersBlocked":0,"messagesBlocked":0,"alertsSent":0,"startTime":1753797527808,"activeThreats":0,"blockedUsers":0,"whitelistedUsers":0,"suspiciousPatterns":0,"uptime":2634},"duplicateChecker":{"totalProcessedMessages":0,"activeUsers":0,"activeBusinesses":0,"recentMessages":0,"topUsers":{},"topBusinesses":{},"memoryUsage":{"processedMessages":0,"userHistories":0,"businessHistories":0}}},"pid":12112}
+{"timestamp":"2025-07-29T13:58:50.444Z","level":"INFO","message":"🧹 Shutting down middleware...","meta":{},"pid":12112}
+{"timestamp":"2025-07-29T13:58:50.445Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":12112}
+{"timestamp":"2025-07-29T13:58:50.445Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1753797527808,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":2637}","meta":{},"pid":12112}
+{"timestamp":"2025-07-29T13:58:50.445Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":12112}
+{"timestamp":"2025-07-29T13:58:50.448Z","level":"INFO","message":"🗑️ Shutting down session manager...","meta":{},"pid":12112}
+{"timestamp":"2025-07-29T13:58:50.454Z","level":"INFO","message":"📱 Shutting down WhatsApp service...","meta":{},"pid":12112}
+{"timestamp":"2025-07-29T13:58:50.455Z","level":"INFO","message":"📝 Shutting down logger...","meta":{},"pid":12112}
+{"timestamp":"2025-07-29T14:02:49.279Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":11928}
+{"timestamp":"2025-07-29T14:02:49.280Z","level":"INFO","message":"🚀 WhatsApp Bot initializing...","meta":{},"pid":11928}
+{"timestamp":"2025-07-29T14:02:49.281Z","level":"INFO","message":"🔌 Initializing Firebase database...","meta":{},"pid":11928}
+{"timestamp":"2025-07-29T14:02:49.468Z","level":"INFO","message":"✅ Firebase database connected","meta":{},"pid":11928}
+{"timestamp":"2025-07-29T14:02:49.468Z","level":"INFO","message":"🏢 Initializing Business Manager...","meta":{},"pid":11928}
+{"timestamp":"2025-07-29T14:02:51.818Z","level":"INFO","message":"✅ Business Manager initialized","meta":{},"pid":11928}
+{"timestamp":"2025-07-29T14:02:51.818Z","level":"INFO","message":"📱 Initializing WhatsApp service...","meta":{},"pid":11928}
+{"timestamp":"2025-07-29T14:02:51.834Z","level":"ERROR","message":"❌ WhatsApp service initialization failed","meta":{"error":"Cannot read properties of undefined (reading 'child')"},"pid":11928}
+{"timestamp":"2025-07-29T14:02:51.835Z","level":"ERROR","message":"❌ Failed to initialize WhatsApp Bot","meta":{"error":"WhatsApp service initialization failed: Cannot read properties of undefined (reading 'child')","stack":"Error: WhatsApp service initialization failed: Cannot read properties of undefined (reading 'child')\n    at WhatsAppBot.initializeWhatsApp (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:107:19)\n    at async WhatsAppBot.initialize (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:51:13)\n    at async startBot (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:391:9)"},"pid":11928}
+{"timestamp":"2025-07-29T14:02:51.837Z","level":"INFO","message":"🛑 Bot shutdown initiated...","meta":{},"pid":11928}
+{"timestamp":"2025-07-29T14:02:51.838Z","level":"INFO","message":"📊 Bot Statistics","meta":{"bot":{"messagesProcessed":0,"sessionsCreated":0,"ordersCompleted":0,"errorsHandled":0,"uptime":3,"sessionsActive":0,"memoryUsage":{"heapUsed":44.94,"heapTotal":71.98,"external":3.04,"rss":110.2}},"rateLimiter":{"activeUsers":0,"activeBusinesses":0,"globalRequests":0,"blockedUsers":0,"suspiciousUsers":0,"recentBlocks":0},"security":{"threatsDetected":0,"usersBlocked":0,"messagesBlocked":0,"alertsSent":0,"startTime":1753797769279,"activeThreats":0,"blockedUsers":0,"whitelistedUsers":0,"suspiciousPatterns":0,"uptime":2559},"duplicateChecker":{"totalProcessedMessages":0,"activeUsers":0,"activeBusinesses":0,"recentMessages":0,"topUsers":{},"topBusinesses":{},"memoryUsage":{"processedMessages":0,"userHistories":0,"businessHistories":0}}},"pid":11928}
+{"timestamp":"2025-07-29T14:02:51.840Z","level":"INFO","message":"🧹 Shutting down middleware...","meta":{},"pid":11928}
+{"timestamp":"2025-07-29T14:02:51.840Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":11928}
+{"timestamp":"2025-07-29T14:02:51.841Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1753797769279,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":2562}","meta":{},"pid":11928}
+{"timestamp":"2025-07-29T14:02:51.841Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":11928}
+{"timestamp":"2025-07-29T14:02:51.843Z","level":"INFO","message":"🗑️ Shutting down session manager...","meta":{},"pid":11928}
+{"timestamp":"2025-07-29T14:02:51.847Z","level":"INFO","message":"📱 Shutting down WhatsApp service...","meta":{},"pid":11928}
+{"timestamp":"2025-07-29T14:02:51.848Z","level":"INFO","message":"📝 Shutting down logger...","meta":{},"pid":11928}
+{"timestamp":"2025-07-29T14:24:49.173Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":9896}
+{"timestamp":"2025-07-29T14:24:49.174Z","level":"INFO","message":"🚀 WhatsApp Bot initializing...","meta":{},"pid":9896}
+{"timestamp":"2025-07-29T14:24:49.174Z","level":"INFO","message":"🔌 Initializing Firebase database...","meta":{},"pid":9896}
+{"timestamp":"2025-07-29T14:24:49.328Z","level":"INFO","message":"✅ Firebase database connected","meta":{},"pid":9896}
+{"timestamp":"2025-07-29T14:24:49.328Z","level":"INFO","message":"🏢 Initializing Business Manager...","meta":{},"pid":9896}
+{"timestamp":"2025-07-29T14:24:50.423Z","level":"INFO","message":"✅ Business Manager initialized","meta":{},"pid":9896}
+{"timestamp":"2025-07-29T14:24:50.423Z","level":"INFO","message":"📱 Initializing WhatsApp service...","meta":{},"pid":9896}
+{"timestamp":"2025-07-29T14:24:50.438Z","level":"ERROR","message":"❌ WhatsApp service initialization failed","meta":{"error":"Cannot read properties of undefined (reading 'child')"},"pid":9896}
+{"timestamp":"2025-07-29T14:24:50.438Z","level":"ERROR","message":"❌ Failed to initialize WhatsApp Bot","meta":{"error":"WhatsApp service initialization failed: Cannot read properties of undefined (reading 'child')","stack":"Error: WhatsApp service initialization failed: Cannot read properties of undefined (reading 'child')\n    at WhatsAppBot.initializeWhatsApp (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:107:19)\n    at async WhatsAppBot.initialize (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:51:13)\n    at async startBot (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:391:9)"},"pid":9896}
+{"timestamp":"2025-07-29T14:24:50.439Z","level":"INFO","message":"🛑 Bot shutdown initiated...","meta":{},"pid":9896}
+{"timestamp":"2025-07-29T14:24:50.440Z","level":"INFO","message":"📊 Bot Statistics","meta":{"bot":{"messagesProcessed":0,"sessionsCreated":0,"ordersCompleted":0,"errorsHandled":0,"uptime":1,"sessionsActive":0,"memoryUsage":{"heapUsed":38.98,"heapTotal":69.01,"external":3.67,"rss":111.48}},"rateLimiter":{"activeUsers":0,"activeBusinesses":0,"globalRequests":0,"blockedUsers":0,"suspiciousUsers":0,"recentBlocks":0},"security":{"threatsDetected":0,"usersBlocked":0,"messagesBlocked":0,"alertsSent":0,"startTime":1753799089173,"activeThreats":0,"blockedUsers":0,"whitelistedUsers":0,"suspiciousPatterns":0,"uptime":1267},"duplicateChecker":{"totalProcessedMessages":0,"activeUsers":0,"activeBusinesses":0,"recentMessages":0,"topUsers":{},"topBusinesses":{},"memoryUsage":{"processedMessages":0,"userHistories":0,"businessHistories":0}}},"pid":9896}
+{"timestamp":"2025-07-29T14:24:50.442Z","level":"INFO","message":"🧹 Shutting down middleware...","meta":{},"pid":9896}
+{"timestamp":"2025-07-29T14:24:50.443Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":9896}
+{"timestamp":"2025-07-29T14:24:50.443Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1753799089173,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":1270}","meta":{},"pid":9896}
+{"timestamp":"2025-07-29T14:24:50.443Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":9896}
+{"timestamp":"2025-07-29T14:24:50.447Z","level":"INFO","message":"🗑️ Shutting down session manager...","meta":{},"pid":9896}
+{"timestamp":"2025-07-29T14:24:50.451Z","level":"INFO","message":"📱 Shutting down WhatsApp service...","meta":{},"pid":9896}
+{"timestamp":"2025-07-29T14:24:50.452Z","level":"INFO","message":"📝 Shutting down logger...","meta":{},"pid":9896}
+{"timestamp":"2025-07-29T14:25:01.665Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":3080}
+{"timestamp":"2025-07-29T14:25:01.665Z","level":"INFO","message":"🚀 WhatsApp Bot initializing...","meta":{},"pid":3080}
+{"timestamp":"2025-07-29T14:25:01.666Z","level":"INFO","message":"🔌 Initializing Firebase database...","meta":{},"pid":3080}
+{"timestamp":"2025-07-29T14:25:01.816Z","level":"INFO","message":"✅ Firebase database connected","meta":{},"pid":3080}
+{"timestamp":"2025-07-29T14:25:01.817Z","level":"INFO","message":"🏢 Initializing Business Manager...","meta":{},"pid":3080}
+{"timestamp":"2025-07-29T14:25:02.900Z","level":"INFO","message":"✅ Business Manager initialized","meta":{},"pid":3080}
+{"timestamp":"2025-07-29T14:25:02.900Z","level":"INFO","message":"📱 Initializing WhatsApp service...","meta":{},"pid":3080}
+{"timestamp":"2025-07-29T14:25:02.916Z","level":"ERROR","message":"❌ WhatsApp service initialization failed","meta":{"error":"Cannot read properties of undefined (reading 'child')"},"pid":3080}
+{"timestamp":"2025-07-29T14:25:02.917Z","level":"ERROR","message":"❌ Failed to initialize WhatsApp Bot","meta":{"error":"WhatsApp service initialization failed: Cannot read properties of undefined (reading 'child')","stack":"Error: WhatsApp service initialization failed: Cannot read properties of undefined (reading 'child')\n    at WhatsAppBot.initializeWhatsApp (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:107:19)\n    at async WhatsAppBot.initialize (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:51:13)\n    at async startBot (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:391:9)"},"pid":3080}
+{"timestamp":"2025-07-29T14:25:02.918Z","level":"INFO","message":"🛑 Bot shutdown initiated...","meta":{},"pid":3080}
+{"timestamp":"2025-07-29T14:25:02.919Z","level":"INFO","message":"📊 Bot Statistics","meta":{"bot":{"messagesProcessed":0,"sessionsCreated":0,"ordersCompleted":0,"errorsHandled":0,"uptime":1,"sessionsActive":0,"memoryUsage":{"heapUsed":41.52,"heapTotal":67.51,"external":3.7,"rss":108.25}},"rateLimiter":{"activeUsers":0,"activeBusinesses":0,"globalRequests":0,"blockedUsers":0,"suspiciousUsers":0,"recentBlocks":0},"security":{"threatsDetected":0,"usersBlocked":0,"messagesBlocked":0,"alertsSent":0,"startTime":1753799101665,"activeThreats":0,"blockedUsers":0,"whitelistedUsers":0,"suspiciousPatterns":0,"uptime":1254},"duplicateChecker":{"totalProcessedMessages":0,"activeUsers":0,"activeBusinesses":0,"recentMessages":0,"topUsers":{},"topBusinesses":{},"memoryUsage":{"processedMessages":0,"userHistories":0,"businessHistories":0}}},"pid":3080}
+{"timestamp":"2025-07-29T14:25:02.921Z","level":"INFO","message":"🧹 Shutting down middleware...","meta":{},"pid":3080}
+{"timestamp":"2025-07-29T14:25:02.922Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":3080}
+{"timestamp":"2025-07-29T14:25:02.922Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1753799101665,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":1257}","meta":{},"pid":3080}
+{"timestamp":"2025-07-29T14:25:02.922Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":3080}
+{"timestamp":"2025-07-29T14:25:02.925Z","level":"INFO","message":"🗑️ Shutting down session manager...","meta":{},"pid":3080}
+{"timestamp":"2025-07-29T14:25:02.928Z","level":"INFO","message":"📱 Shutting down WhatsApp service...","meta":{},"pid":3080}
+{"timestamp":"2025-07-29T14:25:02.928Z","level":"INFO","message":"📝 Shutting down logger...","meta":{},"pid":3080}
+{"timestamp":"2025-07-29T18:26:34.925Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:34.926Z","level":"INFO","message":"🚀 WhatsApp Bot initializing...","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:34.926Z","level":"INFO","message":"🔌 Initializing Firebase database...","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:35.159Z","level":"INFO","message":"✅ Firebase database connected","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:35.159Z","level":"INFO","message":"🏢 Initializing Business Manager...","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:37.703Z","level":"INFO","message":"✅ Business Manager initialized","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:37.703Z","level":"INFO","message":"📱 Initializing WhatsApp service...","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:37.819Z","level":"INFO","message":"✅ WhatsApp service initialized","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:37.819Z","level":"INFO","message":"🛡️ Initializing middleware...","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:37.820Z","level":"INFO","message":"✅ Rate Limiter ready","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:37.820Z","level":"INFO","message":"✅ Duplicate Checker ready","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:37.820Z","level":"INFO","message":"✅ Security Monitor ready","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:37.821Z","level":"INFO","message":"✅ Logger ready","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:37.821Z","level":"INFO","message":"🔧 Initializing Session Manager...","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:37.821Z","level":"INFO","message":"✅ Session Manager initialized","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:37.822Z","level":"INFO","message":"📨 Setting up message handling...","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:37.822Z","level":"INFO","message":"✅ Message handling configured","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:37.823Z","level":"INFO","message":"📊 Setting up monitoring...","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:37.823Z","level":"INFO","message":"✅ Monitoring configured","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:37.823Z","level":"INFO","message":"✅ Graceful shutdown configured","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:26:37.824Z","level":"INFO","message":"✅ WhatsApp Bot successfully initialized","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:27:14.867Z","level":"INFO","message":"🛑 Bot shutdown initiated...","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:27:14.868Z","level":"INFO","message":"📊 Bot Statistics","meta":{"bot":{"messagesProcessed":0,"sessionsCreated":0,"ordersCompleted":0,"errorsHandled":0,"uptime":40,"sessionsActive":0,"memoryUsage":{"heapUsed":43.6,"heapTotal":50.88,"external":3.6,"rss":97.12}},"rateLimiter":{"activeUsers":0,"activeBusinesses":0,"globalRequests":0,"blockedUsers":0,"suspiciousUsers":0,"recentBlocks":0},"security":{"threatsDetected":0,"usersBlocked":0,"messagesBlocked":0,"alertsSent":0,"startTime":1753813594925,"activeThreats":0,"blockedUsers":0,"whitelistedUsers":0,"suspiciousPatterns":0,"uptime":39943},"duplicateChecker":{"totalProcessedMessages":0,"activeUsers":0,"activeBusinesses":0,"recentMessages":0,"topUsers":{},"topBusinesses":{},"memoryUsage":{"processedMessages":0,"userHistories":0,"businessHistories":0}}},"pid":13696}
+{"timestamp":"2025-07-29T18:27:14.871Z","level":"INFO","message":"🧹 Shutting down middleware...","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:27:14.871Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:27:14.871Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1753813594925,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":39946}","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:27:14.872Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:27:14.874Z","level":"INFO","message":"🗑️ Shutting down session manager...","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:27:14.877Z","level":"INFO","message":"📱 Shutting down WhatsApp service...","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:27:14.880Z","level":"INFO","message":"📝 Shutting down logger...","meta":{},"pid":13696}
+{"timestamp":"2025-07-29T18:28:04.837Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:04.838Z","level":"INFO","message":"🚀 WhatsApp Bot initializing...","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:04.838Z","level":"INFO","message":"🔌 Initializing Firebase database...","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:04.964Z","level":"INFO","message":"✅ Firebase database connected","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:04.965Z","level":"INFO","message":"🏢 Initializing Business Manager...","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:06.067Z","level":"INFO","message":"✅ Business Manager initialized","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:06.068Z","level":"INFO","message":"📱 Initializing WhatsApp service...","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:06.114Z","level":"INFO","message":"✅ WhatsApp service initialized","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:06.114Z","level":"INFO","message":"🛡️ Initializing middleware...","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:06.115Z","level":"INFO","message":"✅ Rate Limiter ready","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:06.115Z","level":"INFO","message":"✅ Duplicate Checker ready","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:06.115Z","level":"INFO","message":"✅ Security Monitor ready","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:06.115Z","level":"INFO","message":"✅ Logger ready","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:06.116Z","level":"INFO","message":"🔧 Initializing Session Manager...","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:06.116Z","level":"INFO","message":"✅ Session Manager initialized","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:06.117Z","level":"INFO","message":"📨 Setting up message handling...","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:06.117Z","level":"INFO","message":"✅ Message handling configured","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:06.118Z","level":"INFO","message":"📊 Setting up monitoring...","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:06.118Z","level":"INFO","message":"✅ Monitoring configured","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:06.118Z","level":"INFO","message":"✅ Graceful shutdown configured","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:28:06.119Z","level":"INFO","message":"✅ WhatsApp Bot successfully initialized","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:29:06.067Z","level":"INFO","message":"🛑 Bot shutdown initiated...","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:29:06.068Z","level":"INFO","message":"📊 Bot Statistics","meta":{"bot":{"messagesProcessed":0,"sessionsCreated":0,"ordersCompleted":0,"errorsHandled":0,"uptime":61,"sessionsActive":0,"memoryUsage":{"heapUsed":46.39,"heapTotal":82.88,"external":7,"rss":163.12}},"rateLimiter":{"activeUsers":0,"activeBusinesses":0,"globalRequests":0,"blockedUsers":0,"suspiciousUsers":0,"recentBlocks":0},"security":{"threatsDetected":0,"usersBlocked":0,"messagesBlocked":0,"alertsSent":0,"startTime":1753813684837,"activeThreats":0,"blockedUsers":0,"whitelistedUsers":0,"suspiciousPatterns":0,"uptime":61231},"duplicateChecker":{"totalProcessedMessages":0,"activeUsers":0,"activeBusinesses":0,"recentMessages":0,"topUsers":{},"topBusinesses":{},"memoryUsage":{"processedMessages":0,"userHistories":0,"businessHistories":0}}},"pid":9848}
+{"timestamp":"2025-07-29T18:29:06.070Z","level":"INFO","message":"🧹 Shutting down middleware...","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:29:06.071Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:29:06.071Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1753813684837,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":61234}","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:29:06.071Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:29:06.074Z","level":"INFO","message":"🗑️ Shutting down session manager...","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:29:06.078Z","level":"INFO","message":"📱 Shutting down WhatsApp service...","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:29:06.082Z","level":"INFO","message":"📝 Shutting down logger...","meta":{},"pid":9848}
+{"timestamp":"2025-07-29T18:30:37.296Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:37.296Z","level":"INFO","message":"🚀 WhatsApp Bot initializing...","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:37.297Z","level":"INFO","message":"🔌 Initializing Firebase database...","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:37.427Z","level":"INFO","message":"✅ Firebase database connected","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:37.428Z","level":"INFO","message":"🏢 Initializing Business Manager...","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:38.516Z","level":"INFO","message":"✅ Business Manager initialized","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:38.516Z","level":"INFO","message":"📱 Initializing WhatsApp service...","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:38.566Z","level":"INFO","message":"✅ WhatsApp service initialized","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:38.566Z","level":"INFO","message":"🛡️ Initializing middleware...","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:38.567Z","level":"INFO","message":"✅ Rate Limiter ready","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:38.567Z","level":"INFO","message":"✅ Duplicate Checker ready","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:38.567Z","level":"INFO","message":"✅ Security Monitor ready","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:38.567Z","level":"INFO","message":"✅ Logger ready","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:38.568Z","level":"INFO","message":"🔧 Initializing Session Manager...","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:38.568Z","level":"INFO","message":"✅ Session Manager initialized","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:38.569Z","level":"INFO","message":"📨 Setting up message handling...","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:38.569Z","level":"INFO","message":"✅ Message handling configured","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:38.570Z","level":"INFO","message":"📊 Setting up monitoring...","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:38.570Z","level":"INFO","message":"✅ Monitoring configured","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:38.570Z","level":"INFO","message":"✅ Graceful shutdown configured","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:30:38.571Z","level":"INFO","message":"✅ WhatsApp Bot successfully initialized","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:31:15.379Z","level":"INFO","message":"🛑 Bot shutdown initiated...","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:31:15.379Z","level":"INFO","message":"📊 Bot Statistics","meta":{"bot":{"messagesProcessed":0,"sessionsCreated":0,"ordersCompleted":0,"errorsHandled":0,"uptime":38,"sessionsActive":1,"memoryUsage":{"heapUsed":43.2,"heapTotal":47.88,"external":3.11,"rss":89.82}},"rateLimiter":{"activeUsers":0,"activeBusinesses":0,"globalRequests":0,"blockedUsers":0,"suspiciousUsers":0,"recentBlocks":0},"security":{"threatsDetected":0,"usersBlocked":0,"messagesBlocked":0,"alertsSent":0,"startTime":1753813837296,"activeThreats":0,"blockedUsers":0,"whitelistedUsers":0,"suspiciousPatterns":0,"uptime":38083},"duplicateChecker":{"totalProcessedMessages":0,"activeUsers":0,"activeBusinesses":0,"recentMessages":0,"topUsers":{},"topBusinesses":{},"memoryUsage":{"processedMessages":0,"userHistories":0,"businessHistories":0}}},"pid":15936}
+{"timestamp":"2025-07-29T18:31:15.382Z","level":"INFO","message":"🧹 Shutting down middleware...","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:31:15.383Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:31:15.383Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1753813837296,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":38087}","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:31:15.383Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:31:15.386Z","level":"INFO","message":"🗑️ Shutting down session manager...","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:31:15.388Z","level":"INFO","message":"📱 Shutting down WhatsApp service...","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:31:15.390Z","level":"INFO","message":"📝 Shutting down logger...","meta":{},"pid":15936}
+{"timestamp":"2025-07-29T18:37:02.805Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:02.805Z","level":"INFO","message":"🚀 WhatsApp Bot initializing...","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:02.806Z","level":"INFO","message":"🔌 Initializing Firebase database...","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:02.934Z","level":"INFO","message":"✅ Firebase database connected","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:02.934Z","level":"INFO","message":"🏢 Initializing Business Manager...","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:05.146Z","level":"INFO","message":"✅ Business Manager initialized","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:05.146Z","level":"INFO","message":"📱 Initializing WhatsApp service...","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:05.200Z","level":"INFO","message":"✅ WhatsApp service initialized","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:05.201Z","level":"INFO","message":"🛡️ Initializing middleware...","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:05.201Z","level":"INFO","message":"✅ Rate Limiter ready","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:05.202Z","level":"INFO","message":"✅ Duplicate Checker ready","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:05.202Z","level":"INFO","message":"✅ Security Monitor ready","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:05.202Z","level":"INFO","message":"✅ Logger ready","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:05.203Z","level":"INFO","message":"🔧 Initializing Session Manager...","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:05.203Z","level":"INFO","message":"✅ Session Manager initialized","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:05.203Z","level":"INFO","message":"📨 Setting up message handling...","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:05.204Z","level":"INFO","message":"✅ Message handling configured","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:05.204Z","level":"INFO","message":"📊 Setting up monitoring...","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:05.205Z","level":"INFO","message":"✅ Monitoring configured","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:05.206Z","level":"INFO","message":"✅ Graceful shutdown configured","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:37:05.206Z","level":"INFO","message":"✅ WhatsApp Bot successfully initialized","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:38:41.283Z","level":"INFO","message":"🛑 Bot shutdown initiated...","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:38:41.284Z","level":"INFO","message":"📊 Bot Statistics","meta":{"bot":{"messagesProcessed":0,"sessionsCreated":0,"ordersCompleted":0,"errorsHandled":0,"uptime":98,"sessionsActive":1,"memoryUsage":{"heapUsed":44.42,"heapTotal":48.13,"external":3.12,"rss":93.24}},"rateLimiter":{"activeUsers":0,"activeBusinesses":0,"globalRequests":0,"blockedUsers":0,"suspiciousUsers":0,"recentBlocks":0},"security":{"threatsDetected":0,"usersBlocked":0,"messagesBlocked":0,"alertsSent":0,"startTime":1753814222804,"activeThreats":0,"blockedUsers":0,"whitelistedUsers":0,"suspiciousPatterns":0,"uptime":98479},"duplicateChecker":{"totalProcessedMessages":0,"activeUsers":0,"activeBusinesses":0,"recentMessages":0,"topUsers":{},"topBusinesses":{},"memoryUsage":{"processedMessages":0,"userHistories":0,"businessHistories":0}}},"pid":13348}
+{"timestamp":"2025-07-29T18:38:41.286Z","level":"INFO","message":"🧹 Shutting down middleware...","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:38:41.287Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:38:41.287Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1753814222804,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":98483}","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:38:41.287Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:38:41.290Z","level":"INFO","message":"🗑️ Shutting down session manager...","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:38:41.294Z","level":"INFO","message":"📱 Shutting down WhatsApp service...","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T18:38:41.297Z","level":"INFO","message":"📝 Shutting down logger...","meta":{},"pid":13348}
+{"timestamp":"2025-07-29T20:22:36.798Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:36.799Z","level":"INFO","message":"🚀 WhatsApp Bot initializing...","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:36.799Z","level":"INFO","message":"🔌 Initializing Firebase database...","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:37.029Z","level":"INFO","message":"✅ Firebase database connected","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:37.029Z","level":"INFO","message":"🏢 Initializing Business Manager...","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:40.387Z","level":"INFO","message":"✅ Business Manager initialized","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:40.388Z","level":"INFO","message":"📱 Initializing WhatsApp service...","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:40.575Z","level":"INFO","message":"✅ WhatsApp service initialized","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:40.576Z","level":"INFO","message":"🛡️ Initializing middleware...","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:40.576Z","level":"INFO","message":"✅ Rate Limiter ready","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:40.577Z","level":"INFO","message":"✅ Duplicate Checker ready","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:40.578Z","level":"INFO","message":"✅ Security Monitor ready","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:40.579Z","level":"INFO","message":"✅ Logger ready","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:40.579Z","level":"INFO","message":"🔧 Initializing Session Manager...","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:40.580Z","level":"INFO","message":"✅ Session Manager initialized","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:40.581Z","level":"INFO","message":"📨 Setting up message handling...","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:40.582Z","level":"INFO","message":"✅ Message handling configured","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:40.583Z","level":"INFO","message":"📊 Setting up monitoring...","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:40.583Z","level":"INFO","message":"✅ Monitoring configured","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:40.585Z","level":"INFO","message":"✅ Graceful shutdown configured","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:22:40.586Z","level":"INFO","message":"✅ WhatsApp Bot successfully initialized","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:29:36.146Z","level":"INFO","message":"🛑 Bot shutdown initiated...","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:29:36.146Z","level":"INFO","message":"📊 Bot Statistics","meta":{"bot":{"messagesProcessed":0,"sessionsCreated":0,"ordersCompleted":0,"errorsHandled":0,"uptime":419,"sessionsActive":1,"memoryUsage":{"heapUsed":45.28,"heapTotal":48.42,"external":3.76,"rss":102.27}},"rateLimiter":{"activeUsers":0,"activeBusinesses":0,"globalRequests":0,"blockedUsers":0,"suspiciousUsers":0,"recentBlocks":0},"security":{"threatsDetected":0,"usersBlocked":0,"messagesBlocked":0,"alertsSent":0,"startTime":1753820556798,"activeThreats":0,"blockedUsers":0,"whitelistedUsers":0,"suspiciousPatterns":0,"uptime":419348},"duplicateChecker":{"totalProcessedMessages":0,"activeUsers":0,"activeBusinesses":0,"recentMessages":0,"topUsers":{},"topBusinesses":{},"memoryUsage":{"processedMessages":0,"userHistories":0,"businessHistories":0}}},"pid":10008}
+{"timestamp":"2025-07-29T20:29:36.149Z","level":"INFO","message":"🧹 Shutting down middleware...","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:29:36.149Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:29:36.149Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1753820556798,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":419351}","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:29:36.149Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:29:36.152Z","level":"INFO","message":"🗑️ Shutting down session manager...","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:29:36.155Z","level":"INFO","message":"📱 Shutting down WhatsApp service...","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:29:36.158Z","level":"INFO","message":"📝 Shutting down logger...","meta":{},"pid":10008}
+{"timestamp":"2025-07-29T20:29:46.961Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:46.961Z","level":"INFO","message":"🚀 WhatsApp Bot initializing...","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:46.962Z","level":"INFO","message":"🔌 Initializing Firebase database...","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:47.110Z","level":"INFO","message":"✅ Firebase database connected","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:47.110Z","level":"INFO","message":"🏢 Initializing Business Manager...","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:49.311Z","level":"INFO","message":"✅ Business Manager initialized","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:49.311Z","level":"INFO","message":"📱 Initializing WhatsApp service...","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:49.357Z","level":"INFO","message":"✅ WhatsApp service initialized","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:49.357Z","level":"INFO","message":"🛡️ Initializing middleware...","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:49.357Z","level":"INFO","message":"✅ Rate Limiter ready","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:49.358Z","level":"INFO","message":"✅ Duplicate Checker ready","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:49.358Z","level":"INFO","message":"✅ Security Monitor ready","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:49.358Z","level":"INFO","message":"✅ Logger ready","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:49.358Z","level":"INFO","message":"🔧 Initializing Session Manager...","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:49.359Z","level":"INFO","message":"✅ Session Manager initialized","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:49.359Z","level":"INFO","message":"📨 Setting up message handling...","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:49.360Z","level":"INFO","message":"✅ Message handling configured","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:49.360Z","level":"INFO","message":"📊 Setting up monitoring...","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:49.360Z","level":"INFO","message":"✅ Monitoring configured","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:49.361Z","level":"INFO","message":"✅ Graceful shutdown configured","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:29:49.361Z","level":"INFO","message":"✅ WhatsApp Bot successfully initialized","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:37:03.754Z","level":"INFO","message":"🛑 Bot shutdown initiated...","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:37:03.754Z","level":"INFO","message":"📊 Bot Statistics","meta":{"bot":{"messagesProcessed":0,"sessionsCreated":0,"ordersCompleted":0,"errorsHandled":0,"uptime":437,"sessionsActive":1,"memoryUsage":{"heapUsed":44.92,"heapTotal":47.67,"external":3.76,"rss":100.85}},"rateLimiter":{"activeUsers":0,"activeBusinesses":0,"globalRequests":0,"blockedUsers":0,"suspiciousUsers":0,"recentBlocks":0},"security":{"threatsDetected":0,"usersBlocked":0,"messagesBlocked":0,"alertsSent":0,"startTime":1753820986961,"activeThreats":0,"blockedUsers":0,"whitelistedUsers":0,"suspiciousPatterns":0,"uptime":436793},"duplicateChecker":{"totalProcessedMessages":0,"activeUsers":0,"activeBusinesses":0,"recentMessages":0,"topUsers":{},"topBusinesses":{},"memoryUsage":{"processedMessages":0,"userHistories":0,"businessHistories":0}}},"pid":5564}
+{"timestamp":"2025-07-29T20:37:03.757Z","level":"INFO","message":"🧹 Shutting down middleware...","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:37:03.757Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:37:03.758Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1753820986961,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":436797}","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:37:03.758Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:37:03.761Z","level":"INFO","message":"🗑️ Shutting down session manager...","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:37:03.764Z","level":"INFO","message":"📱 Shutting down WhatsApp service...","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:37:03.766Z","level":"INFO","message":"📝 Shutting down logger...","meta":{},"pid":5564}
+{"timestamp":"2025-07-29T20:37:28.082Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":5528}
+{"timestamp":"2025-07-29T20:37:28.082Z","level":"INFO","message":"🚀 WhatsApp Bot initializing...","meta":{},"pid":5528}
+{"timestamp":"2025-07-29T20:37:28.082Z","level":"INFO","message":"🔌 Initializing Firebase database...","meta":{},"pid":5528}
+{"timestamp":"2025-07-29T20:37:28.228Z","level":"INFO","message":"✅ Firebase database connected","meta":{},"pid":5528}
+{"timestamp":"2025-07-29T20:37:28.228Z","level":"INFO","message":"🏢 Initializing Business Manager...","meta":{},"pid":5528}
+{"timestamp":"2025-07-29T20:37:28.231Z","level":"ERROR","message":"❌ Business Manager initialization failed","meta":{"error":"firebaseService.getBusinessMappings is not a function"},"pid":5528}
+{"timestamp":"2025-07-29T20:37:28.231Z","level":"ERROR","message":"❌ Failed to initialize WhatsApp Bot","meta":{"error":"Business Manager initialization failed: firebaseService.getBusinessMappings is not a function","stack":"Error: Business Manager initialization failed: firebaseService.getBusinessMappings is not a function\n    at WhatsAppBot.initializeBusinessManager (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:96:19)\n    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)\n    at async WhatsAppBot.initialize (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:48:13)\n    at async startBot (C:\\Users\\Lenton\\Desktop\\Automation\\LLLFarming_Automation\\src\\index.js:391:9)"},"pid":5528}
+{"timestamp":"2025-07-29T20:37:28.233Z","level":"INFO","message":"🛑 Bot shutdown initiated...","meta":{},"pid":5528}
+{"timestamp":"2025-07-29T20:37:28.234Z","level":"INFO","message":"📊 Bot Statistics","meta":{"bot":{"messagesProcessed":0,"sessionsCreated":0,"ordersCompleted":0,"errorsHandled":0,"uptime":0,"sessionsActive":0,"memoryUsage":{"heapUsed":44.02,"heapTotal":63.05,"external":3.49,"rss":100.68}},"rateLimiter":{"activeUsers":0,"activeBusinesses":0,"globalRequests":0,"blockedUsers":0,"suspiciousUsers":0,"recentBlocks":0},"security":{"threatsDetected":0,"usersBlocked":0,"messagesBlocked":0,"alertsSent":0,"startTime":1753821448082,"activeThreats":0,"blockedUsers":0,"whitelistedUsers":0,"suspiciousPatterns":0,"uptime":151},"duplicateChecker":{"totalProcessedMessages":0,"activeUsers":0,"activeBusinesses":0,"recentMessages":0,"topUsers":{},"topBusinesses":{},"memoryUsage":{"processedMessages":0,"userHistories":0,"businessHistories":0}}},"pid":5528}
+{"timestamp":"2025-07-29T20:37:28.237Z","level":"INFO","message":"🧹 Shutting down middleware...","meta":{},"pid":5528}
+{"timestamp":"2025-07-29T20:37:28.237Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":5528}
+{"timestamp":"2025-07-29T20:37:28.237Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1753821448082,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":155}","meta":{},"pid":5528}
+{"timestamp":"2025-07-29T20:37:28.238Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":5528}
+{"timestamp":"2025-07-29T20:37:28.240Z","level":"INFO","message":"🗑️ Shutting down session manager...","meta":{},"pid":5528}
+{"timestamp":"2025-07-29T20:37:28.243Z","level":"INFO","message":"📱 Shutting down WhatsApp service...","meta":{},"pid":5528}
+{"timestamp":"2025-07-29T20:37:28.243Z","level":"INFO","message":"📝 Shutting down logger...","meta":{},"pid":5528}
+{"timestamp":"2025-07-29T20:41:16.267Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":9724}
+{"timestamp":"2025-07-29T20:41:16.268Z","level":"INFO","message":"🚀 WhatsApp Bot initializing...","meta":{},"pid":9724}
+{"timestamp":"2025-07-29T20:41:16.268Z","level":"INFO","message":"🔌 Initializing Firebase database...","meta":{},"pid":9724}
+{"timestamp":"2025-07-29T20:41:16.417Z","level":"INFO","message":"✅ Firebase database connected","meta":{},"pid":9724}
+{"timestamp":"2025-07-29T20:41:16.417Z","level":"INFO","message":"🏢 Initializing Business Manager...","meta":{},"pid":9724}
+{"timestamp":"2025-07-29T20:41:16.420Z","level":"INFO","message":"✅ Business Manager initialized","meta":{},"pid":9724}
+{"timestamp":"2025-07-29T20:41:16.421Z","level":"INFO","message":"📱 Initializing WhatsApp service...","meta":{},"pid":9724}
+{"timestamp":"2025-07-29T20:41:16.425Z","level":"INFO","message":"🛑 Bot shutdown initiated...","meta":{},"pid":9724}
+{"timestamp":"2025-07-29T20:41:16.426Z","level":"INFO","message":"📊 Bot Statistics","meta":{"bot":{"messagesProcessed":0,"sessionsCreated":0,"ordersCompleted":0,"errorsHandled":0,"uptime":0,"sessionsActive":0,"memoryUsage":{"heapUsed":44.11,"heapTotal":63.8,"external":3.49,"rss":101.23}},"rateLimiter":{"activeUsers":0,"activeBusinesses":0,"globalRequests":0,"blockedUsers":0,"suspiciousUsers":0,"recentBlocks":0},"security":{"threatsDetected":0,"usersBlocked":0,"messagesBlocked":0,"alertsSent":0,"startTime":1753821676267,"activeThreats":0,"blockedUsers":0,"whitelistedUsers":0,"suspiciousPatterns":0,"uptime":158},"duplicateChecker":{"totalProcessedMessages":0,"activeUsers":0,"activeBusinesses":0,"recentMessages":0,"topUsers":{},"topBusinesses":{},"memoryUsage":{"processedMessages":0,"userHistories":0,"businessHistories":0}}},"pid":9724}
+{"timestamp":"2025-07-29T20:41:16.428Z","level":"INFO","message":"🧹 Shutting down middleware...","meta":{},"pid":9724}
+{"timestamp":"2025-07-29T20:41:16.428Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":9724}
+{"timestamp":"2025-07-29T20:41:16.428Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1753821676267,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":161}","meta":{},"pid":9724}
+{"timestamp":"2025-07-29T20:41:16.428Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":9724}
+{"timestamp":"2025-07-29T20:41:16.431Z","level":"INFO","message":"🗑️ Shutting down session manager...","meta":{},"pid":9724}
+{"timestamp":"2025-07-29T20:41:16.434Z","level":"INFO","message":"📱 Shutting down WhatsApp service...","meta":{},"pid":9724}
+{"timestamp":"2025-07-29T20:41:16.435Z","level":"INFO","message":"📝 Shutting down logger...","meta":{},"pid":9724}

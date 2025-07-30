@@ -1,12 +1,25 @@
 {
   "dependencies": {
     "@hapi/boom": "^10.0.1",
-    "@whiskeysockets/baileys": "^6.17.16",
+    "@whiskeysockets/baileys": "^6.7.18",
     "baileys": "^6.7.16",
-    "dotenv": "^17.0.1",
+    "dotenv": "^17.2.0",
+    "firebase": "^12.0.0",
     "firebase-admin": "^13.4.0",
     "google-spreadsheet": "^3.3.0",
     "pino": "^9.7.0",
-    "qrcode-terminal": "^0.12.0"
-  }
+    "qrcode-terminal": "^0.12.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3"
+  },
+  "name": "lllfarming_automation",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
 }
