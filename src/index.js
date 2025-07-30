@@ -7,449 +7,435 @@ const { initializeFirebase } = require('./config/database');
 const { OWNER_NUMBER } = require('./config/constants');
 
 // Services
-const whatsappService = require('./services/whatsapp');
 const businessManager = require('./services/businessManager');
+// Import WhatsApp service correctly - it might be a default export or instance
+const whatsappService = require('./services/whatsapp');
 
-// Handlers
+// Handlers and utilities
 const MessageHandler = require('./handlers/messageHandler');
-
-// Utils
 const sessionManager = require('./utils/sessionManager');
-const helpers = require('./utils/helpers');
 
-// Middleware
+// Middleware - Import the instances, not classes
 const rateLimiter = require('./middleware/rateLimiter');
-const duplicateChecker = require('./middleware/duplicateChecker');
-const logger = require('./middleware/logger');
+const duplicateChecker = require('./middleware/duplicateChecker');  
 const securityMonitor = require('./middleware/securityMonitor');
+const logger = require('./middleware/logger');
 
 class WhatsAppBot {
     constructor() {
-        this.isInitialized = false;
-        this.isShuttingDown = false;
+        this.whatsappService = null;
         this.messageHandler = null;
+        this.firebaseService = null;
+        this.middleware = {
+            rateLimiter: rateLimiter,
+            duplicateChecker: duplicateChecker,
+            securityMonitor: securityMonitor,
+            logger: logger
+        };
+        this.isInitialized = false;
         this.startTime = Date.now();
         this.stats = {
-            messagesProcessed: 0,
-            sessionsCreated: 0,
-            ordersCompleted: 0,
-            errorsHandled: 0
+            bot: {
+                messagesProcessed: 0,
+                sessionsCreated: 0,
+                ordersCompleted: 0,
+                errorsHandled: 0,
+                uptime: 0,
+                sessionsActive: 0,
+                memoryUsage: {}
+            },
+            rateLimiter: {},
+            security: {},
+            duplicateChecker: {}
         };
     }
 
     async initialize() {
         try {
-            logger.info('🚀 WhatsApp Bot initializing...');
-            
-            // Initialize Firebase database
+            console.log('🚀 WhatsApp Bot initializing...');
+
+            // Step 1: Initialize Firebase database first
             await this.initializeDatabase();
-            
-            // Initialize business manager
+
+            // Step 2: Initialize Firebase service (this must happen after database)
+            await this.initializeFirebaseService();
+
+            // Step 3: Initialize Business Manager (depends on Firebase service)
             await this.initializeBusinessManager();
-            
-            // Initialize WhatsApp service
+
+            // Step 4: Initialize WhatsApp service
             await this.initializeWhatsApp();
-            
-            // Initialize middleware
-            this.initializeMiddleware();
-            
-            // Initialize session manager
-            this.initializeSessionManager();
-            
-            // Setup message handling
-            this.setupMessageHandling();
-            
-            // Setup monitoring
-            this.setupMonitoring();
-            
-            // Setup graceful shutdown
+
+            // Step 5: Initialize middleware (optional, many don't have initialize methods)
+            await this.initializeMiddleware();
+
+            // Step 6: Initialize session manager
+            await this.initializeSessionManager();
+
+            // Step 7: Set up message handling
+            await this.setupMessageHandling();
+
+            // Step 8: Set up monitoring
+            await this.setupMonitoring();
+
+            // Step 9: Set up graceful shutdown
             this.setupGracefulShutdown();
-            
+
             this.isInitialized = true;
-            logger.info('✅ WhatsApp Bot successfully initialized');
-            
+            console.log('✅ WhatsApp Bot successfully initialized');
+
             return true;
         } catch (error) {
-            logger.error('❌ Failed to initialize WhatsApp Bot', { error: error.message, stack: error.stack });
-            throw error;
+            console.error('❌ Failed to initialize WhatsApp Bot:', error);
+            throw new Error(`Bot initialization failed: ${error.message}`);
         }
     }
 
     async initializeDatabase() {
         try {
-            logger.info('🔌 Initializing Firebase database...');
+            console.log('🔌 Initializing Firebase database...');
             await initializeFirebase();
-            logger.info('✅ Firebase database connected');
+            console.log('✅ Firebase database connected');
         } catch (error) {
-            logger.error('❌ Database initialization failed', { error: error.message });
+            console.error('❌ Database initialization failed:', error.message);
             throw new Error(`Database initialization failed: ${error.message}`);
+        }
+    }
+
+    async initializeFirebaseService() {
+        try {
+            console.log('🔥 Initializing Firebase service...');
+            
+            // Import and initialize Firebase service AFTER database is ready
+            this.firebaseService = require('./services/firebase');
+            await this.firebaseService.initialize();
+            
+            console.log('✅ Firebase service initialized');
+        } catch (error) {
+            console.error('❌ Firebase service initialization failed:', error.message);
+            // Don't throw error, just log it - Firebase service handles graceful degradation
+            console.log('⚠️ Continuing without Firebase service - some features may be limited');
         }
     }
 
     async initializeBusinessManager() {
         try {
-            logger.info('🏢 Initializing Business Manager...');
+            console.log('🏢 Initializing Business Manager...');
             await businessManager.initialize();
-            logger.info('✅ Business Manager initialized');
+            console.log('✅ Business Manager initialized');
         } catch (error) {
-            logger.error('❌ Business Manager initialization failed', { error: error.message });
+            console.error('❌ Business Manager initialization failed:', error.message);
             throw new Error(`Business Manager initialization failed: ${error.message}`);
         }
     }
 
     async initializeWhatsApp() {
         try {
-            logger.info('📱 Initializing WhatsApp service...');
-            await whatsappService.initialize();
-            logger.info('✅ WhatsApp service initialized');
+            console.log('📱 Initializing WhatsApp service...');
+            
+            // Check if whatsappService is a class or an instance
+            if (typeof whatsappService === 'function') {
+                // It's a class, instantiate it
+                this.whatsappService = new whatsappService();
+            } else if (whatsappService && typeof whatsappService === 'object') {
+                // It's already an instance
+                this.whatsappService = whatsappService;
+            } else {
+                throw new Error('WhatsApp service import is not valid');
+            }
+            
+            // Initialize the service
+            if (typeof this.whatsappService.initialize === 'function') {
+                await this.whatsappService.initialize();
+            }
+            
+            console.log('✅ WhatsApp service initialized');
         } catch (error) {
-            logger.error('❌ WhatsApp service initialization failed', { error: error.message });
+            console.error('❌ WhatsApp service initialization failed:', error.message);
             throw new Error(`WhatsApp service initialization failed: ${error.message}`);
         }
     }
 
-    initializeMiddleware() {
-        logger.info('🛡️ Initializing middleware...');
-        
-        // All middleware components are already initialized via their constructors
-        // Just log their readiness
-        logger.info('✅ Rate Limiter ready');
-        logger.info('✅ Duplicate Checker ready');
-        logger.info('✅ Security Monitor ready');
-        logger.info('✅ Logger ready');
+    async initializeMiddleware() {
+        try {
+            console.log('🛡️ Initializing middleware...');
+            
+            // Initialize middleware components if they have initialize methods
+            if (this.middleware.rateLimiter && typeof this.middleware.rateLimiter.initialize === 'function') {
+                await this.middleware.rateLimiter.initialize();
+            }
+            console.log('✅ Rate Limiter ready');
+
+            if (this.middleware.duplicateChecker && typeof this.middleware.duplicateChecker.initialize === 'function') {
+                await this.middleware.duplicateChecker.initialize();
+            }
+            console.log('✅ Duplicate Checker ready');
+
+            if (this.middleware.securityMonitor && typeof this.middleware.securityMonitor.initialize === 'function') {
+                await this.middleware.securityMonitor.initialize();
+            }
+            console.log('✅ Security Monitor ready');
+
+            if (this.middleware.logger && typeof this.middleware.logger.initialize === 'function') {
+                await this.middleware.logger.initialize();
+            }
+            console.log('✅ Logger ready');
+
+        } catch (error) {
+            console.error('❌ Middleware initialization failed:', error.message);
+            // Don't throw error for middleware - continue without it
+            console.log('⚠️ Continuing without some middleware - basic functionality will work');
+        }
     }
 
-    initializeSessionManager() {
-        logger.info('🔧 Initializing Session Manager...');
-        sessionManager.initialize();
-        logger.info('✅ Session Manager initialized');
+    async initializeSessionManager() {
+        try {
+            console.log('🔧 Initializing Session Manager...');
+            if (sessionManager && typeof sessionManager.initialize === 'function') {
+                await sessionManager.initialize();
+            }
+            console.log('✅ Session Manager initialized');
+        } catch (error) {
+            console.error('❌ Session Manager initialization failed:', error.message);
+            throw new Error(`Session Manager initialization failed: ${error.message}`);
+        }
     }
 
-    setupMessageHandling() {
-        logger.info('📨 Setting up message handling...');
-        
-        this.messageHandler = new MessageHandler(whatsappService, businessManager);
-        this.messageHandler.initialize();
-        
-        logger.info('✅ Message handling configured');
+    async setupMessageHandling() {
+        try {
+            console.log('📨 Setting up message handling...');
+            
+            this.messageHandler = new MessageHandler(this.whatsappService, this.middleware);
+            
+            // Set up WhatsApp message event handler
+            if (this.whatsappService && typeof this.whatsappService.onMessage === 'function') {
+                this.whatsappService.onMessage((messageData) => {
+                    this.messageHandler.handleMessage(messageData);
+                });
+            }
+
+            console.log('✅ Message handling configured');
+        } catch (error) {
+            console.error('❌ Message handling setup failed:', error.message);
+            throw new Error(`Message handling setup failed: ${error.message}`);
+        }
     }
 
-    setupMonitoring() {
-        logger.info('📊 Setting up monitoring...');
-        
-        // Log stats every 10 minutes
-        this.statsInterval = setInterval(() => {
-            this.logStats();
-        }, 10 * 60 * 1000);
-        
-        // Memory monitoring every 5 minutes
-        this.memoryInterval = setInterval(() => {
-            this.checkMemoryUsage();
-        }, 5 * 60 * 1000);
-        
-        logger.info('✅ Monitoring configured');
+    async setupMonitoring() {
+        try {
+            console.log('📊 Setting up monitoring...');
+            
+            // Start monitoring intervals
+            this.startStatsCollection();
+            this.startMemoryMonitoring();
+            
+            console.log('✅ Monitoring configured');
+        } catch (error) {
+            console.error('❌ Monitoring setup failed:', error.message);
+            // Don't throw error for monitoring - continue without it
+            console.log('⚠️ Continuing without monitoring - basic functionality will work');
+        }
     }
 
     setupGracefulShutdown() {
-        const cleanup = async () => {
-            if (this.isShuttingDown) return;
-            await this.shutdown();
-        };
-        
-        // Handle graceful shutdown
-        helpers.gracefulShutdown([cleanup]);
-        
-        logger.info('✅ Graceful shutdown configured');
+        console.log('✅ Graceful shutdown configured');
+
+        // Handle various shutdown signals
+        process.on('SIGINT', () => this.shutdown('SIGINT'));
+        process.on('SIGTERM', () => this.shutdown('SIGTERM'));
+        process.on('uncaughtException', (error) => {
+            console.error('💥 Uncaught Exception:', error);
+            this.shutdown('uncaughtException');
+        });
+        process.on('unhandledRejection', (reason, promise) => {
+            console.error('💥 Unhandled Rejection at:', promise, 'Reason:', reason);
+            // Don't exit on unhandled rejection, just log it
+        });
     }
 
-    // Main message processing pipeline
-    async processMessage(messageData) {
-        const timer = helpers.createTimer();
-        let processingResult = null;
-        
-        try {
-            // Step 1: Security check
-            const securityCheck = securityMonitor.checkSecurity(messageData);
-            if (!securityCheck.allowed) {
-                logger.warn('🚫 Message blocked by security monitor', {
-                    userId: messageData.userId,
-                    reason: securityCheck.reason,
-                    severity: securityCheck.severity
-                });
-                return { blocked: true, reason: securityCheck.reason };
-            }
-            
-            // Step 2: Rate limiting
-            const rateLimitCheck = rateLimiter.checkRateLimit(
-                messageData.userId, 
-                messageData.businessId, 
-                messageData
-            );
-            if (!rateLimitCheck.allowed) {
-                logger.warn('🚫 Message blocked by rate limiter', {
-                    userId: messageData.userId,
-                    reason: rateLimitCheck.reason
-                });
+    startStatsCollection() {
+        // Collect and log statistics every 10 minutes
+        setInterval(() => {
+            this.collectStats();
+            this.logStats();
+        }, 600000); // 10 minutes
+    }
+
+    startMemoryMonitoring() {
+        // Monitor memory usage every 5 minutes
+        setInterval(() => {
+            const memUsage = process.memoryUsage();
+            const memUsageMB = {
+                heapUsed: (memUsage.heapUsed / 1024 / 1024).toFixed(2),
+                heapTotal: (memUsage.heapTotal / 1024 / 1024).toFixed(2),
+                external: (memUsage.external / 1024 / 1024).toFixed(2),
+                rss: (memUsage.rss / 1024 / 1024).toFixed(2)
+            };
+
+            // Log memory warning if usage is high
+            if (memUsage.heapUsed > 200 * 1024 * 1024) { // 200MB
+                console.log(`⚠️ High memory usage: ${memUsageMB.heapUsed}MB`);
                 
-                // Send rate limit message to user
-                if (rateLimitCheck.message) {
-                    await whatsappService.sendTextMessage(messageData.userId, rateLimitCheck.message);
+                // Trigger cleanup if available
+                if (sessionManager && typeof sessionManager.optimizeMemory === 'function') {
+                    sessionManager.optimizeMemory();
                 }
-                return { blocked: true, reason: rateLimitCheck.reason };
             }
-            
-            // Step 3: Duplicate check
-            const duplicateCheck = duplicateChecker.shouldProcessMessage(messageData);
-            if (!duplicateCheck.shouldProcess) {
-                logger.info('🚫 Duplicate message detected', {
-                    userId: messageData.userId,
-                    type: duplicateCheck.reason.type
-                });
-                return { blocked: true, reason: 'duplicate' };
-            }
-            
-            // Step 4: Process the message (handled by MessageHandler)
-            // Note: The actual processing is handled in MessageHandler.handleMessage
-            // This method is called from the WhatsApp event handler
-            
-            this.stats.messagesProcessed++;
-            
-            // Mark duplicate processing as complete
-            if (duplicateCheck.hash) {
-                duplicateChecker.completeProcessing(duplicateCheck.hash);
-            }
-            
-            const duration = timer.end();
-            logger.logPerformance('message_processing', duration, {
-                userId: messageData.userId,
-                businessId: messageData.businessId
-            });
-            
-            return { success: true, duration };
-            
+        }, 300000); // 5 minutes
+    }
+
+    collectStats() {
+        const now = Date.now();
+        this.stats.bot.uptime = Math.floor((now - this.startTime) / 1000);
+        this.stats.bot.sessionsActive = (sessionManager && typeof sessionManager.getActiveSessionCount === 'function') 
+            ? sessionManager.getActiveSessionCount() : 0;
+        
+        const memUsage = process.memoryUsage();
+        this.stats.bot.memoryUsage = {
+            heapUsed: (memUsage.heapUsed / 1024 / 1024).toFixed(2),
+            heapTotal: (memUsage.heapTotal / 1024 / 1024).toFixed(2),
+            external: (memUsage.external / 1024 / 1024).toFixed(2),
+            rss: (memUsage.rss / 1024 / 1024).toFixed(2)
+        };
+
+        // Collect middleware stats if available
+        try {
+            this.stats.rateLimiter = (this.middleware.rateLimiter && typeof this.middleware.rateLimiter.getStats === 'function') 
+                ? this.middleware.rateLimiter.getStats() : {};
+            this.stats.security = (this.middleware.securityMonitor && typeof this.middleware.securityMonitor.getStats === 'function') 
+                ? this.middleware.securityMonitor.getStats() : {};
+            this.stats.duplicateChecker = (this.middleware.duplicateChecker && typeof this.middleware.duplicateChecker.getStats === 'function') 
+                ? this.middleware.duplicateChecker.getStats() : {};
         } catch (error) {
-            this.stats.errorsHandled++;
-            logger.logError(error, 'Message processing error', {
-                userId: messageData.userId,
-                businessId: messageData.businessId
-            });
-            
-            // Mark duplicate processing as complete even on error
-            if (processingResult && processingResult.hash) {
-                duplicateChecker.completeProcessing(processingResult.hash);
-            }
-            
-            return { error: true, message: error.message };
+            // Ignore stats collection errors
         }
     }
 
-    // Statistics and monitoring
     logStats() {
-        const uptime = Date.now() - this.startTime;
-        const botStats = {
-            ...this.stats,
-            uptime: Math.round(uptime / 1000),
-            sessionsActive: sessionManager.getActiveSessionCount(),
-            memoryUsage: helpers.getMemoryUsage()
-        };
-        
-        const rateLimiterStats = rateLimiter.getStats();
-        const securityStats = securityMonitor.getStats();
-        const duplicateStats = duplicateChecker.getStats();
-        
-        logger.info('📊 Bot Statistics', {
-            bot: botStats,
-            rateLimiter: rateLimiterStats,
-            security: securityStats,
-            duplicateChecker: duplicateStats
-        });
-        
-        // Log to console for visibility
         console.log('\n📊 === BOT STATISTICS ===');
-        console.log(`⏰ Uptime: ${Math.round(uptime / 1000 / 60)} minutes`);
-        console.log(`📨 Messages Processed: ${this.stats.messagesProcessed}`);
-        console.log(`👥 Active Sessions: ${sessionManager.getActiveSessionCount()}`);
-        console.log(`🛡️ Threats Detected: ${securityStats.threatsDetected}`);
-        console.log(`🚫 Messages Blocked: ${rateLimiterStats.globalRequests || 0}`);
-        console.log(`💾 Memory Usage: ${botStats.memoryUsage.heapUsed}MB`);
+        console.log(`⏰ Uptime: ${Math.floor(this.stats.bot.uptime / 60)} minutes`);
+        console.log(`📨 Messages Processed: ${this.stats.bot.messagesProcessed}`);
+        console.log(`👥 Active Sessions: ${this.stats.bot.sessionsActive}`);
+        console.log(`🛡️ Threats Detected: ${this.stats.security.threatsDetected || 0}`);
+        console.log(`🚫 Messages Blocked: ${this.stats.security.messagesBlocked || 0}`);
+        console.log(`💾 Memory Usage: ${this.stats.bot.memoryUsage.heapUsed}MB`);
         console.log('========================\n');
     }
 
-    checkMemoryUsage() {
-        const memoryUsage = helpers.getMemoryUsage();
-        
-        if (memoryUsage.heapUsed > 500) { // 500MB threshold
-            logger.warn('⚠️ High memory usage detected', { memoryUsage });
-            
-            // Trigger cleanup
-            sessionManager.optimizeMemory();
-            
-            // Force garbage collection if available
-            if (global.gc) {
-                global.gc();
-                logger.info('♻️ Garbage collection triggered');
-            }
-        }
-        
-        if (memoryUsage.heapUsed > 1000) { // 1GB critical threshold
-            logger.error('🚨 Critical memory usage - initiating emergency cleanup', { memoryUsage });
-            sessionManager.emergencyCleanup();
-        }
-    }
+    async shutdown(signal) {
+        console.log(`\n🛑 Received ${signal}, shutting down gracefully...`);
 
-    // Health check endpoint (for monitoring systems)
-    getHealthStatus() {
-        return {
-            status: this.isInitialized && !this.isShuttingDown ? 'healthy' : 'unhealthy',
-            uptime: Date.now() - this.startTime,
-            whatsappConnected: whatsappService.isConnected(),
-            stats: this.stats,
-            memory: helpers.getMemoryUsage(),
-            timestamp: new Date().toISOString()
-        };
-    }
-
-    // Manual controls
-    async emergencyStop() {
-        logger.error('🚨 EMERGENCY STOP INITIATED');
-        
-        // Stop processing new messages
-        rateLimiter.emergencyStop();
-        
-        // Clear all sessions
-        sessionManager.emergencyCleanup();
-        
-        logger.error('🛑 Emergency stop completed');
-    }
-
-    async restart() {
-        logger.info('🔄 Bot restart initiated');
-        
         try {
-            await this.shutdown();
-            await this.initialize();
-            logger.info('✅ Bot restart completed');
-        } catch (error) {
-            logger.error('❌ Bot restart failed', { error: error.message });
-            throw error;
-        }
-    }
-
-    // Graceful shutdown
-    async shutdown() {
-        if (this.isShuttingDown) {
-            logger.warn('⚠️ Shutdown already in progress');
-            return;
-        }
-        
-        this.isShuttingDown = true;
-        logger.info('🛑 Bot shutdown initiated...');
-        
-        try {
-            // Stop monitoring intervals
-            if (this.statsInterval) {
-                clearInterval(this.statsInterval);
-                this.statsInterval = null;
-            }
-            
-            if (this.memoryInterval) {
-                clearInterval(this.memoryInterval);
-                this.memoryInterval = null;
-            }
-            
-            // Log final stats
+            // Log final statistics
+            this.collectStats();
             this.logStats();
-            
+
             // Shutdown components in reverse order
-            logger.info('🧹 Shutting down middleware...');
-            securityMonitor.shutdown();
-            duplicateChecker.shutdown();
-            rateLimiter.shutdown();
-            
-            logger.info('🗑️ Shutting down session manager...');
-            sessionManager.shutdown();
-            
-            logger.info('📱 Shutting down WhatsApp service...');
-            whatsappService.cleanup();
-            
-            logger.info('📝 Shutting down logger...');
-            logger.shutdown();
-            
+            console.log('🧹 Shutting down middleware...');
+
+            // Shutdown middleware
+            if (this.middleware.securityMonitor && typeof this.middleware.securityMonitor.shutdown === 'function') {
+                await this.middleware.securityMonitor.shutdown();
+            }
+            if (this.middleware.duplicateChecker && typeof this.middleware.duplicateChecker.shutdown === 'function') {
+                await this.middleware.duplicateChecker.shutdown();
+            }
+            if (this.middleware.rateLimiter && typeof this.middleware.rateLimiter.shutdown === 'function') {
+                await this.middleware.rateLimiter.shutdown();
+            }
+
+            // Shutdown session manager
+            console.log('🗑️ Shutting down session manager...');
+            if (sessionManager && typeof sessionManager.shutdown === 'function') {
+                await sessionManager.shutdown();
+            }
+
+            // Shutdown WhatsApp service
+            console.log('📱 Shutting down WhatsApp service...');
+            if (this.whatsappService && typeof this.whatsappService.shutdown === 'function') {
+                await this.whatsappService.shutdown();
+            }
+
+            // Shutdown business manager
+            console.log('🏢 Shutting down business manager...');
+            if (businessManager && typeof businessManager.shutdown === 'function') {
+                await businessManager.shutdown();
+            }
+
+            // Shutdown Firebase service
+            console.log('🔥 Shutting down Firebase service...');
+            if (this.firebaseService && typeof this.firebaseService.shutdown === 'function') {
+                await this.firebaseService.shutdown();
+            }
+
+            // Shutdown logger last
+            console.log('📝 Shutting down logger...');
+            if (this.middleware.logger && typeof this.middleware.logger.shutdown === 'function') {
+                await this.middleware.logger.shutdown();
+            }
+
             console.log('✅ Bot shutdown completed successfully');
             
         } catch (error) {
-            console.error('❌ Error during shutdown:', error.message);
+            console.error('❌ Error during shutdown:', error);
+        } finally {
+            console.log('✅ Graceful shutdown complete');
+            process.exit(0);
+        }
+    }
+
+    // Health check method
+    isHealthy() {
+        return this.isInitialized && 
+               this.whatsappService && 
+               (typeof this.whatsappService.isConnected !== 'function' || this.whatsappService.isConnected()) && 
+               this.firebaseService &&
+               (typeof this.firebaseService.isServiceReady !== 'function' || this.firebaseService.isServiceReady()) &&
+               businessManager &&
+               (typeof businessManager.isHealthy !== 'function' || businessManager.isHealthy());
+    }
+
+    // Emergency stop
+    emergencyStop() {
+        console.log('🚨 EMERGENCY STOP TRIGGERED');
+        if (this.middleware.rateLimiter && typeof this.middleware.rateLimiter.emergencyStop === 'function') {
+            this.middleware.rateLimiter.emergencyStop();
+        }
+        if (this.middleware.securityMonitor && typeof this.middleware.securityMonitor.emergencyStop === 'function') {
+            this.middleware.securityMonitor.emergencyStop();
+        }
+        if (sessionManager && typeof sessionManager.emergencyCleanup === 'function') {
+            sessionManager.emergencyCleanup();
         }
     }
 }
 
-// Create and start the bot
-const bot = new WhatsAppBot();
-
+// Main bot startup function
 async function startBot() {
     try {
+        console.log('\n🎉 === WHATSAPP BOT STARTING ===');
+        console.log('📱 Initializing all systems...\n');
+
+        const bot = new WhatsAppBot();
         await bot.initialize();
-        
-        // Bot is now running
+
         console.log('\n🎉 === WHATSAPP BOT STARTED SUCCESSFULLY ===');
-        console.log(`📱 Scan the QR code above to connect`);
+        console.log('📱 Scan the QR code above to connect');
         console.log(`👑 Owner number: ${OWNER_NUMBER}`);
         console.log(`🕐 Started at: ${new Date().toLocaleString()}`);
         console.log('============================================\n');
-        
+
+        return bot;
     } catch (error) {
         console.error('💥 Critical error starting bot:', error.message);
         console.error('Stack trace:', error.stack);
-        
-        // Attempt graceful shutdown even on startup failure
-        try {
-            await bot.shutdown();
-        } catch (shutdownError) {
-            console.error('❌ Additional error during emergency shutdown:', shutdownError.message);
-        }
-        
         process.exit(1);
     }
 }
 
-// Handle uncaught exceptions and rejections
-process.on('uncaughtException', async (error) => {
-    console.error('💥 Uncaught Exception:', error.message);
-    console.error('Stack trace:', error.stack);
-    
-    try {
-        await bot.shutdown();
-    } catch (shutdownError) {
-        console.error('❌ Error during emergency shutdown:', shutdownError.message);
-    }
-    
-    process.exit(1);
-});
-
-process.on('unhandledRejection', async (reason, promise) => {
-    console.error('💥 Unhandled Rejection at:', promise);
-    console.error('Reason:', reason);
-    
-    try {
-        await bot.shutdown();
-    } catch (shutdownError) {
-        console.error('❌ Error during emergency shutdown:', shutdownError.message);
-    }
-    
-    process.exit(1);
-});
-
-// Export for testing or external use
-module.exports = {
-    WhatsAppBot,
-    bot,
-    startBot
-};
-
-// Start the bot if this file is run directly
+// Start the bot
 if (require.main === module) {
-    startBot().catch(error => {
-        console.error('💥 Fatal error in main:', error.message);
-        process.exit(1);
-    });
+    startBot();
 }
+
+module.exports = { WhatsAppBot, startBot };
