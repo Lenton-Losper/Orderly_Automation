@@ -69,10 +69,9 @@ class WhatsAppService {
             console.log('🧪 Testing minimal socket configuration...');
             
             try {
-                // Try minimal config first
+                // Try minimal config first (removed deprecated printQRInTerminal)
                 const minimalConfig = {
                     auth: state,
-                    printQRInTerminal: true,
                     browser: ['LLL Farm Bot', 'Chrome', '120.0.0'],
                     syncFullHistory: false
                 };
@@ -133,8 +132,18 @@ class WhatsAppService {
                 console.log('🔄 Connecting to WhatsApp...');
             }
             
+            // FIXED: Properly display QR code
             if (qr) {
-                console.log('📱 Scan the QR code above to connect');
+                console.log('\n📱 ═══════════════════════════════════════');
+                console.log('📱 QR CODE TO SCAN:');
+                console.log('📱 ═══════════════════════════════════════');
+                console.log(qr);
+                console.log('📱 ═══════════════════════════════════════');
+                console.log('📱 OPTION 1: Copy the text above and paste into WhatsApp Web');
+                console.log('📱 OPTION 2: Visit this URL to see QR code:');
+                console.log(`📱 https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`);
+                console.log('📱 OPTION 3: Open WhatsApp > Settings > Linked Devices > Link a Device');
+                console.log('📱 ═══════════════════════════════════════\n');
             }
         });
 

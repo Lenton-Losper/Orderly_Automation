@@ -1,3 +1,4 @@
+//src/config/database.js
 require('dotenv').config();
 const admin = require('firebase-admin');
 
@@ -10,9 +11,11 @@ function initializeFirebase() {
     try {
         if (!admin.apps.length) {
             admin.initializeApp({
-                credential: admin.credential.cert(serviceAccount)
+                credential: admin.credential.cert(serviceAccount),
+                projectId: serviceAccount.project_id // Use project_id from service account file
             });
             console.log('✅ Firebase Admin SDK initialized successfully');
+            console.log(`📱 Project ID: ${serviceAccount.project_id}`);
         }
         
         db = admin.firestore();

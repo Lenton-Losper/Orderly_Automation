@@ -5,7 +5,22 @@ const sessionManager = require('../utils/sessionManager');
 class CommandHandler {
     // Main command routing
     async handleCommand(text, session, businessManager, messageData) {
-        const command = text.toLowerCase().trim();
+        if (typeof text !== 'string') {
+        console.error('❌ Invalid text parameter type:', typeof text);
+        return;
+    }
+
+    // Convert to lowercase safely
+    const command = text.toLowerCase().trim();
+    
+    if (!command) {
+        console.log('🚫 Empty command after processing');
+        return;
+    }
+
+    // Your existing command handling logic continues here...
+    // Replace any other instances of text.toLowerCase() with just 'command'
+ 
 
         try {
             // Welcome and menu commands
