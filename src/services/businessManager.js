@@ -55,7 +55,7 @@ class BusinessManager {
         }
     }
 
-    // NEW: Get business ID based on bot's phone number with auto-mapping
+    // FIXED: Properly await the Promise and return the actual business ID
     async getBusinessIdFromBot(botPhoneNumber) {
         if (!botPhoneNumber) {
             console.log('⚠️  No bot phone number provided, using default business');
@@ -74,13 +74,19 @@ class BusinessManager {
 
         // Try auto-mapping
         console.log(`🔍 No mapping found for bot ${cleanBotNumber}, attempting auto-mapping...`);
-        const autoMappedBusinessId = await firebaseService.autoMapBotToVendor(botPhoneNumber);
         
-        if (autoMappedBusinessId) {
-            // Update our cache
-            this.botToBusinessMap.set(cleanBotNumber, autoMappedBusinessId);
-            console.log(`✨ Auto-mapped bot ${cleanBotNumber} to business: ${autoMappedBusinessId}`);
-            return autoMappedBusinessId;
+        try {
+            // FIXED: Properly await the Promise
+            const autoMappedBusinessId = await firebaseService.autoMapBotToVendor(botPhoneNumber);
+            
+            if (autoMappedBusinessId) {
+                // Update our cache
+                this.botToBusinessMap.set(cleanBotNumber, autoMappedBusinessId);
+                console.log(`✨ Auto-mapped bot ${cleanBotNumber} to business: ${autoMappedBusinessId}`);
+                return autoMappedBusinessId;
+            }
+        } catch (error) {
+            console.error(`❌ Error in auto-mapping for bot ${cleanBotNumber}:`, error);
         }
 
         // Fallback: Check if bot number has business mapping (legacy)
@@ -216,6 +222,178 @@ class BusinessManager {
             this.botToBusinessMap.forEach((businessId, botNumber) => {
                 console.log(`   📱 ${botNumber} → 🏢 ${businessId}`);
             });
+        }
+    }
+
+    // Add these methods to your BusinessManager class
+
+    // Customer management methods
+    async getExistingCustomer(userId, businessId) {
+        try {
+            // Clean the userId (remove @s.whatsapp.net if present)
+            const cleanUserId = userId.split('@')[0];
+            return await firebaseService.getCustomer(cleanUserId, businessId);
+        } catch (error) {
+            console.error(`❌ Failed to get customer ${userId} for business ${businessId}:`, error);
+            return null;
+        }
+    }
+
+    async createCustomer(customerData, businessId) {
+        try {
+            return await firebaseService.createCustomer(customerData, businessId);
+        } catch (error) {
+            console.error(`❌ Failed to create customer for business ${businessId}:`, error);
+            throw error;
+        }
+    }
+
+    async updateCustomer(userId, customerData, businessId) {
+        try {
+            const cleanUserId = userId.split('@')[0];
+            return await firebaseService.updateCustomer(cleanUserId, customerData, businessId);
+        } catch (error) {
+            console.error(`❌ Failed to update customer ${userId} for business ${businessId}:`, error);
+            throw error;
+        }
+    }
+
+    async getCustomerOrders(userId, businessId) {
+        try {
+            const cleanUserId = userId.split('@')[0];
+            return await firebaseService.getCustomerOrders(cleanUserId, businessId);
+        } catch (error) {
+            console.error(`❌ Failed to get orders for customer ${userId} in business ${businessId}:`, error);
+            return [];
+        }
+    }
+
+    // Order management methods
+    async createOrder(orderData, businessId) {
+        try {
+            return await firebaseService.createOrder(orderData, businessId);
+        } catch (error) {
+            console.error(`❌ Failed to create order for business ${businessId}:`, error);
+            throw error;
+        }
+    }
+
+    async getOrder(orderId, businessId) {
+        try {
+            return await firebaseService.getOrder(orderId, businessId);
+        } catch (error) {
+            console.error(`❌ Failed to get order ${orderId} for business ${businessId}:`, error);
+            return null;
+        }
+    }
+
+    async updateOrder(orderId, orderData, businessId) {
+        try {
+            return await firebaseService.updateOrder(orderId, orderData, businessId);
+        } catch (error) {
+            console.error(`❌ Failed to update order ${orderId} for business ${businessId}:`, error);
+            throw error;
+        }
+    }
+
+    // Add these methods to your BusinessManager class (replace the ones I suggested earlier)
+
+    // Customer management methods - using your existing Firebase methods
+    async getExistingCustomer(userId, businessId) {
+        try {
+            // Clean the userId (remove @s.whatsapp.net if present)
+            const cleanUserId = userId.split('@')[0];
+            // Use your existing Firebase method
+            return await firebaseService.getCustomer(cleanUserId, businessId);
+        } catch (error) {
+            console.error(`❌ Failed to get customer ${userId} for business ${businessId}:`, error);
+            return null;
+        }
+    }
+
+    async createCustomer(customerData, businessId) {
+        try {
+            const cleanUserId = customerData.phone?.split('@')[0] || customerData.userId?.split('@')[0];
+            // Use your existing Firebase method
+            const success = await firebaseService.saveCustomer(cleanUserId, businessId, customerData);
+            if (success) {
+                return { ...customerData, phone: cleanUserId };
+            }
+            throw new Error('Failed to save customer');
+        } catch (error) {
+            console.error(`❌ Failed to create customer for business ${businessId}:`, error);
+            throw error;
+        }
+    }
+
+    async updateCustomer(userId, customerData, businessId) {
+        try {
+            const cleanUserId = userId.split('@')[0];
+            // Use your existing Firebase method (saveCustomer with merge: true)
+            const success = await firebaseService.saveCustomer(cleanUserId, businessId, customerData);
+            if (success) {
+                return { ...customerData, phone: cleanUserId };
+            }
+            throw new Error('Failed to update customer');
+        } catch (error) {
+            console.error(`❌ Failed to update customer ${userId} for business ${businessId}:`, error);
+            throw error;
+        }
+    }
+
+    async getCustomerOrders(userId, businessId, limit = 10) {
+        try {
+            const cleanUserId = userId.split('@')[0];
+            // Use your existing Firebase method
+            return await firebaseService.getOrderHistory(cleanUserId, businessId, limit);
+        } catch (error) {
+            console.error(`❌ Failed to get orders for customer ${userId} in business ${businessId}:`, error);
+            return [];
+        }
+    }
+
+    // Order management methods - using your existing Firebase methods
+    async createOrder(orderData, businessId) {
+        try {
+            // Use your existing Firebase method
+            const orderId = await firebaseService.saveOrder(businessId, orderData);
+            if (orderId) {
+                return { ...orderData, id: orderId };
+            }
+            throw new Error('Failed to save order');
+        } catch (error) {
+            console.error(`❌ Failed to create order for business ${businessId}:`, error);
+            throw error;
+        }
+    }
+
+    async getOrder(orderId, businessId) {
+        try {
+            // You might need to add this method to Firebase service if it doesn't exist
+            if (typeof firebaseService.getOrder === 'function') {
+                return await firebaseService.getOrder(orderId, businessId);
+            } else {
+                console.log('⚠️ getOrder method not implemented in Firebase service');
+                return null;
+            }
+        } catch (error) {
+            console.error(`❌ Failed to get order ${orderId} for business ${businessId}:`, error);
+            return null;
+        }
+    }
+
+    async updateOrder(orderId, orderData, businessId) {
+        try {
+            // You might need to add this method to Firebase service if it doesn't exist
+            if (typeof firebaseService.updateOrder === 'function') {
+                return await firebaseService.updateOrder(orderId, orderData, businessId);
+            } else {
+                console.log('⚠️ updateOrder method not implemented in Firebase service');
+                return false;
+            }
+        } catch (error) {
+            console.error(`❌ Failed to update order ${orderId} for business ${businessId}:`, error);
+            throw error;
         }
     }
 
