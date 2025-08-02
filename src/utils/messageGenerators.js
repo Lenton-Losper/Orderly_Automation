@@ -1,4 +1,31 @@
 class MessageGenerators {
+    // Helper method to safely convert price to number
+    safePrice(price) {
+        const numPrice = parseFloat(price);
+        return isNaN(numPrice) ? 0 : numPrice;
+    }
+
+    // Calculate cart totals directly from cart data
+    calculateCartTotals(cart) {
+        const subtotal = cart.reduce((sum, item) => {
+            const price = this.safePrice(item.price);
+            const quantity = parseInt(item.quantity) || 1;
+            return sum + (price * quantity);
+        }, 0);
+
+        const tax = subtotal * 0.1; // 10% tax
+        const shipping = subtotal >= 50 ? 0 : 5; // Free shipping over N$50
+        const total = subtotal + tax + shipping;
+
+        return {
+            subtotal,
+            tax,
+            shipping,
+            total,
+            itemCount: cart.length
+        };
+    }
+
     // Main menu message
     generateMainMenu(businessProfile) {
         const businessName = businessProfile.businessName || 'Our Business';
@@ -55,7 +82,8 @@ class MessageGenerators {
         businessData.productOrder.forEach((key, i) => {
             const p = businessData.products[key];
             if (p) {
-                msg += `${i + 1}. ${p.image} *${p.name}* - N$${p.price.toFixed(2)}\n`;
+                const price = this.safePrice(p.price);
+                msg += `${i + 1}. ${p.image} *${p.name}* - N$${price.toFixed(2)}\n`;
                 if (p.description) {
                     msg += `   ${p.description.substring(0, 60)}${p.description.length > 60 ? '...' : ''}\n`;
                 }
@@ -72,7 +100,7 @@ class MessageGenerators {
 
     // Cart summary
     generateCartSummary(session) {
-        if (session.cart.length === 0) {
+        if (!session.cart || session.cart.length === 0) {
             return "🛒 *YOUR CART IS EMPTY*\n\n" +
                    "Ready to start shopping?\n\n" +
                    "• Type *catalog* to browse all products\n" +
@@ -82,33 +110,36 @@ class MessageGenerators {
         
         let msg = "🛒 *YOUR CART*\n\n";
         session.cart.forEach((item, i) => {
-            msg += `${i + 1}. ${item.image} *${item.name}*\n`;
-            msg += `   Qty: ${item.quantity} × N$${item.price.toFixed(2)} = N$${(item.price * item.quantity).toFixed(2)}\n\n`;
+            const price = this.safePrice(item.price);
+            const quantity = parseInt(item.quantity) || 1;
+            const itemTotal = price * quantity;
+            
+            msg += `${i + 1}. ${item.image || '🛍️'} *${item.name}*\n`;
+            msg += `   Qty: ${quantity} × N${price.toFixed(2)} = N${itemTotal.toFixed(2)}\n\n`;
         });
         
-        const subtotal = session.getSubtotal();
-        const shipping = session.getShipping();
-        const tax = session.getTax();
-        const discount = session.getDiscountAmount();
-        const total = session.getTotal();
+        // Calculate totals directly from cart data
+        const totals = this.calculateCartTotals(session.cart);
+        const discount = session.discountAmount || 0;
+        const finalTotal = totals.total - discount;
         
         msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
         msg += `📊 *SUMMARY*\n`;
-        msg += `Subtotal: N$${subtotal.toFixed(2)}\n`;
+        msg += `Subtotal: N${totals.subtotal.toFixed(2)}\n`;
         
-        if (shipping > 0) {
-            msg += `Delivery: N$${shipping.toFixed(2)}\n`;
+        if (totals.shipping > 0) {
+            msg += `Delivery: N${totals.shipping.toFixed(2)}\n`;
         } else {
             msg += `Delivery: FREE (orders over N$50)\n`;
         }
         
-        msg += `Tax (10%): N$${tax.toFixed(2)}\n`;
+        msg += `Tax (10%): N${totals.tax.toFixed(2)}\n`;
         
         if (discount > 0) {
-            msg += `Discount (${session.discountCode}): -N$${discount.toFixed(2)}\n`;
+            msg += `Discount (${session.discountCode || 'Applied'}): -N${discount.toFixed(2)}\n`;
         }
         
-        msg += `*Total: N$${total.toFixed(2)}*\n`;
+        msg += `*Total: N${finalTotal.toFixed(2)}*\n`;
         msg += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
         
         msg += `💡 *Next steps:*\n`;
@@ -166,8 +197,22 @@ class MessageGenerators {
     }
 
     // Checkout message
-    generateCheckoutMessage() {
+    generateCheckoutMessage(session) {
+        // If cart is empty, redirect to shopping
+        if (!session.cart || session.cart.length === 0) {
+            return "🛒 *YOUR CART IS EMPTY*\n\n" +
+                   "Please add items to your cart before checkout:\n\n" +
+                   "• Type *catalog* to browse all products\n" +
+                   "• Type *quick* for popular items\n" +
+                   "• Type *menu* to return to main menu";
+        }
+
         let msg = "📝 *CHECKOUT - CUSTOMER DETAILS* 📝\n\n";
+        
+        // Show cart summary first
+        const totals = this.calculateCartTotals(session.cart);
+        msg += `🛒 *Your Order: ${session.cart.length} items - N${totals.total.toFixed(2)}*\n\n`;
+        
         msg += "Please provide your information for delivery:\n\n";
         msg += "Format: *name|email|phone|address*\n\n";
         msg += "📋 *Example:*\n";
@@ -181,10 +226,10 @@ class MessageGenerators {
         let msg = "📋 *CHECKOUT CONFIRMATION* 📋\n\n";
         msg += this.generateOrderSummary(session);
         msg += "\n👤 *CUSTOMER DETAILS*\n";
-        msg += `Name: ${session.customerInfo.name}\n`;
-        msg += `Email: ${session.customerInfo.email}\n`;
-        msg += `Phone: ${session.customerInfo.phone}\n`;
-        msg += `Address: ${session.customerInfo.address}\n\n`;
+        msg += `Name: ${session.customerInfo?.name || 'Not provided'}\n`;
+        msg += `Email: ${session.customerInfo?.email || 'Not provided'}\n`;
+        msg += `Phone: ${session.customerInfo?.phone || 'Not provided'}\n`;
+        msg += `Address: ${session.customerInfo?.address || 'Not provided'}\n\n`;
         
         if (session.customerAccount) {
             msg += `Account: ${session.customerAccount}\n\n`;
@@ -199,13 +244,13 @@ class MessageGenerators {
 
     // Order confirmation
     generateOrderConfirmation(session) {
-        const total = session.getTotal();
-        const customerName = session.customerInfo.name;
+        const totals = this.calculateCartTotals(session.cart || []);
+        const customerName = session.customerInfo?.name || 'Customer';
         
         let msg = "🎉 *ORDER CONFIRMED!* 🎉\n\n";
         msg += `Thank you, *${customerName}*!\n\n`;
-        msg += `📋 Order Total: *N$${total.toFixed(2)}*\n`;
-        msg += `📦 Items: ${session.getCartItemCount()} products\n\n`;
+        msg += `📋 Order Total: *N${totals.total.toFixed(2)}*\n`;
+        msg += `📦 Items: ${totals.itemCount} products\n\n`;
         
         if (session.customerAccount) {
             msg += `👤 Account: ${session.customerAccount}\n`;
@@ -224,13 +269,13 @@ class MessageGenerators {
 
     // Detailed order summary for checkout
     generateOrderSummary(session) {
-        if (session.cart.length === 0) return "🛒 Cart is empty! Type 'catalog' to browse items.";
+        if (!session.cart || session.cart.length === 0) {
+            return "🛒 Cart is empty! Type 'catalog' to browse items.";
+        }
         
-        const subtotal = session.getSubtotal();
-        const tax = session.getTax();
-        const delivery = session.getShipping();
-        const discount = session.getDiscountAmount();
-        const total = session.getTotal();
+        const totals = this.calculateCartTotals(session.cart);
+        const discount = session.discountAmount || 0;
+        const finalTotal = totals.total - discount;
         
         let msg = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
         msg += "📋 *ORDER SUMMARY*\n";
@@ -239,30 +284,34 @@ class MessageGenerators {
         // Items section
         msg += "🛍️ *ITEMS*\n";
         session.cart.forEach((item, i) => {
-            msg += `${i + 1}. ${item.name}\n`;
-            msg += `   Qty: ${item.quantity} × N${item.price.toFixed(2)} = N${(item.price * item.quantity).toFixed(2)}\n\n`;
+            const price = this.safePrice(item.price);
+            const quantity = parseInt(item.quantity) || 1;
+            const itemTotal = price * quantity;
+            
+            msg += `${i + 1}. ${item.name || 'Product'}\n`;
+            msg += `   Qty: ${quantity} × N${price.toFixed(2)} = N${itemTotal.toFixed(2)}\n\n`;
         });
         
         msg += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
         
         // Pricing breakdown
         msg += `📊 *PRICING BREAKDOWN*\n\n`;
-        msg += `Subtotal • ${session.cart.length} items${' '.repeat(20 - session.cart.length.toString().length)}N${subtotal.toFixed(2)}\n`;
+        msg += `Subtotal • ${session.cart.length} items${' '.repeat(20 - session.cart.length.toString().length)}N${totals.subtotal.toFixed(2)}\n`;
         
-        if (delivery > 0) {
-            msg += `Delivery${' '.repeat(31)}N${delivery.toFixed(2)}\n`;
+        if (totals.shipping > 0) {
+            msg += `Delivery${' '.repeat(31)}N${totals.shipping.toFixed(2)}\n`;
         } else {
-            msg += `Delivery${' '.repeat(20)}~~N${(subtotal * 0.1).toFixed(2)}~~ FREE\n`;
+            msg += `Delivery${' '.repeat(20)}~~N${(totals.subtotal * 0.1).toFixed(2)}~~ FREE\n`;
         }
         
-        msg += `Tax (10%)${' '.repeat(29)}N${tax.toFixed(2)}\n`;
+        msg += `Tax (10%)${' '.repeat(29)}N${totals.tax.toFixed(2)}\n`;
         
         if (discount > 0) {
-            msg += `Discount (${session.discountCode})${' '.repeat(20)}-N${discount.toFixed(2)}\n`;
+            msg += `Discount (${session.discountCode || 'Applied'})${' '.repeat(20)}-N${discount.toFixed(2)}\n`;
         }
         
         msg += "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
-        msg += `💰 *TOTAL*${' '.repeat(28)}N${total.toFixed(2)}\n`;
+        msg += `💰 *TOTAL*${' '.repeat(28)}N${finalTotal.toFixed(2)}\n`;
         
         if (discount > 0) {
             msg += `💎 *TOTAL SAVINGS*${' '.repeat(19)}N${discount.toFixed(2)}\n`;
