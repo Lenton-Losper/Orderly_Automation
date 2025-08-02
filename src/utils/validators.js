@@ -3,13 +3,24 @@ const { VALIDATION_CONFIG } = require('../config/constants');
 class Validators {
     // Parse customer info from checkout (name|email|phone|address)
     parseCustomerInfo(input) {
+        console.log('🔍 VALIDATOR DEBUG - parseCustomerInfo called with:', input);
+        
         if (!input || typeof input !== 'string') {
+            console.log('❌ VALIDATOR DEBUG - parseCustomerInfo: Invalid input type');
             return null;
         }
 
-        const parts = input.split('|').map(part => part.trim());
+        // REMOVE WHATSAPP FORMATTING (asterisks and other markdown)
+        const cleanInput = input.replace(/\*+/g, '').trim();
+        console.log('🔍 VALIDATOR DEBUG - Cleaned input:', cleanInput);
+
+        const parts = cleanInput.split('|').map(part => part.trim());
+        console.log('🔍 VALIDATOR DEBUG - parseCustomerInfo: Split into', parts.length, 'parts:', parts);
         
-        if (parts.length !== VALIDATION_CONFIG.CUSTOMER_INFO_PARTS) {
+        // FIXED: Use hardcoded value instead of potentially undefined constant
+        const expectedParts = VALIDATION_CONFIG?.CUSTOMER_INFO_PARTS || 4;
+        if (parts.length !== expectedParts) {
+            console.log('❌ VALIDATOR DEBUG - parseCustomerInfo: Wrong number of parts, expected', expectedParts, 'got', parts.length);
             return null;
         }
 
@@ -20,47 +31,92 @@ class Validators {
             !this.isValidEmail(email) ||
             !this.isValidPhone(phone) ||
             !this.isValidAddress(address)) {
+            console.log('❌ VALIDATOR DEBUG - parseCustomerInfo: Validation failed for one or more fields');
             return null;
         }
 
-        return {
+        const result = {
             name: this.sanitizeName(name),
             email: this.sanitizeEmail(email),
             phone: this.sanitizePhone(phone),
             address: this.sanitizeAddress(address)
         };
+        
+        console.log('✅ VALIDATOR DEBUG - parseCustomerInfo: Success:', result);
+        return result;
     }
 
     // Parse registration info (name|email|phone|address|accountName)
     parseRegistrationInfo(input) {
+        console.log('🔍 VALIDATOR DEBUG - parseRegistrationInfo called with:', input);
+        console.log('🔍 VALIDATOR DEBUG - Input type:', typeof input);
+        console.log('🔍 VALIDATOR DEBUG - Input length:', input?.length);
+        
         if (!input || typeof input !== 'string') {
+            console.log('❌ VALIDATOR DEBUG - parseRegistrationInfo: Invalid input type or null');
             return null;
         }
 
-        const parts = input.split('|').map(part => part.trim());
+        // REMOVE WHATSAPP FORMATTING (asterisks and other markdown)
+        const cleanInput = input.replace(/\*+/g, '').trim();
+        console.log('🔍 VALIDATOR DEBUG - Cleaned input:', cleanInput);
+
+        const parts = cleanInput.split('|').map(part => part.trim());
+        console.log('🔍 VALIDATOR DEBUG - parseRegistrationInfo: Split into', parts.length, 'parts:', parts);
         
-        if (parts.length !== VALIDATION_CONFIG.REGISTRATION_INFO_PARTS) {
+        // FIXED: Use hardcoded value instead of potentially undefined constant
+        const expectedParts = VALIDATION_CONFIG?.REGISTRATION_INFO_PARTS || 5;
+        console.log('🔍 VALIDATOR DEBUG - Expected parts:', expectedParts);
+        
+        if (parts.length !== expectedParts) {
+            console.log('❌ VALIDATOR DEBUG - parseRegistrationInfo: Wrong number of parts, expected', expectedParts, 'got', parts.length);
             return null;
         }
 
         const [name, email, phone, address, accountName] = parts;
+        console.log('🔍 VALIDATOR DEBUG - parseRegistrationInfo: Extracted fields:', {
+            name: `"${name}"`,
+            email: `"${email}"`,
+            phone: `"${phone}"`,
+            address: `"${address}"`,
+            accountName: `"${accountName}"`
+        });
 
-        // Validate each part
-        if (!this.isValidName(name) ||
-            !this.isValidEmail(email) ||
-            !this.isValidPhone(phone) ||
-            !this.isValidAddress(address) ||
-            !this.isValidAccountName(accountName)) {
+        // Validate each part with detailed logging
+        const nameValid = this.isValidName(name);
+        const emailValid = this.isValidEmail(email);
+        const phoneValid = this.isValidPhone(phone);
+        const addressValid = this.isValidAddress(address);
+        const accountNameValid = this.isValidAccountName(accountName);
+        
+        console.log('🔍 VALIDATOR DEBUG - parseRegistrationInfo: Field validation results:', {
+            name: nameValid,
+            email: emailValid,
+            phone: phoneValid,
+            address: addressValid,
+            accountName: accountNameValid
+        });
+
+        if (!nameValid || !emailValid || !phoneValid || !addressValid || !accountNameValid) {
+            console.log('❌ VALIDATOR DEBUG - parseRegistrationInfo: Validation failed for one or more fields');
+            if (!nameValid) console.log('❌ VALIDATOR DEBUG - Invalid name:', name);
+            if (!emailValid) console.log('❌ VALIDATOR DEBUG - Invalid email:', email);
+            if (!phoneValid) console.log('❌ VALIDATOR DEBUG - Invalid phone:', phone);
+            if (!addressValid) console.log('❌ VALIDATOR DEBUG - Invalid address:', address);
+            if (!accountNameValid) console.log('❌ VALIDATOR DEBUG - Invalid accountName:', accountName);
             return null;
         }
 
-        return {
+        const result = {
             name: this.sanitizeName(name),
             email: this.sanitizeEmail(email),
             phone: this.sanitizePhone(phone),
             address: this.sanitizeAddress(address),
             accountName: this.sanitizeAccountName(accountName)
         };
+        
+        console.log('✅ VALIDATOR DEBUG - parseRegistrationInfo: Success:', result);
+        return result;
     }
 
     // Individual validation methods
@@ -122,8 +178,9 @@ class Validators {
     isValidMessage(message) {
         if (!message || typeof message !== 'string') return false;
         const trimmed = message.trim();
-        return trimmed.length >= VALIDATION_CONFIG.MIN_MESSAGE_LENGTH && 
-               trimmed.length <= VALIDATION_CONFIG.MAX_MESSAGE_LENGTH;
+        const minLength = VALIDATION_CONFIG?.MIN_MESSAGE_LENGTH || 1;
+        const maxLength = VALIDATION_CONFIG?.MAX_MESSAGE_LENGTH || 1000;
+        return trimmed.length >= minLength && trimmed.length <= maxLength;
     }
 
     isValidCommand(command) {
@@ -170,7 +227,8 @@ class Validators {
 
     sanitizeMessage(message) {
         if (!message || typeof message !== 'string') return '';
-        return message.trim().substring(0, VALIDATION_CONFIG.MAX_MESSAGE_LENGTH);
+        const maxLength = VALIDATION_CONFIG?.MAX_MESSAGE_LENGTH || 1000;
+        return message.trim().substring(0, maxLength);
     }
 
     // Product validation
@@ -227,6 +285,7 @@ class Validators {
 
     // Batch validation methods
     validateRegistrationData(data) {
+        console.log('🔍 VALIDATOR DEBUG - validateRegistrationData called with:', data);
         const errors = [];
         
         if (!this.isValidName(data.name)) {
@@ -248,6 +307,11 @@ class Validators {
         if (!this.isValidAccountName(data.accountName)) {
             errors.push('Invalid account name: 3-20 characters, alphanumeric and underscore only');
         }
+        
+        console.log('🔍 VALIDATOR DEBUG - validateRegistrationData result:', {
+            isValid: errors.length === 0,
+            errors
+        });
         
         return {
             isValid: errors.length === 0,
