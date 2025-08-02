@@ -1,0 +1,13 @@
+{"timestamp":"2025-08-02T11:59:11.153Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":9496}
+{"timestamp":"2025-08-02T11:59:19.531Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":9496}
+{"timestamp":"2025-08-02T11:59:52.409Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":9496}
+{"timestamp":"2025-08-02T12:00:04.564Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":9496}
+{"timestamp":"2025-08-02T12:00:33.744Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":9496}
+{"timestamp":"2025-08-02T12:02:00.710Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":9496}
+{"timestamp":"2025-08-02T12:02:00.710Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754135951153,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":169557}","meta":{},"pid":9496}
+{"timestamp":"2025-08-02T12:02:00.711Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":9496}
+{"timestamp":"2025-08-02T12:06:03.235Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":13948}
+{"timestamp":"2025-08-02T12:06:05.707Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":13948}
+{"timestamp":"2025-08-02T12:06:44.350Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":13948}
+{"timestamp":"2025-08-02T12:06:44.350Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754136363234,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":41116}","meta":{},"pid":13948}
+{"timestamp":"2025-08-02T12:06:44.350Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":13948}
