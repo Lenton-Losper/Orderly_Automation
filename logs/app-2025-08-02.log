@@ -11,3 +11,70 @@
 {"timestamp":"2025-08-02T12:06:44.350Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":13948}
 {"timestamp":"2025-08-02T12:06:44.350Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754136363234,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":41116}","meta":{},"pid":13948}
 {"timestamp":"2025-08-02T12:06:44.350Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":13948}
+{"timestamp":"2025-08-02T12:10:29.428Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":12812}
+{"timestamp":"2025-08-02T12:10:32.008Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":12812}
+{"timestamp":"2025-08-02T12:10:54.147Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":12812}
+{"timestamp":"2025-08-02T12:11:10.589Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":12812}
+{"timestamp":"2025-08-02T12:13:06.350Z","level":"INFO","message":"Message received","meta":{"userId":"120363286853793358@newsletter","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":12812}
+{"timestamp":"2025-08-02T12:13:17.900Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":12812}
+{"timestamp":"2025-08-02T12:14:35.447Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":12812}
+{"timestamp":"2025-08-02T12:14:35.448Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754136629428,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":246020}","meta":{},"pid":12812}
+{"timestamp":"2025-08-02T12:14:35.448Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":12812}
+{"timestamp":"2025-08-02T12:18:18.049Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":8944}
+{"timestamp":"2025-08-02T12:18:20.803Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":8944}
+{"timestamp":"2025-08-02T12:18:32.036Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":8944}
+{"timestamp":"2025-08-02T12:18:39.977Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":8944}
+{"timestamp":"2025-08-02T12:18:56.052Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":8944}
+{"timestamp":"2025-08-02T12:19:55.781Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":8944}
+{"timestamp":"2025-08-02T12:22:25.274Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":8944}
+{"timestamp":"2025-08-02T12:26:11.917Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":8944}
+{"timestamp":"2025-08-02T12:26:11.917Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754137098049,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":473868}","meta":{},"pid":8944}
+{"timestamp":"2025-08-02T12:26:11.917Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":8944}
+{"timestamp":"2025-08-02T12:32:31.329Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":2172}
+{"timestamp":"2025-08-02T12:32:34.124Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":2172}
+{"timestamp":"2025-08-02T12:32:41.360Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":2172}
+{"timestamp":"2025-08-02T12:32:52.979Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":2172}
+{"timestamp":"2025-08-02T12:33:01.906Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":2172}
+{"timestamp":"2025-08-02T12:36:59.840Z","level":"INFO","message":"Message received","meta":{"userId":"status@broadcast","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":2172}
+{"timestamp":"2025-08-02T12:38:56.257Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":13124}
+{"timestamp":"2025-08-02T12:38:58.734Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":13124}
+{"timestamp":"2025-08-02T12:39:09.524Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":13124}
+{"timestamp":"2025-08-02T12:39:09.524Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754138336257,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":13267}","meta":{},"pid":13124}
+{"timestamp":"2025-08-02T12:39:09.525Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":13124}
+{"timestamp":"2025-08-02T12:41:53.673Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":15008}
+{"timestamp":"2025-08-02T12:41:56.455Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":15008}
+{"timestamp":"2025-08-02T12:42:08.326Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":15008}
+{"timestamp":"2025-08-02T12:42:19.785Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":15008}
+{"timestamp":"2025-08-02T12:42:34.293Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":15008}
+{"timestamp":"2025-08-02T12:42:42.867Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":15008}
+{"timestamp":"2025-08-02T12:42:50.461Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":15008}
+{"timestamp":"2025-08-02T12:43:43.476Z","level":"INFO","message":"Message received","meta":{"userId":"120363144038483540@newsletter","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":15008}
+{"timestamp":"2025-08-02T12:44:55.827Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":15008}
+{"timestamp":"2025-08-02T12:44:55.828Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754138513673,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":182155}","meta":{},"pid":15008}
+{"timestamp":"2025-08-02T12:44:55.828Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":15008}
+{"timestamp":"2025-08-02T12:45:08.025Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":9648}
+{"timestamp":"2025-08-02T12:45:10.445Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":9648}
+{"timestamp":"2025-08-02T12:45:18.711Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":9648}
+{"timestamp":"2025-08-02T12:45:32.978Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":9648}
+{"timestamp":"2025-08-02T12:45:38.317Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":9648}
+{"timestamp":"2025-08-02T12:45:47.134Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":9648}
+{"timestamp":"2025-08-02T12:46:15.184Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":9648}
+{"timestamp":"2025-08-02T12:49:22.275Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":9648}
+{"timestamp":"2025-08-02T12:49:22.275Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754138708025,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":254250}","meta":{},"pid":9648}
+{"timestamp":"2025-08-02T12:49:22.275Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":9648}
+{"timestamp":"2025-08-02T12:49:34.374Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":8084}
+{"timestamp":"2025-08-02T12:49:38.608Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":8084}
+{"timestamp":"2025-08-02T12:49:49.998Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":8084}
+{"timestamp":"2025-08-02T12:49:57.943Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":8084}
+{"timestamp":"2025-08-02T12:50:04.516Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":8084}
+{"timestamp":"2025-08-02T12:50:18.890Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":8084}
+{"timestamp":"2025-08-02T12:50:34.609Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":8084}
+{"timestamp":"2025-08-02T12:51:03.271Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":8084}
+{"timestamp":"2025-08-02T12:51:10.083Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":8084}
+{"timestamp":"2025-08-02T12:51:27.439Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":8084}
+{"timestamp":"2025-08-02T12:51:39.091Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":8084}
+{"timestamp":"2025-08-02T12:51:52.726Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":8084}
+{"timestamp":"2025-08-02T12:52:07.189Z","level":"INFO","message":"Message received","meta":{"userId":"264818790698@s.whatsapp.net","businessId":"0D0aDbfiPsYasbD4duJiZlHL0Av2","messageLength":0,"action":"received"},"pid":8084}
+{"timestamp":"2025-08-02T12:53:45.067Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":8084}
+{"timestamp":"2025-08-02T12:53:45.067Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754138974374,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":250693}","meta":{},"pid":8084}
+{"timestamp":"2025-08-02T12:53:45.068Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":8084}

@@ -175,6 +175,18 @@ class BusinessManager {
         }
     }
 
+    // ADD: Get vendor profile (for business data normalization)
+    async getVendorProfile(businessId) {
+        try {
+            console.log(`✅ Loaded vendor profile for: ${businessId}`);
+            // Use your existing Firebase method for getting vendor profile
+            return await firebaseService.getVendorProfile(businessId);
+        } catch (error) {
+            console.error(`❌ Failed to get vendor profile for ${businessId}:`, error);
+            return null;
+        }
+    }
+
     async getBusinessProducts(businessId) {
         try {
             return await firebaseService.getBusinessProducts(businessId);
@@ -184,133 +196,298 @@ class BusinessManager {
         }
     }
 
-    // Cache management
-    clearCache(businessId = null) {
-        if (businessId) {
-            this.businessData.delete(businessId);
-            this.cacheTimestamps.delete(businessId);
-        } else {
-            this.businessData.clear();
-            this.cacheTimestamps.clear();
+    // UPDATED: Registration-specific methods with comprehensive debugging
+    async saveCustomer(businessId, customerData, whatsappId) {
+        console.log('🔍 BUSINESS MANAGER DEBUG - saveCustomer called');
+        console.log('🔍 BUSINESS MANAGER DEBUG - Business ID:', businessId);
+        console.log('🔍 BUSINESS MANAGER DEBUG - Customer Data:', JSON.stringify(customerData, null, 2));
+        console.log('🔍 BUSINESS MANAGER DEBUG - WhatsApp ID:', whatsappId);
+        
+        try {
+            // Validate inputs
+            if (!businessId) {
+                console.error('❌ BUSINESS MANAGER DEBUG - Missing businessId');
+                return { success: false, message: 'Missing business ID' };
+            }
+            
+            if (!customerData || !customerData.accountName) {
+                console.error('❌ BUSINESS MANAGER DEBUG - Missing customer data or account name');
+                return { success: false, message: 'Missing customer data' };
+            }
+            
+            if (!whatsappId) {
+                console.error('❌ BUSINESS MANAGER DEBUG - Missing whatsappId');
+                return { success: false, message: 'Missing WhatsApp ID' };
+            }
+
+            // Clean WhatsApp ID
+            const cleanWhatsAppId = whatsappId.split('@')[0];
+            console.log('🔍 BUSINESS MANAGER DEBUG - Clean WhatsApp ID:', cleanWhatsAppId);
+            
+            // Try using existing Firebase service methods first
+            if (typeof firebaseService.saveCustomer === 'function') {
+                console.log('🔍 BUSINESS MANAGER DEBUG - Using firebaseService.saveCustomer...');
+                
+                try {
+                    const success = await firebaseService.saveCustomer(cleanWhatsAppId, businessId, {
+                        ...customerData,
+                        whatsappId: cleanWhatsAppId,
+                        createdAt: new Date().toISOString(),
+                        isActive: true,
+                        score: 0
+                    });
+                    
+                    if (success) {
+                        console.log('✅ BUSINESS MANAGER DEBUG - Customer saved via firebaseService');
+                        return { 
+                            success: true, 
+                            accountName: customerData.accountName 
+                        };
+                    } else {
+                        console.log('❌ BUSINESS MANAGER DEBUG - firebaseService.saveCustomer returned false');
+                        return { success: false, message: 'Failed to save customer via Firebase service' };
+                    }
+                } catch (firebaseError) {
+                    console.error('❌ BUSINESS MANAGER DEBUG - Error with firebaseService.saveCustomer:', firebaseError);
+                    // Fall through to direct Firebase approach
+                }
+            }
+            
+            // Fallback: Direct Firebase approach
+            console.log('🔍 BUSINESS MANAGER DEBUG - Using direct Firebase approach...');
+            
+            // Import Firebase Admin directly
+            const admin = require('firebase-admin');
+            const db = admin.firestore();
+            
+            // Check if account name already exists
+            console.log('🔍 BUSINESS MANAGER DEBUG - Checking for existing account name...');
+            const existingCustomer = await db.collection('customers')
+                .where('businessId', '==', businessId)
+                .where('accountName', '==', customerData.accountName)
+                .get();
+                
+            console.log('🔍 BUSINESS MANAGER DEBUG - Existing customer query result empty:', existingCustomer.empty);
+            console.log('🔍 BUSINESS MANAGER DEBUG - Existing customer query size:', existingCustomer.size);
+            
+            if (!existingCustomer.empty) {
+                console.log('❌ BUSINESS MANAGER DEBUG - Account name already exists');
+                return { success: false, message: 'Account name already exists' };
+            }
+            
+            // Check if WhatsApp ID already has an account for this business
+            console.log('🔍 BUSINESS MANAGER DEBUG - Checking for existing WhatsApp ID...');
+            const existingWhatsAppCustomer = await db.collection('customers')
+                .where('businessId', '==', businessId)
+                .where('whatsappId', '==', cleanWhatsAppId)
+                .get();
+                
+            if (!existingWhatsAppCustomer.empty) {
+                console.log('❌ BUSINESS MANAGER DEBUG - WhatsApp ID already has an account');
+                return { success: false, message: 'This WhatsApp number already has an account' };
+            }
+            
+            // Create customer document
+            const customerDoc = {
+                businessId: businessId,
+                whatsappId: cleanWhatsAppId,
+                name: customerData.name,
+                email: customerData.email,
+                phone: customerData.phone,
+                address: customerData.address,
+                accountName: customerData.accountName,
+                score: 0,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+                isActive: true,
+                totalOrders: 0,
+                totalSpent: 0
+            };
+            
+            console.log('🔍 BUSINESS MANAGER DEBUG - Customer document to save:', JSON.stringify(customerDoc, null, 2));
+            
+            // Save to Firestore
+            console.log('🔍 BUSINESS MANAGER DEBUG - Adding document to customers collection...');
+            const docRef = await db.collection('customers').add(customerDoc);
+            console.log('✅ BUSINESS MANAGER DEBUG - Customer saved with ID:', docRef.id);
+            
+            // Verify the document was created
+            const savedDoc = await docRef.get();
+            if (savedDoc.exists) {
+                console.log('✅ BUSINESS MANAGER DEBUG - Document verification successful');
+                console.log('✅ BUSINESS MANAGER DEBUG - Saved document data:', savedDoc.data());
+            } else {
+                console.error('❌ BUSINESS MANAGER DEBUG - Document was not created properly');
+            }
+            
+            return { 
+                success: true, 
+                accountName: customerData.accountName,
+                customerId: docRef.id 
+            };
+            
+        } catch (error) {
+            console.error('❌ BUSINESS MANAGER DEBUG - Database error occurred');
+            console.error('❌ BUSINESS MANAGER DEBUG - Error name:', error.name);
+            console.error('❌ BUSINESS MANAGER DEBUG - Error message:', error.message);
+            console.error('❌ BUSINESS MANAGER DEBUG - Error code:', error.code);
+            console.error('❌ BUSINESS MANAGER DEBUG - Error stack:', error.stack);
+            
+            // Handle specific Firebase errors
+            if (error.code === 'permission-denied') {
+                return { success: false, message: 'Database permission denied. Please contact support.' };
+            } else if (error.code === 'unavailable') {
+                return { success: false, message: 'Database temporarily unavailable. Please try again.' };
+            } else {
+                return { success: false, message: `Database error: ${error.message}` };
+            }
         }
     }
 
-    async refreshBusinessData(businessId) {
-        this.clearCache(businessId);
-        return await this.getBusinessData(businessId);
-    }
-
-    // Get business statistics
-    getBusinessStats() {
-        const stats = {
-            totalBusinesses: this.phoneToBusinessMap.size,
-            botMappings: this.botToBusinessMap.size,
-            cachedBusinessData: this.businessData.size,
-            mappings: Array.from(this.phoneToBusinessMap.entries()),
-            botMappings: Array.from(this.botToBusinessMap.entries()),
-            isInitialized: this.isInitialized
-        };
-        return stats;
-    }
-
-    // List all mapped bots
-    listMappedBots() {
-        console.log('🤖 Currently mapped bots:');
-        if (this.botToBusinessMap.size === 0) {
-            console.log('   No bots mapped yet');
-        } else {
-            this.botToBusinessMap.forEach((businessId, botNumber) => {
-                console.log(`   📱 ${botNumber} → 🏢 ${businessId}`);
-            });
-        }
-    }
-
-    // Add these methods to your BusinessManager class
-
-    // Customer management methods
-    async getExistingCustomer(userId, businessId) {
+    // UPDATED: Get existing customer with debugging
+    async getExistingCustomer(businessId, whatsappId) {
+        console.log('🔍 BUSINESS MANAGER DEBUG - getExistingCustomer called');
+        console.log('🔍 BUSINESS MANAGER DEBUG - Business ID:', businessId);
+        console.log('🔍 BUSINESS MANAGER DEBUG - WhatsApp ID:', whatsappId);
+        
         try {
             // Clean the userId (remove @s.whatsapp.net if present)
-            const cleanUserId = userId.split('@')[0];
-            return await firebaseService.getCustomer(cleanUserId, businessId);
+            const cleanUserId = whatsappId.split('@')[0];
+            console.log('🔍 BUSINESS MANAGER DEBUG - Clean User ID:', cleanUserId);
+            
+            // Try using existing Firebase service method first
+            if (typeof firebaseService.getCustomer === 'function') {
+                const customer = await firebaseService.getCustomer(cleanUserId, businessId);
+                if (customer) {
+                    console.log('✅ BUSINESS MANAGER DEBUG - Customer found via firebaseService');
+                    return customer;
+                }
+            }
+            
+            // Fallback: Direct Firebase query
+            const admin = require('firebase-admin');
+            const db = admin.firestore();
+            
+            const customerQuery = await db.collection('customers')
+                .where('businessId', '==', businessId)
+                .where('whatsappId', '==', cleanUserId)
+                .where('isActive', '==', true)
+                .get();
+                
+            console.log('🔍 BUSINESS MANAGER DEBUG - Customer query size:', customerQuery.size);
+            
+            if (customerQuery.empty) {
+                console.log('👤 No existing customer found:', businessId, 'for vendor', whatsappId);
+                return null;
+            }
+            
+            const customerDoc = customerQuery.docs[0];
+            const customerData = customerDoc.data();
+            
+            console.log('✅ BUSINESS MANAGER DEBUG - Existing customer found:', customerData.accountName);
+            
+            return {
+                id: customerData.accountName,
+                name: customerData.name,
+                email: customerData.email,
+                phone: customerData.phone,
+                address: customerData.address,
+                score: customerData.score || 0,
+                totalOrders: customerData.totalOrders || 0,
+                totalSpent: customerData.totalSpent || 0
+            };
+            
         } catch (error) {
-            console.error(`❌ Failed to get customer ${userId} for business ${businessId}:`, error);
+            console.error('❌ BUSINESS MANAGER DEBUG - Error getting existing customer:', error);
+            console.log('👤 No existing customer found:', businessId, 'for vendor', whatsappId);
             return null;
         }
     }
 
-    async createCustomer(customerData, businessId) {
+    // ADD: Save order method
+    async saveOrder(businessId, sender, order, messageId) {
+        console.log('🔍 BUSINESS MANAGER DEBUG - saveOrder called');
+        console.log('🔍 BUSINESS MANAGER DEBUG - Business ID:', businessId);
+        console.log('🔍 BUSINESS MANAGER DEBUG - Sender:', sender);
+        console.log('🔍 BUSINESS MANAGER DEBUG - Message ID:', messageId);
+        
         try {
-            return await firebaseService.createCustomer(customerData, businessId);
+            // Try using existing Firebase service method first
+            if (typeof firebaseService.saveOrder === 'function') {
+                console.log('🔍 BUSINESS MANAGER DEBUG - Using firebaseService.saveOrder...');
+                const orderId = await firebaseService.saveOrder(businessId, {
+                    ...order,
+                    customerName: sender,
+                    messageId: messageId,
+                    status: 'pending',
+                    createdAt: new Date().toISOString()
+                });
+                
+                if (orderId) {
+                    console.log('✅ BUSINESS MANAGER DEBUG - Order saved via firebaseService with ID:', orderId);
+                    return true;
+                }
+            }
+            
+            // Fallback: Direct Firebase approach
+            const admin = require('firebase-admin');
+            const db = admin.firestore();
+            
+            const orderDoc = {
+                businessId: businessId,
+                customerName: sender,
+                customerInfo: order.customerInfo,
+                items: order.items,
+                total: order.total,
+                discountCode: order.discountCode,
+                discountAmount: order.discountAmount,
+                messageId: messageId,
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            };
+            
+            const docRef = await db.collection('orders').add(orderDoc);
+            console.log('✅ BUSINESS MANAGER DEBUG - Order saved with ID:', docRef.id);
+            
+            return true;
         } catch (error) {
-            console.error(`❌ Failed to create customer for business ${businessId}:`, error);
-            throw error;
+            console.error('❌ BUSINESS MANAGER DEBUG - Error saving order:', error);
+            return false;
         }
     }
 
-    async updateCustomer(userId, customerData, businessId) {
+    // ADD: Increment customer score
+    async incrementCustomerScore(businessId, accountName) {
+        console.log('🔍 BUSINESS MANAGER DEBUG - incrementCustomerScore called');
+        console.log('🔍 BUSINESS MANAGER DEBUG - Business ID:', businessId);
+        console.log('🔍 BUSINESS MANAGER DEBUG - Account Name:', accountName);
+        
         try {
-            const cleanUserId = userId.split('@')[0];
-            return await firebaseService.updateCustomer(cleanUserId, customerData, businessId);
+            const admin = require('firebase-admin');
+            const db = admin.firestore();
+            
+            const customerQuery = await db.collection('customers')
+                .where('businessId', '==', businessId)
+                .where('accountName', '==', accountName)
+                .get();
+                
+            if (!customerQuery.empty) {
+                const customerDoc = customerQuery.docs[0];
+                const currentScore = customerDoc.data().score || 0;
+                
+                await customerDoc.ref.update({
+                    score: currentScore + 1,
+                    updatedAt: new Date().toISOString()
+                });
+                
+                console.log('✅ BUSINESS MANAGER DEBUG - Customer score incremented from', currentScore, 'to', currentScore + 1);
+            }
         } catch (error) {
-            console.error(`❌ Failed to update customer ${userId} for business ${businessId}:`, error);
-            throw error;
+            console.error('❌ BUSINESS MANAGER DEBUG - Error incrementing score:', error);
         }
     }
 
-    async getCustomerOrders(userId, businessId) {
-        try {
-            const cleanUserId = userId.split('@')[0];
-            return await firebaseService.getCustomerOrders(cleanUserId, businessId);
-        } catch (error) {
-            console.error(`❌ Failed to get orders for customer ${userId} in business ${businessId}:`, error);
-            return [];
-        }
-    }
-
-    // Order management methods
-    async createOrder(orderData, businessId) {
-        try {
-            return await firebaseService.createOrder(orderData, businessId);
-        } catch (error) {
-            console.error(`❌ Failed to create order for business ${businessId}:`, error);
-            throw error;
-        }
-    }
-
-    async getOrder(orderId, businessId) {
-        try {
-            return await firebaseService.getOrder(orderId, businessId);
-        } catch (error) {
-            console.error(`❌ Failed to get order ${orderId} for business ${businessId}:`, error);
-            return null;
-        }
-    }
-
-    async updateOrder(orderId, orderData, businessId) {
-        try {
-            return await firebaseService.updateOrder(orderId, orderData, businessId);
-        } catch (error) {
-            console.error(`❌ Failed to update order ${orderId} for business ${businessId}:`, error);
-            throw error;
-        }
-    }
-
-    // Add these methods to your BusinessManager class (replace the ones I suggested earlier)
-
-    // Customer management methods - using your existing Firebase methods
-    async getExistingCustomer(userId, businessId) {
-        try {
-            // Clean the userId (remove @s.whatsapp.net if present)
-            const cleanUserId = userId.split('@')[0];
-            // Use your existing Firebase method
-            return await firebaseService.getCustomer(cleanUserId, businessId);
-        } catch (error) {
-            console.error(`❌ Failed to get customer ${userId} for business ${businessId}:`, error);
-            return null;
-        }
-    }
-
+    // Keep existing methods for backward compatibility
     async createCustomer(customerData, businessId) {
         try {
             const cleanUserId = customerData.phone?.split('@')[0] || customerData.userId?.split('@')[0];
@@ -394,6 +571,47 @@ class BusinessManager {
         } catch (error) {
             console.error(`❌ Failed to update order ${orderId} for business ${businessId}:`, error);
             throw error;
+        }
+    }
+
+    // Cache management
+    clearCache(businessId = null) {
+        if (businessId) {
+            this.businessData.delete(businessId);
+            this.cacheTimestamps.delete(businessId);
+        } else {
+            this.businessData.clear();
+            this.cacheTimestamps.clear();
+        }
+    }
+
+    async refreshBusinessData(businessId) {
+        this.clearCache(businessId);
+        return await this.getBusinessData(businessId);
+    }
+
+    // Get business statistics
+    getBusinessStats() {
+        const stats = {
+            totalBusinesses: this.phoneToBusinessMap.size,
+            botMappings: this.botToBusinessMap.size,
+            cachedBusinessData: this.businessData.size,
+            mappings: Array.from(this.phoneToBusinessMap.entries()),
+            botMappings: Array.from(this.botToBusinessMap.entries()),
+            isInitialized: this.isInitialized
+        };
+        return stats;
+    }
+
+    // List all mapped bots
+    listMappedBots() {
+        console.log('🤖 Currently mapped bots:');
+        if (this.botToBusinessMap.size === 0) {
+            console.log('   No bots mapped yet');
+        } else {
+            this.botToBusinessMap.forEach((businessId, botNumber) => {
+                console.log(`   📱 ${botNumber} → 🏢 ${businessId}`);
+            });
         }
     }
 

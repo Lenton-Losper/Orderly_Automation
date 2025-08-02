@@ -13,11 +13,14 @@ class MessageHandler {
         this.securityMonitor = middleware.securityMonitor;
         this.logger = middleware.logger;
         
-        // ADD THIS: Simple in-memory session storage to fix persistence issue
+        // Simple in-memory session storage to fix persistence issue
         this.sessions = new Map();
+        
+        // Business data cache for products
+        this.businessDataCache = new Map();
     }
 
-    // ADD THIS METHOD: Get or create session with persistence
+    // Get or create session with persistence
     getOrCreateSession(userId, businessId, businessData) {
         const sessionKey = `${userId}_${businessId}`;
         console.log('🔍 SESSION DEBUG - Looking for session:', sessionKey);
@@ -141,8 +144,46 @@ class MessageHandler {
         return session;
     }
 
+    // Load products asynchronously from Firebase
+    async loadProductsAsync(businessId) {
+        try {
+            console.log('🔍 Loading products asynchronously for business:', businessId);
+            
+            // Import Firebase Admin
+            const admin = require('firebase-admin');
+            const db = admin.firestore();
+            
+            // Load products from the vendors/{businessId}/products subcollection
+            const productsRef = await db.collection('vendors')
+                .doc(businessId)
+                .collection('products')
+                .where('isAvailable', '==', true)
+                .get();
+                
+            const products = {};
+            productsRef.forEach(doc => {
+                const productData = doc.data();
+                products[doc.id] = {
+                    name: productData.name,
+                    price: productData.price,
+                    description: productData.description || 'No description',
+                    category: productData.category || 'General',
+                    stock: productData.stock || 0,
+                    isAvailable: productData.isAvailable
+                };
+            });
+            
+            console.log('✅ Async loaded', Object.keys(products).length, 'products from Firebase');
+            return products;
+            
+        } catch (error) {
+            console.error('❌ Error loading products async:', error);
+            return {};
+        }
+    }
+
     // Helper method to normalize different business data structures
-    normalizeBusinessData(rawData, businessId) {
+    async normalizeBusinessData(rawData, businessId) {
         console.log('🔧 Normalizing business data structure...');
         
         // Handle different possible structures
@@ -183,10 +224,41 @@ class MessageHandler {
         // Extract products information
         if (rawData.products) {
             products = rawData.products;
+            console.log('🔍 Found products in vendor profile:', Object.keys(products).length);
         } else if (rawData.inventory) {
             products = rawData.inventory;
+            console.log('🔍 Found products in inventory:', Object.keys(products).length);
         } else if (rawData.items) {
             products = rawData.items;
+            console.log('🔍 Found products in items:', Object.keys(products).length);
+        } else {
+            // LOAD PRODUCTS FROM FIREBASE
+            console.log('🔍 Products not found in vendor profile, loading from Firebase...');
+            try {
+                const admin = require('firebase-admin');
+                const db = admin.firestore();
+                
+                const productsRef = await db.collection('vendors')
+                    .doc(businessId)
+                    .collection('products')
+                    .where('isAvailable', '==', true)
+                    .get();
+                    
+                productsRef.forEach(doc => {
+                    const productData = doc.data();
+                    products[doc.id] = {
+                        name: productData.name,
+                        price: productData.price,
+                        description: productData.description || 'No description',
+                        category: productData.category || 'General',
+                        stock: productData.stock || 0
+                    };
+                });
+                
+                console.log('✅ Loaded', Object.keys(products).length, 'products from Firebase');
+            } catch (error) {
+                console.error('❌ Error loading products:', error);
+            }
         }
         
         // Extract product order
@@ -317,7 +389,7 @@ class MessageHandler {
                 
                 // Transform/normalize the business data structure
                 if (rawBusinessData) {
-                    businessData = this.normalizeBusinessData(rawBusinessData, businessId);
+                    businessData = await this.normalizeBusinessData(rawBusinessData, businessId);
                 } else {
                     businessData = this.createDefaultBusinessData();
                 }
@@ -355,23 +427,6 @@ class MessageHandler {
                 }
             }
 
-            // TEMPORARY: Duplicate checker disabled to fix message blocking issue
-            /*
-            if (this.duplicateChecker && typeof this.duplicateChecker.checkDuplicate === 'function') {
-                const duplicateCheck = await this.duplicateChecker.checkDuplicate(
-                    userId, 
-                    businessId, 
-                    messageContent, 
-                    msgId
-                );
-                
-                if (!duplicateCheck.allowed) {
-                    console.log(`🔄 Duplicate message detected: ${duplicateCheck.reason}`);
-                    return;
-                }
-            }
-            */
-
             // Log the message (with safety check)
             if (this.logger && typeof this.logger.logMessage === 'function') {
                 await this.logger.logMessage({
@@ -386,7 +441,7 @@ class MessageHandler {
 
             console.log(`📨 Message from ${sender} (${phoneNumber}) to business ${businessId}: "${messageContent}"`);
 
-            // FIXED: Use the new session management method that persists sessions
+            // Use the new session management method that persists sessions
             let session = this.getOrCreateSession(userId, businessId, businessData);
 
             // Process the message through command handler
