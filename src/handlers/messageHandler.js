@@ -20,6 +20,13 @@ class MessageHandler {
         this.businessDataCache = new Map();
     }
 
+    // Check if message is from a group
+    isGroupMessage(remoteJid) {
+        // WhatsApp group JIDs end with '@g.us'
+        // Individual chat JIDs end with '@s.whatsapp.net'
+        return remoteJid.endsWith('@g.us');
+    }
+
     // Get or create session with persistence
     getOrCreateSession(userId, businessId, businessData) {
         const sessionKey = `${userId}_${businessId}`;
@@ -65,20 +72,42 @@ class MessageHandler {
                     };
                 },
                 
-                // Cart methods
+                // Fixed Cart methods
                 addToCart: function(productKey) {
+                    console.log('🔍 ADD_TO_CART DEBUG - Product key:', productKey);
+                    console.log('🔍 ADD_TO_CART DEBUG - Available products:', Object.keys(this.businessData.products || {}));
+                    
                     if (this.businessData.products[productKey]) {
-                        this.cart.push({
-                            key: productKey,
-                            product: this.businessData.products[productKey],
-                            quantity: 1
-                        });
+                        const product = this.businessData.products[productKey];
+                        console.log('🔍 ADD_TO_CART DEBUG - Found product:', product);
+                        
+                        // Create cart item with the structure that MessageGenerators expects
+                        const cartItem = {
+                            name: product.name || 'Unknown Product',
+                            price: product.price || 0,
+                            quantity: 1,
+                            image: product.image || '🛍️',
+                            description: product.description || '',
+                            productKey: productKey  // Keep reference to original product
+                        };
+                        
+                        console.log('🔍 ADD_TO_CART DEBUG - Created cart item:', cartItem);
+                        
+                        this.cart.push(cartItem);
+                        console.log('🔍 ADD_TO_CART DEBUG - Cart after adding:', this.cart);
+                        
                         return true;
+                    } else {
+                        console.log('❌ ADD_TO_CART DEBUG - Product not found for key:', productKey);
+                        console.log('❌ ADD_TO_CART DEBUG - Available product keys:', Object.keys(this.businessData.products || {}));
+                        return false;
                     }
-                    return false;
                 },
                 
-                clearCart: function() { this.cart = []; },
+                clearCart: function() { 
+                    console.log('🔍 CLEAR_CART DEBUG - Clearing cart');
+                    this.cart = []; 
+                },
                 
                 // Discount methods
                 applyDiscount: function(code) {
@@ -90,33 +119,60 @@ class MessageHandler {
                     if (discounts[code]) {
                         this.discountCode = code;
                         this.discountAmount = discounts[code];
+                        console.log(`🔍 DISCOUNT DEBUG - Applied ${code}: ${this.discountAmount * 100}%`);
                         return true;
                     }
+                    console.log(`❌ DISCOUNT DEBUG - Invalid code: ${code}`);
                     return false;
                 },
                 
                 removeDiscount: function() {
+                    console.log('🔍 DISCOUNT DEBUG - Removing discount');
                     this.discountCode = null;
                     this.discountAmount = 0;
                 },
                 
-                // Total calculation
+                // Fixed Total calculation
                 getTotal: function() {
-                    let total = this.cart.reduce((sum, item) => {
-                        return sum + (item.product.price * item.quantity);
+                    console.log('🔍 GET_TOTAL DEBUG - Calculating total for cart:', this.cart);
+                    
+                    let subtotal = this.cart.reduce((sum, item) => {
+                        const price = parseFloat(item.price) || 0;
+                        const quantity = parseInt(item.quantity) || 1;
+                        const itemTotal = price * quantity;
+                        
+                        console.log(`🔍 GET_TOTAL DEBUG - Item: ${item.name}, Price: ${price}, Qty: ${quantity}, Total: ${itemTotal}`);
+                        return sum + itemTotal;
                     }, 0);
                     
+                    console.log('🔍 GET_TOTAL DEBUG - Subtotal:', subtotal);
+                    
+                    const tax = subtotal * 0.1; // 10% tax
+                    const shipping = subtotal >= 50 ? 0 : 5; // Free shipping over N$50
+                    let total = subtotal + tax + shipping;
+                    
                     if (this.discountAmount > 0) {
-                        total = total * (1 - this.discountAmount);
+                        const discountValue = total * this.discountAmount;
+                        total = total - discountValue;
+                        console.log('🔍 GET_TOTAL DEBUG - Discount applied:', discountValue);
                     }
                     
+                    console.log('🔍 GET_TOTAL DEBUG - Final total:', total);
                     return total;
                 },
                 
-                // Order generation
+                // Fixed Order generation
                 generateOrder: function() {
+                    console.log('🔍 GENERATE_ORDER DEBUG - Creating order from cart:', this.cart);
+                    
                     return {
-                        items: this.cart,
+                        items: this.cart.map(item => ({
+                            name: item.name,
+                            price: item.price,
+                            quantity: item.quantity,
+                            productKey: item.productKey,
+                            itemTotal: (parseFloat(item.price) || 0) * (parseInt(item.quantity) || 1)
+                        })),
                         customerInfo: this.customerInfo,
                         total: this.getTotal(),
                         discountCode: this.discountCode,
@@ -169,7 +225,8 @@ class MessageHandler {
                     description: productData.description || 'No description',
                     category: productData.category || 'General',
                     stock: productData.stock || 0,
-                    isAvailable: productData.isAvailable
+                    isAvailable: productData.isAvailable,
+                    image: productData.image || '🛍️'
                 };
             });
             
@@ -251,7 +308,8 @@ class MessageHandler {
                         price: productData.price,
                         description: productData.description || 'No description',
                         category: productData.category || 'General',
-                        stock: productData.stock || 0
+                        stock: productData.stock || 0,
+                        image: productData.image || '🛍️'
                     };
                 });
                 
@@ -304,7 +362,8 @@ class MessageHandler {
                     name: 'Sample Product',
                     price: 10.00,
                     description: 'Sample product for demonstration',
-                    category: 'General'
+                    category: 'General',
+                    image: '🛍️'
                 }
             },
             productOrder: ['sample1'],
@@ -332,6 +391,12 @@ class MessageHandler {
         const userId = msg.key.remoteJid;
         const msgId = msg.key.id;
         const phoneNumber = userId.split('@')[0];
+        
+        // ✅ NEW: Ignore group messages
+        if (this.isGroupMessage(userId)) {
+            console.log(`🚫 Ignoring group message from: ${userId}`);
+            return;
+        }
         
         // Get bot's phone number to determine which business this is
         const botPhoneNumber = this.whatsappService.getBotPhoneNumber ? 
