@@ -1,6 +1,7 @@
 const messageGenerators = require('../utils/messageGenerators');
 const validators = require('../utils/validators');
 const sessionManager = require('../utils/sessionManager');
+const pdfInvoiceGenerator = require('../utils/pdfInvoiceGenerator'); // Adjust path as needed
 
 class CommandHandler {
     // Main command routing
@@ -253,46 +254,112 @@ class CommandHandler {
         }
     }
 
-    async handleConfirmOrder(session, businessManager, messageData) {
-        console.log('🔍 CONFIRM ORDER DEBUG - Processing order confirmation');
-        if (!session.customerInfo.name) {
-            return "❌ Please provide your info first (name|email|phone|address).";
-        }
+   async handleConfirmOrder(session, businessManager, messageData) {
+    console.log('🔍 CONFIRM ORDER DEBUG - Processing order confirmation');
+    if (!session.customerInfo.name) {
+        return "❌ Please provide your info first (name|email|phone|address).";
+    }
 
-        if (session.cart.length === 0) {
-            return "❌ Cart is empty. Add items before confirming.";
-        }
+    if (session.cart.length === 0) {
+        return "❌ Cart is empty. Add items before confirming.";
+    }
 
-        try {
-            const order = session.generateOrder();
-            const saved = await businessManager.saveOrder(
-                session.businessId, 
-                messageData.sender, 
+    try {
+        const order = session.generateOrder();
+        const saved = await businessManager.saveOrder(
+            session.businessId, 
+            messageData.sender, 
+            order, 
+            messageData.msgId
+        );
+
+        if (saved) {
+            // Increment customer score if they have an account
+            if (session.customerAccount) {
+                await businessManager.incrementCustomerScore(session.businessId, session.customerAccount);
+            }
+            
+            // Generate PDF invoice
+            console.log('🔍 PDF DEBUG - Generating PDF invoice for order');
+            const pdfResult = await pdfInvoiceGenerator.generateInvoicePDF(
                 order, 
-                messageData.msgId
+                session.businessData
             );
-
-            if (saved) {
-                // Increment customer score if they have an account
-                if (session.customerAccount) {
-                    await businessManager.incrementCustomerScore(session.businessId, session.customerAccount);
+            
+            // Generate text confirmation message
+            const textConfirmation = messageGenerators.generateOrderConfirmation(session);
+            
+            if (pdfResult.success) {
+                console.log('✅ PDF generated successfully:', pdfResult.filename);
+                
+                // Send both text message and PDF
+                try {
+                    // Send text confirmation first
+                    await messageData.whatsappService.sendTextMessage(
+                        messageData.userId, 
+                        textConfirmation
+                    );
+                    
+                    // Send PDF invoice
+                    setTimeout(async () => {
+                        const pdfSent = await messageData.whatsappService.sendDocument(
+                            messageData.userId,
+                            pdfResult.filepath,
+                            pdfResult.filename,
+                            `📄 Invoice ${pdfResult.invoiceNumber}\n\nThank you for your order!`
+                        );
+                        
+                        if (!pdfSent) {
+                            // Fallback - notify about PDF issue
+                            await messageData.whatsappService.sendTextMessage(
+                                messageData.userId,
+                                '❌ There was an issue generating your invoice PDF. Please contact support for a copy.'
+                            );
+                        }
+                    }, 2000); // 2 second delay
+                    
+                } catch (sendError) {
+                    console.error('❌ Error sending messages:', sendError);
+                    // Fallback to just text
+                    const fallbackMessage = textConfirmation + 
+                        '\n\n❌ Invoice PDF could not be generated. Please contact support.';
+                    
+                    // Clear the session after successful order
+                    const sessionKey = `${messageData.userId}_${session.businessId}`;
+                    sessionManager.deleteSession(sessionKey);
+                    
+                    return fallbackMessage;
                 }
                 
-                const response = messageGenerators.generateOrderConfirmation(session);
+            } else {
+                console.error('❌ PDF generation failed:', pdfResult.error);
+                // Send just text confirmation with error note
+                const fallbackMessage = textConfirmation + 
+                    '\n\n❌ Invoice PDF could not be generated. Please contact support for a copy.';
                 
                 // Clear the session after successful order
                 const sessionKey = `${messageData.userId}_${session.businessId}`;
                 sessionManager.deleteSession(sessionKey);
                 
-                return response;
-            } else {
-                return "⚠️ This message was already processed.";
+                return fallbackMessage;
             }
-        } catch (error) {
-            console.error('❌ Error confirming order:', error.message);
-            return "❌ Failed to process your order. Please try again.";
+            
+            // Clear the session after successful order
+            const sessionKey = `${messageData.userId}_${session.businessId}`;
+            sessionManager.deleteSession(sessionKey);
+            
+            // Return null since we're handling the response sending manually
+            return null;
+            
+        } else {
+            return "⚠️ This message was already processed.";
         }
+    } catch (error) {
+        console.error('❌ Error confirming order:', error.message);
+        console.error('❌ Error stack:', error.stack);
+        return "❌ Failed to process your order. Please try again.";
     }
+}
 
     // Registration input handler
     async handleRegistrationInput(session, businessManager, text, userId) {
