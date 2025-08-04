@@ -268,7 +268,7 @@ class WhatsAppService {
         }
     }
 
-    // Message sending methods
+    // ✅ UPDATED: Enhanced message sending methods with PDF support
     async sendMessage(to, content) {
         try {
             if (!this.socket) {
@@ -291,6 +291,162 @@ class WhatsAppService {
 
     async sendTextMessage(to, text) {
         return await this.sendMessage(to, { text });
+    }
+
+    // ✅ NEW: Send PDF document method
+    async sendDocument(userId, filepath, filename, caption = '') {
+        try {
+            console.log(`📎 Sending PDF document to ${userId}: ${filename}`);
+            
+            const fs = require('fs');
+            
+            // Check if file exists
+            if (!fs.existsSync(filepath)) {
+                throw new Error(`File not found: ${filepath}`);
+            }
+
+            // Check socket availability
+            if (!this.socket) {
+                throw new Error('WhatsApp socket not initialized');
+            }
+
+            // Read file as buffer
+            const fileBuffer = fs.readFileSync(filepath);
+            
+            // Add uploading indicator
+            await this.socket.sendPresenceUpdate('composing', userId);
+            
+            // Send document message
+            const message = {
+                document: fileBuffer,
+                fileName: filename,
+                mimetype: 'application/pdf',
+                caption: caption || `📄 ${filename}`
+            };
+
+            await this.socket.sendMessage(userId, message);
+            
+            // Reset presence
+            await this.socket.sendPresenceUpdate('paused', userId);
+            
+            console.log(`✅ PDF sent successfully to ${userId}`);
+            
+            return true;
+        } catch (error) {
+            console.error('❌ Error sending PDF:', error.message);
+            console.error('❌ Error details:', {
+                filepath,
+                filename,
+                userId,
+                socketExists: !!this.socket,
+                errorType: error.name
+            });
+            return false;
+        }
+    }
+
+    // ✅ NEW: Send image method (useful for QR codes, receipts, etc.)
+    async sendImage(userId, imagePath, caption = '') {
+        try {
+            console.log(`🖼️ Sending image to ${userId}`);
+            
+            const fs = require('fs');
+            
+            if (!fs.existsSync(imagePath)) {
+                throw new Error(`Image file not found: ${imagePath}`);
+            }
+
+            if (!this.socket) {
+                throw new Error('WhatsApp socket not initialized');
+            }
+
+            const imageBuffer = fs.readFileSync(imagePath);
+            
+            await this.socket.sendPresenceUpdate('composing', userId);
+            
+            const message = {
+                image: imageBuffer,
+                caption: caption
+            };
+
+            await this.socket.sendMessage(userId, message);
+            await this.socket.sendPresenceUpdate('paused', userId);
+            
+            console.log(`✅ Image sent successfully to ${userId}`);
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Error sending image:', error.message);
+            return false;
+        }
+    }
+
+    // ✅ NEW: Send order confirmation with PDF invoice
+    async sendOrderConfirmationWithPDF(userId, textMessage, pdfPath, pdfFilename) {
+        try {
+            console.log(`📋 Sending order confirmation with PDF to ${userId}`);
+            
+            // Send text confirmation first
+            const textSent = await this.sendTextMessage(userId, textMessage);
+            if (!textSent) {
+                throw new Error('Failed to send text confirmation');
+            }
+            
+            // Wait a moment then send PDF
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            
+            const pdfSent = await this.sendDocument(
+                userId, 
+                pdfPath, 
+                pdfFilename, 
+                '📄 Your invoice is attached above'
+            );
+            
+            if (!pdfSent) {
+                // Fallback - send error message
+                await this.sendTextMessage(userId, 
+                    '❌ Sorry, there was an issue generating your invoice PDF. Please contact support for a copy.');
+                return false;
+            }
+            
+            console.log(`✅ Order confirmation with PDF sent successfully to ${userId}`);
+            return true;
+            
+        } catch (error) {
+            console.error('❌ Error sending order confirmation with PDF:', error.message);
+            
+            // Try to send at least an error message
+            try {
+                await this.sendTextMessage(userId, 
+                    '❌ There was an issue processing your order confirmation. Please contact support.');
+            } catch (fallbackError) {
+                console.error('❌ Failed to send fallback error message:', fallbackError.message);
+            }
+            
+            return false;
+        }
+    }
+
+    // ✅ NEW: Send typing indicator
+    async sendTyping(userId, duration = 3000) {
+        try {
+            if (!this.socket) return false;
+            
+            await this.socket.sendPresenceUpdate('composing', userId);
+            
+            setTimeout(async () => {
+                try {
+                    await this.socket.sendPresenceUpdate('paused', userId);
+                } catch (err) {
+                    console.log('⚠️ Could not clear typing indicator:', err.message);
+                }
+            }, duration);
+            
+            return true;
+        } catch (error) {
+            console.error('❌ Error sending typing indicator:', error.message);
+            return false;
+        }
     }
 
     // Event handler registration
@@ -317,6 +473,49 @@ class WhatsAppService {
 
     getBotPhoneNumber() {
         return this.socket?.user?.id?.split('@')[0] || null;
+    }
+
+    // ✅ NEW: Get bot info
+    getBotInfo() {
+        if (!this.socket || !this.socket.user) {
+            return null;
+        }
+        
+        return {
+            phoneNumber: this.getBotPhoneNumber(),
+            name: this.socket.user.name || 'LLL Farm Bot',
+            id: this.socket.user.id,
+            startTime: this.botStartTime,
+            uptime: this.botStartTime ? Date.now() - this.botStartTime : 0
+        };
+    }
+
+    // ✅ NEW: Health check method
+    async healthCheck() {
+        try {
+            if (!this.socket) {
+                return { status: 'disconnected', error: 'Socket not initialized' };
+            }
+            
+            if (!this.socket.user) {
+                return { status: 'disconnected', error: 'Not authenticated' };
+            }
+            
+            // Try to send a presence update as a health check
+            await this.socket.sendPresenceUpdate('available');
+            
+            return { 
+                status: 'connected', 
+                botInfo: this.getBotInfo(),
+                uptime: this.botStartTime ? Date.now() - this.botStartTime : 0
+            };
+            
+        } catch (error) {
+            return { 
+                status: 'error', 
+                error: error.message 
+            };
+        }
     }
 
     // Cleanup method
