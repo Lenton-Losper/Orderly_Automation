@@ -1,3 +1,8 @@
+// File: src/services/whatsapp.js
+// Enhanced WhatsApp Service with Dynamic Vendor Mapping Integration
+// Handles WhatsApp connection, message sending, and bot-to-vendor mapping
+// Integrates with dynamic Firebase vendor discovery system
+
 // Import Baileys functions directly (not as default)
 const { makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const { Boom } = require('@hapi/boom');
@@ -13,6 +18,8 @@ class WhatsAppService {
         this.connectionCheckInterval = null;
         this.botStartTime = null;
         this.eventHandlers = new Map();
+        this.botInfo = null; // Store bot information for dynamic mapping
+        this.vendorMappingAttempted = false; // Track if we've tried mapping this session
         
         // Validate imports are available
         if (!makeWASocket || typeof makeWASocket !== 'function') {
@@ -30,7 +37,7 @@ class WhatsAppService {
 
     async initialize() {
         try {
-            console.log('🚀 Initializing WhatsApp connection...');
+            console.log('🚀 Initializing WhatsApp connection with dynamic vendor mapping...');
             
             // Initialize auth state with better error handling
             let state, saveCreds;
@@ -120,7 +127,7 @@ class WhatsAppService {
         // Credentials update handler
         this.socket.ev.on('creds.update', saveCreds);
         
-        // Connection update handler
+        // Connection update handler with enhanced bot info extraction
         this.socket.ev.on('connection.update', async ({ connection, lastDisconnect, qr, isNewLogin }) => {
             console.log('📡 Connection update:', { connection, isNewLogin });
             
@@ -132,7 +139,7 @@ class WhatsAppService {
                 console.log('🔄 Connecting to WhatsApp...');
             }
             
-            // FIXED: Properly display QR code
+            // ENHANCED: Display QR code with dynamic mapping info
             if (qr) {
                 console.log('\n📱 ═══════════════════════════════════════');
                 console.log('📱 QR CODE TO SCAN:');
@@ -143,6 +150,8 @@ class WhatsAppService {
                 console.log('📱 OPTION 2: Visit this URL to see QR code:');
                 console.log(`📱 https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`);
                 console.log('📱 OPTION 3: Open WhatsApp > Settings > Linked Devices > Link a Device');
+                console.log('📱 ═══════════════════════════════════════');
+                console.log('🔄 Once connected, bot will auto-discover vendor mapping...');
                 console.log('📱 ═══════════════════════════════════════\n');
             }
         });
@@ -177,6 +186,10 @@ class WhatsAppService {
             this.connectionCheckInterval = null;
         }
         
+        // Reset vendor mapping flag for next connection
+        this.vendorMappingAttempted = false;
+        this.botInfo = null;
+        
         if (shouldReconnect) {
             this.connectionRetries++;
             
@@ -207,6 +220,7 @@ class WhatsAppService {
         }
     }
 
+    // ENHANCED: Connection open handler with dynamic vendor mapping
     async handleConnectionOpen() {
         console.log('✅ Bot connected to WhatsApp successfully!');
         this.connectionRetries = 0;
@@ -218,8 +232,130 @@ class WhatsAppService {
             console.log('⚠️ Could not set presence:', err.message);
         }
 
+        // Extract and store bot information
+        this.extractBotInfo();
+
+        // Attempt dynamic vendor mapping
+        await this.attemptVendorMapping();
+
         // Start connection health check
         this.startHealthCheck();
+    }
+
+    // NEW: Extract bot information for vendor mapping
+    extractBotInfo() {
+        if (this.socket && this.socket.user) {
+            this.botInfo = {
+                phoneNumber: this.getBotPhoneNumber(),
+                fullId: this.socket.user.id,
+                name: this.socket.user.name || 'LLL Farm Bot',
+                startTime: this.botStartTime,
+                uptime: this.botStartTime ? Date.now() - this.botStartTime : 0
+            };
+            
+            console.log('📋 Bot Information Extracted:');
+            console.log(`   📱 Phone Number: ${this.botInfo.phoneNumber}`);
+            console.log(`   🆔 Full ID: ${this.botInfo.fullId}`);
+            console.log(`   📛 Name: ${this.botInfo.name}`);
+            console.log(`   ⏰ Connected At: ${new Date(this.botInfo.startTime).toLocaleString()}`);
+        }
+    }
+
+    // NEW: Attempt dynamic vendor mapping when bot connects
+    async attemptVendorMapping() {
+        if (this.vendorMappingAttempted || !this.botInfo) {
+            return;
+        }
+
+        try {
+            console.log('🔄 VENDOR MAPPING - Attempting dynamic vendor discovery...');
+            this.vendorMappingAttempted = true;
+
+            // Import business manager for dynamic mapping
+            const businessManager = require('./businessManager');
+            
+            if (!businessManager.isHealthy()) {
+                console.log('⚠️ Business Manager not ready, will retry mapping on first message');
+                this.vendorMappingAttempted = false;
+                return;
+            }
+
+            // Attempt to get business ID using dynamic discovery
+            const businessId = await businessManager.getBusinessIdFromBot(this.botInfo.fullId);
+            
+            if (businessId && businessId !== 'default') {
+                console.log(`✅ VENDOR MAPPING SUCCESS - Bot mapped to business: ${businessId}`);
+                
+                // Get vendor profile to show mapping details
+                const businessData = await businessManager.getBusinessData(businessId);
+                console.log(`🏢 Vendor Details:`);
+                console.log(`   Business Name: ${businessData.businessName}`);
+                console.log(`   Email: ${businessData.businessEmail}`);
+                console.log(`   Phone: ${businessData.businessPhone}`);
+                
+                // Store successful mapping info
+                this.botInfo.mappedBusinessId = businessId;
+                this.botInfo.businessName = businessData.businessName;
+                
+            } else {
+                console.log('⚠️ VENDOR MAPPING - Using default business (mapping may have failed)');
+                console.log('💡 Check if vendor profile exists with bot phone number');
+                
+                // Show troubleshooting info
+                await this.showVendorMappingTroubleshooting(businessManager);
+            }
+            
+        } catch (error) {
+            console.error('❌ Error in vendor mapping attempt:', error);
+            this.vendorMappingAttempted = false; // Allow retry
+        }
+    }
+
+    // NEW: Show troubleshooting information for vendor mapping
+    async showVendorMappingTroubleshooting(businessManager) {
+        try {
+            console.log('\n🔍 VENDOR MAPPING TROUBLESHOOTING:');
+            console.log('═══════════════════════════════════════');
+            
+            // Show bot info
+            console.log(`📱 Bot Phone Number: ${this.botInfo.phoneNumber}`);
+            console.log(`🆔 Bot Full ID: ${this.botInfo.fullId}`);
+            
+            // Show business manager stats
+            const stats = businessManager.getBusinessStats();
+            console.log(`📊 Current Mappings:`);
+            console.log(`   Bot Mappings: ${stats.botMappings}`);
+            console.log(`   Customer Mappings: ${stats.totalBusinesses}`);
+            console.log(`   Firebase Cache: ${stats.firebaseVendorCache.vendorsInCache} vendors`);
+            
+            // Show available vendors (first 5)
+            console.log('\n🔍 Discovering available vendors...');
+            const vendors = await businessManager.debugAvailableVendors();
+            
+            if (vendors.length > 0) {
+                console.log('📋 Available Vendors (showing first 5):');
+                vendors.slice(0, 5).forEach((vendor, index) => {
+                    console.log(`   ${index + 1}. ${vendor.id}`);
+                    console.log(`      Name: ${vendor.name}`);
+                    console.log(`      Phone: ${vendor.phone}`);
+                    console.log(`      Has Profile: ${vendor.hasProfile}`);
+                });
+                
+                if (vendors.length > 5) {
+                    console.log(`   ... and ${vendors.length - 5} more vendors`);
+                }
+            }
+            
+            console.log('\n💡 SOLUTIONS:');
+            console.log('1. Ensure vendor profile exists with phone:', this.botInfo.phoneNumber);
+            console.log('2. Check Firebase permissions for reading vendor profiles');
+            console.log('3. Use forceAutoMapping() method to retry mapping');
+            console.log('4. Create manual mapping if needed');
+            console.log('═══════════════════════════════════════\n');
+            
+        } catch (error) {
+            console.error('❌ Error showing troubleshooting info:', error);
+        }
     }
 
     startHealthCheck() {
@@ -268,12 +404,14 @@ class WhatsAppService {
         }
     }
 
-    // ✅ UPDATED: Enhanced message sending methods with PDF support
+    // ENHANCED: Message sending methods with PDF support and better logging
     async sendMessage(to, content) {
         try {
             if (!this.socket) {
                 throw new Error('WhatsApp socket not initialized');
             }
+            
+            console.log(`📤 Sending message to ${to} (Bot: ${this.botInfo?.businessName || 'Unknown Business'})`);
             
             // Add typing indicator for better UX
             await this.socket.sendPresenceUpdate('composing', to);
@@ -282,6 +420,7 @@ class WhatsAppService {
             
             // Send message
             await this.socket.sendMessage(to, content);
+            console.log(`✅ Message sent successfully to ${to}`);
             return true;
         } catch (error) {
             console.error('❌ Failed to send message:', error.message);
@@ -293,10 +432,11 @@ class WhatsAppService {
         return await this.sendMessage(to, { text });
     }
 
-    // ✅ NEW: Send PDF document method
+    // ENHANCED: Send PDF document method with business context
     async sendDocument(userId, filepath, filename, caption = '') {
         try {
             console.log(`📎 Sending PDF document to ${userId}: ${filename}`);
+            console.log(`🏢 Business Context: ${this.botInfo?.businessName || 'Unknown'}`);
             
             const fs = require('fs');
             
@@ -321,7 +461,7 @@ class WhatsAppService {
                 document: fileBuffer,
                 fileName: filename,
                 mimetype: 'application/pdf',
-                caption: caption || `📄 ${filename}`
+                caption: caption || `📄 ${filename}\n\n🏢 From: ${this.botInfo?.businessName || 'LLL Farm'}`
             };
 
             await this.socket.sendMessage(userId, message);
@@ -339,16 +479,18 @@ class WhatsAppService {
                 filename,
                 userId,
                 socketExists: !!this.socket,
+                botInfo: this.botInfo,
                 errorType: error.name
             });
             return false;
         }
     }
 
-    // ✅ NEW: Send image method (useful for QR codes, receipts, etc.)
+    // ENHANCED: Send image method with business branding
     async sendImage(userId, imagePath, caption = '') {
         try {
             console.log(`🖼️ Sending image to ${userId}`);
+            console.log(`🏢 Business Context: ${this.botInfo?.businessName || 'Unknown'}`);
             
             const fs = require('fs');
             
@@ -364,9 +506,13 @@ class WhatsAppService {
             
             await this.socket.sendPresenceUpdate('composing', userId);
             
+            const enhancedCaption = caption ? 
+                `${caption}\n\n🏢 From: ${this.botInfo?.businessName || 'LLL Farm'}` : 
+                `🏢 From: ${this.botInfo?.businessName || 'LLL Farm'}`;
+            
             const message = {
                 image: imageBuffer,
-                caption: caption
+                caption: enhancedCaption
             };
 
             await this.socket.sendMessage(userId, message);
@@ -381,13 +527,17 @@ class WhatsAppService {
         }
     }
 
-    // ✅ NEW: Send order confirmation with PDF invoice
+    // ENHANCED: Send order confirmation with PDF invoice and business info
     async sendOrderConfirmationWithPDF(userId, textMessage, pdfPath, pdfFilename) {
         try {
             console.log(`📋 Sending order confirmation with PDF to ${userId}`);
+            console.log(`🏢 Business: ${this.botInfo?.businessName || 'Unknown'}`);
+            
+            // Enhance text message with business info
+            const enhancedMessage = `${textMessage}\n\n🏢 ${this.botInfo?.businessName || 'LLL Farm'}`;
             
             // Send text confirmation first
-            const textSent = await this.sendTextMessage(userId, textMessage);
+            const textSent = await this.sendTextMessage(userId, enhancedMessage);
             if (!textSent) {
                 throw new Error('Failed to send text confirmation');
             }
@@ -399,13 +549,13 @@ class WhatsAppService {
                 userId, 
                 pdfPath, 
                 pdfFilename, 
-                '📄 Your invoice is attached above'
+                `📄 Your invoice from ${this.botInfo?.businessName || 'LLL Farm'}`
             );
             
             if (!pdfSent) {
                 // Fallback - send error message
                 await this.sendTextMessage(userId, 
-                    '❌ Sorry, there was an issue generating your invoice PDF. Please contact support for a copy.');
+                    `❌ Sorry, there was an issue generating your invoice PDF. Please contact ${this.botInfo?.businessName || 'us'} for a copy.`);
                 return false;
             }
             
@@ -418,7 +568,7 @@ class WhatsAppService {
             // Try to send at least an error message
             try {
                 await this.sendTextMessage(userId, 
-                    '❌ There was an issue processing your order confirmation. Please contact support.');
+                    `❌ There was an issue processing your order confirmation. Please contact ${this.botInfo?.businessName || 'support'}.`);
             } catch (fallbackError) {
                 console.error('❌ Failed to send fallback error message:', fallbackError.message);
             }
@@ -427,10 +577,12 @@ class WhatsAppService {
         }
     }
 
-    // ✅ NEW: Send typing indicator
+    // ENHANCED: Send typing indicator with business context
     async sendTyping(userId, duration = 3000) {
         try {
             if (!this.socket) return false;
+            
+            console.log(`⌨️ Showing typing indicator to ${userId} (${this.botInfo?.businessName || 'Unknown Business'})`);
             
             await this.socket.sendPresenceUpdate('composing', userId);
             
@@ -458,7 +610,7 @@ class WhatsAppService {
         }
     }
 
-    // Utility methods
+    // ENHANCED: Utility methods with vendor mapping context
     isConnected() {
         return this.socket && this.socket.user;
     }
@@ -475,7 +627,7 @@ class WhatsAppService {
         return this.socket?.user?.id?.split('@')[0] || null;
     }
 
-    // ✅ NEW: Get bot info
+    // ENHANCED: Get comprehensive bot info including vendor mapping
     getBotInfo() {
         if (!this.socket || !this.socket.user) {
             return null;
@@ -486,11 +638,15 @@ class WhatsAppService {
             name: this.socket.user.name || 'LLL Farm Bot',
             id: this.socket.user.id,
             startTime: this.botStartTime,
-            uptime: this.botStartTime ? Date.now() - this.botStartTime : 0
+            uptime: this.botStartTime ? Date.now() - this.botStartTime : 0,
+            mappedBusinessId: this.botInfo?.mappedBusinessId || 'default',
+            businessName: this.botInfo?.businessName || 'Unknown',
+            vendorMappingAttempted: this.vendorMappingAttempted,
+            vendorMappingSuccess: !!(this.botInfo?.mappedBusinessId && this.botInfo?.mappedBusinessId !== 'default')
         };
     }
 
-    // ✅ NEW: Health check method
+    // ENHANCED: Health check with vendor mapping status
     async healthCheck() {
         try {
             if (!this.socket) {
@@ -504,10 +660,18 @@ class WhatsAppService {
             // Try to send a presence update as a health check
             await this.socket.sendPresenceUpdate('available');
             
+            const botInfo = this.getBotInfo();
+            
             return { 
                 status: 'connected', 
-                botInfo: this.getBotInfo(),
-                uptime: this.botStartTime ? Date.now() - this.botStartTime : 0
+                botInfo: botInfo,
+                uptime: this.botStartTime ? Date.now() - this.botStartTime : 0,
+                vendorMapping: {
+                    attempted: this.vendorMappingAttempted,
+                    successful: botInfo?.vendorMappingSuccess || false,
+                    businessId: botInfo?.mappedBusinessId || 'default',
+                    businessName: botInfo?.businessName || 'Unknown'
+                }
             };
             
         } catch (error) {
@@ -516,6 +680,34 @@ class WhatsAppService {
                 error: error.message 
             };
         }
+    }
+
+    // NEW: Force vendor re-mapping
+    async forceVendorRemapping() {
+        console.log('🔄 FORCE REMAPPING - Forcing vendor re-discovery...');
+        
+        this.vendorMappingAttempted = false;
+        this.botInfo = null;
+        
+        // Re-extract bot info
+        this.extractBotInfo();
+        
+        // Attempt mapping again
+        await this.attemptVendorMapping();
+        
+        return this.getBotInfo();
+    }
+
+    // NEW: Get vendor mapping status
+    getVendorMappingStatus() {
+        return {
+            attempted: this.vendorMappingAttempted,
+            successful: !!(this.botInfo?.mappedBusinessId && this.botInfo?.mappedBusinessId !== 'default'),
+            businessId: this.botInfo?.mappedBusinessId || 'default',
+            businessName: this.botInfo?.businessName || 'Unknown',
+            botPhoneNumber: this.getBotPhoneNumber(),
+            canRetryMapping: !this.vendorMappingAttempted || this.botInfo?.mappedBusinessId === 'default'
+        };
     }
 
     // Cleanup method
@@ -536,6 +728,10 @@ class WhatsAppService {
             this.socket.end();
             this.socket = null;
         }
+        
+        // Clear bot info
+        this.botInfo = null;
+        this.vendorMappingAttempted = false;
         
         console.log('✅ WhatsApp service cleanup completed');
     }
