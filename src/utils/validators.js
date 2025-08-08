@@ -1,6 +1,57 @@
+// File: src/utils/validator.js
+// Enhanced Validators with Unicode Character Handling and WhatsApp Formatting Support
+// Fixes phone validation issues with invisible Unicode characters from WhatsApp
+
 const { VALIDATION_CONFIG } = require('../config/constants');
 
 class Validators {
+    // Enhanced phone cleaning function that removes all Unicode formatting
+    cleanPhoneNumberForValidation(phone) {
+        if (!phone) return '';
+        
+        console.log(`🔍 PHONE VALIDATION DEBUG - Input: "${phone}"`);
+        console.log(`🔍 PHONE VALIDATION DEBUG - Input length: ${phone.length}`);
+        console.log(`🔍 PHONE VALIDATION DEBUG - Input char codes:`, phone.split('').map(c => c.charCodeAt(0)));
+        
+        // Step 1: Remove all non-printable Unicode characters (including WhatsApp formatting)
+        let cleaned = phone.replace(/[\u200B-\u200D\uFEFF\u202A-\u202E\u2066-\u2069\u061C]/g, '');
+        console.log(`🔍 PHONE VALIDATION DEBUG - After Unicode removal: "${cleaned}"`);
+        
+        // Step 2: Remove all whitespace characters
+        cleaned = cleaned.replace(/\s+/g, '');
+        console.log(`🔍 PHONE VALIDATION DEBUG - After whitespace removal: "${cleaned}"`);
+        
+        // Step 3: Keep only digits, +, and common phone characters
+        cleaned = cleaned.replace(/[^\d+\-()]/g, '');
+        console.log(`🔍 PHONE VALIDATION DEBUG - After character filtering: "${cleaned}"`);
+        
+        // Step 4: Normalize to standard format
+        cleaned = cleaned.replace(/[\-()]/g, ''); // Remove dashes and parentheses
+        console.log(`🔍 PHONE VALIDATION DEBUG - Final cleaned: "${cleaned}"`);
+        
+        return cleaned;
+    }
+
+    // Enhanced Unicode text cleaning for all inputs
+    cleanUnicodeText(text) {
+        if (!text || typeof text !== 'string') return '';
+        
+        console.log(`🔍 UNICODE CLEAN DEBUG - Input: "${text}"`);
+        console.log(`🔍 UNICODE CLEAN DEBUG - Input length: ${text.length}`);
+        
+        // Remove invisible Unicode characters commonly added by WhatsApp
+        let cleaned = text.replace(/[\u200B-\u200D\uFEFF\u202A-\u202E\u2066-\u2069\u061C]/g, '');
+        
+        // Remove WhatsApp formatting (asterisks and other markdown)
+        cleaned = cleaned.replace(/\*+/g, '');
+        
+        // Normalize whitespace
+        cleaned = cleaned.replace(/\s+/g, ' ').trim();
+        
+        console.log(`🔍 UNICODE CLEAN DEBUG - Cleaned: "${cleaned}"`);
+        return cleaned;
+    }
+
     // Parse customer info from checkout (name|email|phone|address)
     parseCustomerInfo(input) {
         console.log('🔍 VALIDATOR DEBUG - parseCustomerInfo called with:', input);
@@ -10,14 +61,13 @@ class Validators {
             return null;
         }
 
-        // REMOVE WHATSAPP FORMATTING (asterisks and other markdown)
-        const cleanInput = input.replace(/\*+/g, '').trim();
+        // Enhanced Unicode cleaning
+        const cleanInput = this.cleanUnicodeText(input);
         console.log('🔍 VALIDATOR DEBUG - Cleaned input:', cleanInput);
 
         const parts = cleanInput.split('|').map(part => part.trim());
         console.log('🔍 VALIDATOR DEBUG - parseCustomerInfo: Split into', parts.length, 'parts:', parts);
         
-        // FIXED: Use hardcoded value instead of potentially undefined constant
         const expectedParts = VALIDATION_CONFIG?.CUSTOMER_INFO_PARTS || 4;
         if (parts.length !== expectedParts) {
             console.log('❌ VALIDATOR DEBUG - parseCustomerInfo: Wrong number of parts, expected', expectedParts, 'got', parts.length);
@@ -46,7 +96,7 @@ class Validators {
         return result;
     }
 
-    // Parse registration info (name|email|phone|address|accountName)
+    // Enhanced registration info parser with Unicode handling
     parseRegistrationInfo(input) {
         console.log('🔍 VALIDATOR DEBUG - parseRegistrationInfo called with:', input);
         console.log('🔍 VALIDATOR DEBUG - Input type:', typeof input);
@@ -57,14 +107,13 @@ class Validators {
             return null;
         }
 
-        // REMOVE WHATSAPP FORMATTING (asterisks and other markdown)
-        const cleanInput = input.replace(/\*+/g, '').trim();
+        // Enhanced Unicode cleaning
+        const cleanInput = this.cleanUnicodeText(input);
         console.log('🔍 VALIDATOR DEBUG - Cleaned input:', cleanInput);
 
         const parts = cleanInput.split('|').map(part => part.trim());
         console.log('🔍 VALIDATOR DEBUG - parseRegistrationInfo: Split into', parts.length, 'parts:', parts);
         
-        // FIXED: Use hardcoded value instead of potentially undefined constant
         const expectedParts = VALIDATION_CONFIG?.REGISTRATION_INFO_PARTS || 5;
         console.log('🔍 VALIDATOR DEBUG - Expected parts:', expectedParts);
         
@@ -134,13 +183,40 @@ class Validators {
         return emailRegex.test(email.trim()) && email.length <= 100;
     }
 
+    // Enhanced phone validation with Unicode handling
     isValidPhone(phone) {
-        if (!phone || typeof phone !== 'string') return false;
-        // Remove spaces, dashes, and parentheses for validation
-        const cleaned = phone.replace(/[\s\-\(\)]/g, '');
-        // Check for valid phone format (international or local)
-        const phoneRegex = /^\+?[\d]{8,15}$/;
-        return phoneRegex.test(cleaned);
+        console.log(`🔍 PHONE VALIDATION - Validating: "${phone}"`);
+        
+        if (!phone || typeof phone !== 'string') {
+            console.log(`❌ PHONE VALIDATION - Invalid input type or empty`);
+            return false;
+        }
+        
+        const cleaned = this.cleanPhoneNumberForValidation(phone);
+        console.log(`🔍 PHONE VALIDATION - Cleaned phone: "${cleaned}"`);
+        
+        if (!cleaned) {
+            console.log(`❌ PHONE VALIDATION - Empty phone number after cleaning`);
+            return false;
+        }
+        
+        // Check for valid Namibian and international phone patterns
+        const patterns = [
+            /^\+264\d{8,9}$/,     // +264812345678 or +264813141453
+            /^264\d{8,9}$/,       // 264812345678
+            /^0\d{8,9}$/,         // 0812345678
+            /^\d{8,9}$/,          // 812345678
+            /^\+\d{10,15}$/       // International format
+        ];
+        
+        const isValid = patterns.some(pattern => {
+            const match = pattern.test(cleaned);
+            console.log(`🔍 PHONE VALIDATION - Pattern ${pattern} matches: ${match}`);
+            return match;
+        });
+        
+        console.log(`🔍 PHONE VALIDATION - Final result: ${isValid}`);
+        return isValid;
     }
 
     isValidAddress(address) {
@@ -195,40 +271,43 @@ class Validators {
         return validCommands.includes(trimmed);
     }
 
-    // Sanitization methods
+    // Enhanced sanitization methods
     sanitizeName(name) {
-        return name.trim()
-                  .replace(/\s+/g, ' ') // Replace multiple spaces with single space
-                  .replace(/[^a-zA-Z\s\-'\.]/g, '') // Remove invalid characters
-                  .substring(0, 50); // Limit length
+        const cleaned = this.cleanUnicodeText(name);
+        return cleaned.replace(/\s+/g, ' ') // Replace multiple spaces with single space
+                     .replace(/[^a-zA-Z\s\-'\.]/g, '') // Remove invalid characters
+                     .substring(0, 50); // Limit length
     }
 
     sanitizeEmail(email) {
-        return email.trim().toLowerCase().substring(0, 100);
+        const cleaned = this.cleanUnicodeText(email);
+        return cleaned.toLowerCase().substring(0, 100);
     }
 
+    // Enhanced phone sanitization
     sanitizePhone(phone) {
-        // Keep the original format but trim
-        return phone.trim().substring(0, 20);
+        const cleaned = this.cleanPhoneNumberForValidation(phone);
+        return cleaned.substring(0, 20);
     }
 
     sanitizeAddress(address) {
-        return address.trim()
-                     .replace(/\s+/g, ' ') // Replace multiple spaces with single space
+        const cleaned = this.cleanUnicodeText(address);
+        return cleaned.replace(/\s+/g, ' ') // Replace multiple spaces with single space
                      .substring(0, 200); // Limit length
     }
 
     sanitizeAccountName(accountName) {
-        return accountName.trim()
-                         .replace(/[^a-zA-Z0-9_]/g, '') // Remove invalid characters
-                         .substring(0, 20) // Limit length
-                         .toLowerCase(); // Convert to lowercase for consistency
+        const cleaned = this.cleanUnicodeText(accountName);
+        return cleaned.replace(/[^a-zA-Z0-9_]/g, '') // Remove invalid characters
+                     .substring(0, 20) // Limit length
+                     .toLowerCase(); // Convert to lowercase for consistency
     }
 
     sanitizeMessage(message) {
         if (!message || typeof message !== 'string') return '';
+        const cleaned = this.cleanUnicodeText(message);
         const maxLength = VALIDATION_CONFIG?.MAX_MESSAGE_LENGTH || 1000;
-        return message.trim().substring(0, maxLength);
+        return cleaned.substring(0, maxLength);
     }
 
     // Product validation
@@ -354,7 +433,7 @@ class Validators {
     }
 
     getPhoneValidationMessage() {
-        return "Phone must be 8-15 digits (example: +264812345678)";
+        return "Phone must be 8-15 digits (example: +264812345678 or 264817375744)";
     }
 
     getAddressValidationMessage() {
@@ -384,18 +463,72 @@ class Validators {
         return length >= min && length <= max;
     }
 
-    // Namibian-specific validation (customize as needed)
+    // Enhanced Namibian-specific validation
     isValidNamibianPhone(phone) {
+        console.log(`🔍 NAMIBIAN PHONE VALIDATION - Input: "${phone}"`);
+        
         if (!phone || typeof phone !== 'string') return false;
-        const cleaned = phone.replace(/[\s\-\(\)]/g, '');
-        // Namibian phone numbers: +264 followed by 8-9 digits
-        return /^\+?264[0-9]{8,9}$/.test(cleaned) || /^0[0-9]{8,9}$/.test(cleaned);
+        
+        const cleaned = this.cleanPhoneNumberForValidation(phone);
+        console.log(`🔍 NAMIBIAN PHONE VALIDATION - Cleaned: "${cleaned}"`);
+        
+        // Namibian phone number patterns
+        const patterns = [
+            /^\+264[0-9]{8,9}$/,  // +264812345678
+            /^264[0-9]{8,9}$/,    // 264812345678
+            /^0[0-9]{8,9}$/       // 0812345678
+        ];
+        
+        const isValid = patterns.some(pattern => pattern.test(cleaned));
+        console.log(`🔍 NAMIBIAN PHONE VALIDATION - Result: ${isValid}`);
+        
+        return isValid;
     }
 
     isValidPostalCode(code) {
         if (!code || typeof code !== 'string') return false;
         // Basic postal code validation (adjust for your region)
         return /^[0-9]{4,6}$/.test(code.trim());
+    }
+
+    // Debug helpers
+    debugPhoneValidation(phone) {
+        console.log('🔍 PHONE DEBUG - Starting validation for:', phone);
+        console.log('🔍 PHONE DEBUG - Character codes:', phone.split('').map(c => `${c}(${c.charCodeAt(0)})`));
+        
+        const cleaned = this.cleanPhoneNumberForValidation(phone);
+        console.log('🔍 PHONE DEBUG - After cleaning:', cleaned);
+        
+        const isValid = this.isValidPhone(phone);
+        console.log('🔍 PHONE DEBUG - Validation result:', isValid);
+        
+        return { original: phone, cleaned, isValid };
+    }
+
+    debugRegistrationInput(input) {
+        console.log('🔍 REGISTRATION DEBUG - Full analysis of input:');
+        console.log('🔍 REGISTRATION DEBUG - Raw input:', input);
+        console.log('🔍 REGISTRATION DEBUG - Input length:', input.length);
+        console.log('🔍 REGISTRATION DEBUG - Character analysis:');
+        
+        for (let i = 0; i < input.length; i++) {
+            const char = input[i];
+            const code = char.charCodeAt(0);
+            console.log(`  ${i}: "${char}" (${code}) ${code > 127 ? '← UNICODE' : ''}`);
+        }
+        
+        const cleaned = this.cleanUnicodeText(input);
+        console.log('🔍 REGISTRATION DEBUG - After cleaning:', cleaned);
+        
+        const parts = cleaned.split('|');
+        console.log('🔍 REGISTRATION DEBUG - Split parts:', parts);
+        
+        if (parts.length >= 3) {
+            console.log('🔍 REGISTRATION DEBUG - Phone part analysis:');
+            this.debugPhoneValidation(parts[2]);
+        }
+        
+        return this.parseRegistrationInfo(input);
     }
 }
 
