@@ -43,6 +43,27 @@ class CommandHandler {
                 return await this.handleRegistrationInput(session, businessManager, text, messageData.userId);
             }
 
+            // PDF testing commands
+            if (command === 'test pdf' || command === 'pdf test') {
+                console.log('🔍 COMMAND DEBUG - Processing PDF test');
+                return await this.handlePDFTest(session);
+            }
+
+            if (command === 'pdf status' || command === 'pdf check') {
+                console.log('🔍 COMMAND DEBUG - Processing PDF status check');
+                return await this.handlePDFStatus();
+            }
+
+            if (command === 'pdf stats' || command === 'invoice stats') {
+                console.log('🔍 COMMAND DEBUG - Processing PDF statistics');
+                return await this.handlePDFStats();
+            }
+
+            if (command === 'pdf help') {
+                console.log('🔍 COMMAND DEBUG - Processing PDF help');
+                return this.handlePDFHelp();
+            }
+
             // Main menu options
             if (['1', 'quick'].includes(command) && session.step === 'menu') {
                 console.log('🔍 COMMAND DEBUG - Processing quick order');
@@ -164,6 +185,79 @@ class CommandHandler {
         }
     }
 
+    // PDF testing and management methods
+    async handlePDFTest(session) {
+        try {
+            console.log('🔍 Testing PDF generation...');
+            
+            const testResult = await pdfInvoiceGenerator.generateTestInvoice(session.businessId);
+            
+            if (testResult.success) {
+                return `✅ **PDF Test Successful!**\n\n` +
+                       `📄 File: ${testResult.filename}\n` +
+                       `📊 Size: ${testResult.fileSize}\n` +
+                       `🆔 Invoice: ${testResult.invoiceNumber}\n\n` +
+                       `PDF system is working correctly!`;
+            } else {
+                return `❌ **PDF Test Failed**\n\n` +
+                       `Error: ${testResult.error}\n\n` +
+                       `Please check the logs for more details.`;
+            }
+            
+        } catch (error) {
+            console.error('❌ PDF Test Error:', error);
+            return `❌ **PDF Test Error**\n\n` +
+                   `${error.message}\n\n` +
+                   `Make sure PDFKit is installed: \`npm install pdfkit\``;
+        }
+    }
+
+    async handlePDFStatus() {
+        try {
+            const stats = pdfInvoiceGenerator.getInvoiceStats();
+            
+            return `📊 **PDF System Status**\n\n` +
+                   `📁 Directory: invoices/\n` +
+                   `📄 Total PDFs: ${stats.totalInvoices}\n` +
+                   `💾 Total Size: ${stats.totalSize}\n` +
+                   `📏 Average Size: ${stats.averageSize}\n\n` +
+                   `Status: ${stats.totalInvoices >= 0 ? '✅ Operational' : '❌ Error'}\n\n` +
+                   `Type *test pdf* to generate a sample invoice.`;
+            
+        } catch (error) {
+            console.error('❌ PDF Status Error:', error);
+            return `❌ **PDF System Error**\n\n` +
+                   `Error: ${error.message}\n\n` +
+                   `The PDF system may not be properly configured.`;
+        }
+    }
+
+    async handlePDFStats() {
+        try {
+            const stats = pdfInvoiceGenerator.getInvoiceStats();
+            
+            return `📊 **Invoice Statistics**\n\n` +
+                   `📄 Total Invoices: ${stats.totalInvoices}\n` +
+                   `💾 Total Size: ${stats.totalSize}\n` +
+                   `📏 Average Size: ${stats.averageSize}\n` +
+                   `📁 Directory: ${stats.directory}\n\n` +
+                   `Type *test pdf* to generate a sample invoice.`;
+            
+        } catch (error) {
+            console.error('❌ PDF Stats Error:', error);
+            return `❌ Error getting PDF statistics: ${error.message}`;
+        }
+    }
+
+    handlePDFHelp() {
+        return `📄 **PDF Invoice Commands**\n\n` +
+               `🧪 *test pdf* - Generate a sample invoice\n` +
+               `📊 *pdf status* - Check PDF system status\n` +
+               `📈 *pdf stats* - View invoice statistics\n` +
+               `❓ *pdf help* - Show this help message\n\n` +
+               `**Note:** Invoices are automatically generated when you confirm an order.`;
+    }
+
     // Menu navigation handlers
     handleQuickOrder(session) {
         console.log('🔍 QUICK ORDER DEBUG - Setting step to quick_order');
@@ -238,7 +332,7 @@ class CommandHandler {
             return messageGenerators.generateCheckoutConfirmation(session);
         } else {
             session.setStep('checkout');
-            return messageGenerators.generateCheckoutMessage();
+            return messageGenerators.generateCheckoutMessage(session);
         }
     }
 
@@ -254,112 +348,124 @@ class CommandHandler {
         }
     }
 
-   async handleConfirmOrder(session, businessManager, messageData) {
-    console.log('🔍 CONFIRM ORDER DEBUG - Processing order confirmation');
-    if (!session.customerInfo.name) {
-        return "❌ Please provide your info first (name|email|phone|address).";
-    }
+    // FIXED: Updated order confirmation with proper PDF integration
+    async handleConfirmOrder(session, businessManager, messageData) {
+        console.log('🔍 CONFIRM ORDER DEBUG - Processing order confirmation');
+        if (!session.customerInfo.name) {
+            return "❌ Please provide your info first (name|email|phone|address).";
+        }
 
-    if (session.cart.length === 0) {
-        return "❌ Cart is empty. Add items before confirming.";
-    }
+        if (session.cart.length === 0) {
+            return "❌ Cart is empty. Add items before confirming.";
+        }
 
-    try {
-        const order = session.generateOrder();
-        const saved = await businessManager.saveOrder(
-            session.businessId, 
-            messageData.sender, 
-            order, 
-            messageData.msgId
-        );
-
-        if (saved) {
-            // Increment customer score if they have an account
-            if (session.customerAccount) {
-                await businessManager.incrementCustomerScore(session.businessId, session.customerAccount);
-            }
-            
-            // Generate PDF invoice
-            console.log('🔍 PDF DEBUG - Generating PDF invoice for order');
-            const pdfResult = await pdfInvoiceGenerator.generateInvoicePDF(
+        try {
+            const order = session.generateOrder();
+            const saved = await businessManager.saveOrder(
+                session.businessId, 
+                messageData.sender, 
                 order, 
-                session.businessData
+                messageData.msgId
             );
-            
-            // Generate text confirmation message
-            const textConfirmation = messageGenerators.generateOrderConfirmation(session);
-            
-            if (pdfResult.success) {
-                console.log('✅ PDF generated successfully:', pdfResult.filename);
-                
-                // Send both text message and PDF
-                try {
-                    // Send text confirmation first
-                    await messageData.whatsappService.sendTextMessage(
-                        messageData.userId, 
-                        textConfirmation
-                    );
-                    
-                    // Send PDF invoice
-                    setTimeout(async () => {
-                        const pdfSent = await messageData.whatsappService.sendDocument(
-                            messageData.userId,
-                            pdfResult.filepath,
-                            pdfResult.filename,
-                            `📄 Invoice ${pdfResult.invoiceNumber}\n\nThank you for your order!`
-                        );
-                        
-                        if (!pdfSent) {
-                            // Fallback - notify about PDF issue
-                            await messageData.whatsappService.sendTextMessage(
-                                messageData.userId,
-                                '❌ There was an issue generating your invoice PDF. Please contact support for a copy.'
-                            );
-                        }
-                    }, 2000); // 2 second delay
-                    
-                } catch (sendError) {
-                    console.error('❌ Error sending messages:', sendError);
-                    // Fallback to just text
-                    const fallbackMessage = textConfirmation + 
-                        '\n\n❌ Invoice PDF could not be generated. Please contact support.';
-                    
-                    // Clear the session after successful order
-                    const sessionKey = `${messageData.userId}_${session.businessId}`;
-                    sessionManager.deleteSession(sessionKey);
-                    
-                    return fallbackMessage;
+
+            if (saved) {
+                // Increment customer score if they have an account
+                if (session.customerAccount) {
+                    await businessManager.incrementCustomerScore(session.businessId, session.customerAccount);
                 }
                 
-            } else {
-                console.error('❌ PDF generation failed:', pdfResult.error);
-                // Send just text confirmation with error note
-                const fallbackMessage = textConfirmation + 
-                    '\n\n❌ Invoice PDF could not be generated. Please contact support for a copy.';
+                // Generate PDF invoice - FIXED METHOD CALL
+                console.log('🔍 PDF DEBUG - Generating PDF invoice for order');
+                
+                try {
+                    // Use the correct method from your PDF generator
+                    const pdfResult = await pdfInvoiceGenerator.generateInvoiceForOrder(
+                        session,  // Pass the session which contains cart, customer info, etc.
+                        session.businessId
+                    );
+                    
+                    console.log('🔍 PDF DEBUG - PDF generation result:', pdfResult);
+                    
+                    // Generate text confirmation message
+                    const textConfirmation = messageGenerators.generateOrderConfirmation(session);
+                    
+                    if (pdfResult && pdfResult.success) {
+                        console.log('✅ PDF generated successfully:', pdfResult.filename);
+                        
+                        // Send text confirmation first
+                        await messageData.whatsappService.sendTextMessage(
+                            messageData.userId, 
+                            textConfirmation
+                        );
+                        
+                        // Send PDF invoice after a short delay
+                        setTimeout(async () => {
+                            try {
+                                const pdfSent = await messageData.whatsappService.sendDocument(
+                                    messageData.userId,
+                                    pdfResult.filepath,
+                                    pdfResult.filename,
+                                    `📄 Invoice ${pdfResult.invoiceNumber}\n\nThank you for your order!`
+                                );
+                                
+                                if (!pdfSent) {
+                                    // Fallback - notify about PDF issue
+                                    await messageData.whatsappService.sendTextMessage(
+                                        messageData.userId,
+                                        '❌ There was an issue sending your invoice PDF. Please contact support for a copy.'
+                                    );
+                                }
+                            } catch (sendError) {
+                                console.error('❌ Error sending PDF:', sendError);
+                                await messageData.whatsappService.sendTextMessage(
+                                    messageData.userId,
+                                    '❌ Invoice PDF could not be sent. Please contact support for a copy.'
+                                );
+                            }
+                        }, 2000); // 2 second delay
+                        
+                    } else {
+                        console.error('❌ PDF generation failed:', pdfResult?.error || 'Unknown error');
+                        
+                        // Send text confirmation with PDF error note
+                        const fallbackMessage = textConfirmation + 
+                            '\n\n⚠️ Invoice PDF could not be generated. Please contact support for a copy.';
+                        
+                        await messageData.whatsappService.sendTextMessage(
+                            messageData.userId,
+                            fallbackMessage
+                        );
+                    }
+                    
+                } catch (pdfError) {
+                    console.error('❌ PDF generation error:', pdfError);
+                    
+                    // Send confirmation without PDF
+                    const fallbackMessage = messageGenerators.generateOrderConfirmation(session) + 
+                        '\n\n⚠️ Invoice PDF could not be generated. Please contact support for a copy.';
+                    
+                    await messageData.whatsappService.sendTextMessage(
+                        messageData.userId,
+                        fallbackMessage
+                    );
+                }
                 
                 // Clear the session after successful order
                 const sessionKey = `${messageData.userId}_${session.businessId}`;
                 sessionManager.deleteSession(sessionKey);
                 
-                return fallbackMessage;
+                // Return null since we're handling the response sending manually
+                return null;
+                
+            } else {
+                return "⚠️ This message was already processed.";
             }
-            
-            // Clear the session after successful order
-            const sessionKey = `${messageData.userId}_${session.businessId}`;
-            sessionManager.deleteSession(sessionKey);
-            
-            // Return null since we're handling the response sending manually
-            return null;
-            
-        } else {
-            return "⚠️ This message was already processed.";
+        } catch (error) {
+            console.error('❌ Error confirming order:', error.message);
+            console.error('❌ Error stack:', error.stack);
+            return "❌ Failed to process your order. Please try again.";
         }
-    } catch (error) {
-        console.error('❌ Error confirming order:', error.message);
-        console.error('❌ Error stack:', error.stack);
-        return "❌ Failed to process your order. Please try again.";
     }
-}
 
     // Registration input handler
     async handleRegistrationInput(session, businessManager, text, userId) {
@@ -482,7 +588,9 @@ class CommandHandler {
         const validCommands = [
             'hi', 'hello', 'start', 'menu', 'main',
             'register', 'quick', 'catalog', 'catalogue',
-            'cart', 'help', 'checkout', 'confirm'
+            'cart', 'help', 'checkout', 'confirm',
+            'test pdf', 'pdf test', 'pdf status', 'pdf check',
+            'pdf stats', 'invoice stats', 'pdf help'
         ];
         return validCommands.includes(command.toLowerCase());
     }
@@ -490,7 +598,7 @@ class CommandHandler {
     // Get available commands for current step
     getAvailableCommands(session) {
         const commands = {
-            menu: ['quick', 'catalog', 'cart', 'help', 'register'],
+            menu: ['quick', 'catalog', 'cart', 'help', 'register', 'test pdf'],
             quick_order: ['cart', 'checkout', 'catalog', 'menu'],
             checkout: ['cart', 'menu', 'confirm'],
             registration: ['menu']
