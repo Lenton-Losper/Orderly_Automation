@@ -437,7 +437,7 @@ class MessageGenerators {
         
         msg += "📱 *WHAT'S NEXT?*\n";
         msg += "• We'll contact you soon to confirm delivery\n";
-        msg += "• Expect delivery within 24-48 hours\n";
+        msg += "• Expect delivery with by Friday";
         msg += "• You'll receive updates via WhatsApp\n\n";
         msg += "🛍️ *WANT TO ORDER AGAIN?*\n";
         msg += "Type *start* to place another order\n\n";
