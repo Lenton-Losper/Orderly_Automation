@@ -1,3 +1,4 @@
+// File: src/config/constants.js
 // Application constants and configuration
 
 // Owner configuration - Replace with your WhatsApp number to ignore
@@ -19,8 +20,18 @@ const WHATSAPP_CONFIG = {
     AUTH_FOLDER: './auth'
 };
 
-// Business configuration
-const DEFAULT_BUSINESS = 'default';
+// FIXED: Business configuration with proper ID
+const DEFAULT_BUSINESS = {
+    id: 'default',  // CRITICAL: This line was missing
+    businessName: 'LLL Farm',
+    businessDescription: 'Fresh meat and agricultural products',
+    businessPhone: '',
+    businessEmail: '',
+    businessAddress: '',
+    isActive: true,
+    logo: '',
+    category: 'agriculture'
+};
 
 // Firebase collections
 const COLLECTIONS = {
@@ -44,7 +55,7 @@ const PRICING_CONFIG = {
     TAX_RATE: 0.15, // 15% VAT in Namibia
     DELIVERY_FEE: 25.00, // N$ 25 delivery fee
     FREE_DELIVERY_THRESHOLD: 200.00, // Free delivery over N$ 200
-    CURRENCY: 'N$',
+    CURRENCY: 'N',
     CURRENCY_SYMBOL: 'N$'
 };
 

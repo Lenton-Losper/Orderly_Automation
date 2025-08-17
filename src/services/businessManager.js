@@ -1,29 +1,27 @@
 // File: src/services/businessManager.js
-// Enhanced Business Manager with Dynamic Vendor Discovery Integration
-// Manages business-to-bot mappings using dynamic Firebase vendor discovery
-// Handles customer registration, orders, and business data management
+// Enhanced Business Manager with Scalable Auto-Mapping Integration + Missing Methods
+// ADDED: debugAvailableVendors method that was causing the error
 
 const firebaseService = require('./firebase');
 const { CACHE_CONFIG, DEFAULT_BUSINESS } = require('../config/constants');
 
 // Enhanced phone number cleaning that handles WhatsApp device identifiers
-// This fixes the issue where bot numbers have :3, :2, etc. appended
 function cleanPhoneNumberForMapping(phoneNumber) {
     if (!phoneNumber) return '';
     
-    console.log(`🔍 CLEAN DEBUG - Input: "${phoneNumber}"`);
+    console.log(`CLEAN DEBUG - Input: "${phoneNumber}"`);
     
     // Step 1: Remove @s.whatsapp.net suffix
-    let cleaned = phoneNumber.split('@')[0];
-    console.log(`🔍 CLEAN DEBUG - After removing @domain: "${cleaned}"`);
+    let cleaned = String(phoneNumber).split('@')[0];
+    console.log(`CLEAN DEBUG - After removing @domain: "${cleaned}"`);
     
     // Step 2: Remove WhatsApp device identifier (:1, :2, :3, etc.)
     cleaned = cleaned.split(':')[0];
-    console.log(`🔍 CLEAN DEBUG - After removing device ID: "${cleaned}"`);
+    console.log(`CLEAN DEBUG - After removing device ID: "${cleaned}"`);
     
     // Step 3: Remove any remaining non-digit characters
     cleaned = cleaned.replace(/\D/g, '');
-    console.log(`🔍 CLEAN DEBUG - Final cleaned number: "${cleaned}"`);
+    console.log(`CLEAN DEBUG - Final cleaned number: "${cleaned}"`);
     
     return cleaned;
 }
@@ -32,20 +30,20 @@ class BusinessManager {
     constructor() {
         this.businessData = new Map(); // Cache business data
         this.phoneToBusinessMap = new Map(); // Phone to business mapping (legacy)
-        this.botToBusinessMap = new Map(); // Bot phone to business mapping (new dynamic approach)
+        this.botToBusinessMap = new Map(); // Bot phone to business mapping
         this.cacheTimestamps = new Map(); // Cache timestamps for invalidation
         this.isInitialized = false;
-        this.dynamicMappingEnabled = true; // Enable dynamic vendor discovery
+        this.scalableMappingEnabled = true; // Enable scalable auto-mapping
     }
 
     async initialize() {
         try {
-            console.log('🏢 Initializing Business Manager with dynamic vendor discovery...');
+            console.log('Initializing Business Manager with scalable auto-mapping...');
             await this.loadBusinessMappings();
             this.isInitialized = true;
-            console.log('✅ Business Manager initialized successfully');
+            console.log('Business Manager initialized successfully');
         } catch (error) {
-            console.error('❌ Failed to initialize Business Manager:', error);
+            console.error('Failed to initialize Business Manager:', error);
             throw error;
         }
     }
@@ -53,10 +51,10 @@ class BusinessManager {
     async loadBusinessMappings() {
         try {
             const mappings = await firebaseService.getBusinessMappings();
-            console.log(`✅ Loaded ${mappings.length} business mappings`);
+            console.log(`Loaded ${mappings.length} business mappings`);
             
             if (mappings.length === 0) {
-                console.log('⚠️  No business mappings found. Dynamic auto-mapping will be used when bot connects.');
+                console.log('No business mappings found. Scalable auto-mapping will be used when bots connect.');
                 return;
             }
 
@@ -65,242 +63,185 @@ class BusinessManager {
                 // Customer phone to business mapping (legacy)
                 this.phoneToBusinessMap.set(mapping.phoneNumber, mapping.businessId);
                 
-                // Bot phone to business mapping (dynamic approach)
+                // Bot phone to business mapping
                 if (mapping.isBotNumber || mapping.type === 'bot') {
                     this.botToBusinessMap.set(mapping.phoneNumber, mapping.businessId);
-                    console.log(`🤖 Bot ${mapping.phoneNumber} mapped to business: ${mapping.businessId}`);
+                    console.log(`Bot ${mapping.phoneNumber} mapped to business: ${mapping.businessId}`);
                     
-                    if (mapping.autoMapped) {
-                        console.log(`   ✨ Auto-mapped vendor: ${mapping.vendorName}`);
-                        if (mapping.discoveryMethod === 'dynamic_firebase_query') {
-                            console.log(`   🔄 Discovered via: Dynamic Firebase Query`);
-                        }
+                    if (mapping.autoCreated || mapping.scalableMapping) {
+                        console.log(`   Auto-created via: ${mapping.discoveryMethod || 'scalable_auto_discovery'}`);
                     }
                 }
             });
 
-            console.log(`📱 Loaded ${this.phoneToBusinessMap.size} customer mappings`);
-            console.log(`🤖 Loaded ${this.botToBusinessMap.size} bot mappings`);
-            
-            // Show mapping details for debugging
-            this.logMappingDetails();
+            console.log(`Loaded ${this.phoneToBusinessMap.size} customer mappings`);
+            console.log(`Loaded ${this.botToBusinessMap.size} bot mappings`);
             
         } catch (error) {
-            console.error('❌ Failed to load business mappings:', error);
+            console.error('Failed to load business mappings:', error);
             throw error;
         }
     }
 
-    // NEW: Log mapping details for debugging
-    logMappingDetails() {
-        console.log(`📊 MAPPING DETAILS:`);
-        console.log(`   Bot Mappings:`);
-        if (this.botToBusinessMap.size === 0) {
-            console.log(`     No bot mappings found`);
-        } else {
-            this.botToBusinessMap.forEach((businessId, botPhone) => {
-                console.log(`     📱 ${botPhone} → 🏢 ${businessId}`);
-            });
-        }
-    }
-
-    // ENHANCED: Dynamic business ID resolution with comprehensive fallback strategy
+    // UPDATED: Scalable business ID resolution with guaranteed auto-mapping
     async getBusinessIdFromBot(botPhoneNumber) {
         if (!botPhoneNumber) {
-            console.log('⚠️  No bot phone number provided, using default business');
-            return DEFAULT_BUSINESS;
+            console.log('No bot phone number provided, using default business');
+            return DEFAULT_BUSINESS.id;
         }
 
-        // FIXED: Enhanced cleaning to remove device identifiers
         const cleanBotNumber = cleanPhoneNumberForMapping(botPhoneNumber);
-        console.log(`🔍 DYNAMIC MAPPING - Processing bot number: ${botPhoneNumber} → ${cleanBotNumber}`);
+        console.log(`SCALABLE MAPPING - Processing bot number: ${botPhoneNumber} → ${cleanBotNumber}`);
         
         // Step 1: Check existing cached mappings
         if (this.botToBusinessMap.has(cleanBotNumber)) {
             const businessId = this.botToBusinessMap.get(cleanBotNumber);
-            console.log(`🎯 CACHE HIT - Bot ${cleanBotNumber} mapped to business: ${businessId}`);
+            console.log(`CACHE HIT - Bot ${cleanBotNumber} mapped to business: ${businessId}`);
             return businessId;
         }
 
-        // Step 2: Try dynamic vendor discovery via Firebase service
-        if (this.dynamicMappingEnabled) {
-            console.log(`🔍 DYNAMIC DISCOVERY - No cache hit, attempting dynamic vendor discovery...`);
+        // Step 2: Use scalable Firebase service for auto-mapping
+        if (this.scalableMappingEnabled) {
+            console.log(`SCALABLE DISCOVERY - Attempting automatic vendor discovery and mapping...`);
             
             try {
-                // Use the enhanced Firebase service for dynamic discovery
-                const autoMappedBusinessId = await firebaseService.autoMapBotToVendor(botPhoneNumber);
+                // UPDATED: Use the new scalable auto-mapping method
+                const autoMappedBusinessId = await firebaseService.getOrCreateBusinessMapping(botPhoneNumber);
                 
                 if (autoMappedBusinessId) {
                     // Update our cache with the newly discovered mapping
                     this.botToBusinessMap.set(cleanBotNumber, autoMappedBusinessId);
-                    console.log(`✨ DYNAMIC SUCCESS - Auto-mapped bot ${cleanBotNumber} to business: ${autoMappedBusinessId}`);
-                    console.log(`🔄 Cache updated with new mapping`);
+                    console.log(`SCALABLE SUCCESS - Auto-mapped bot ${cleanBotNumber} to business: ${autoMappedBusinessId}`);
+                    console.log(`Cache updated with new mapping`);
                     return autoMappedBusinessId;
                 } else {
-                    console.log(`❌ DYNAMIC DISCOVERY FAILED - No matching vendor found`);
+                    console.log(`SCALABLE DISCOVERY FAILED - No matching vendor found`);
                 }
             } catch (error) {
-                console.error(`❌ Error in dynamic vendor discovery for bot ${cleanBotNumber}:`, error);
+                console.error(`Error in scalable vendor discovery for bot ${cleanBotNumber}:`, error);
             }
         } else {
-            console.log(`⚠️ Dynamic mapping is disabled, skipping vendor discovery`);
+            console.log(`Scalable mapping is disabled, skipping auto-discovery`);
         }
 
         // Step 3: Fallback to legacy customer mapping
         if (this.phoneToBusinessMap.has(cleanBotNumber)) {
             const businessId = this.phoneToBusinessMap.get(cleanBotNumber);
-            console.log(`🎯 LEGACY FALLBACK - Bot ${cleanBotNumber} found in customer mapping: ${businessId}`);
+            console.log(`LEGACY FALLBACK - Bot ${cleanBotNumber} found in customer mapping: ${businessId}`);
             return businessId;
         }
 
         // Step 4: Final fallback with troubleshooting info
-        console.log(`⚠️  FALLBACK TO DEFAULT - Bot ${cleanBotNumber} not mapped, using default business`);
-        console.log(`💡 TROUBLESHOOTING STEPS:`);
+        console.log(`FALLBACK TO DEFAULT - Bot ${cleanBotNumber} not mapped, using default business`);
+        console.log(`TROUBLESHOOTING STEPS:`);
         console.log(`   Original: ${botPhoneNumber}`);
         console.log(`   Cleaned: ${cleanBotNumber}`);
         console.log(`   1. Ensure vendor profile exists in Firebase with phone: ${cleanBotNumber}`);
         console.log(`   2. Check vendor profile has all required fields (name, phone, email)`);
         console.log(`   3. Verify Firebase permissions allow reading vendor profiles`);
-        console.log(`   4. Run discoverAllVendors() to see all available vendors`);
+        console.log(`   4. Run debugVendorDiscovery() to see all available vendors`);
         console.log(`   5. Consider manual mapping if needed`);
         
-        return DEFAULT_BUSINESS;
+        return DEFAULT_BUSINESS.id;
     }
 
-    // LEGACY: Get business ID from customer phone (keep for backward compatibility)
+    // Legacy method - kept for backward compatibility
     getBusinessId(customerPhoneNumber) {
         if (!customerPhoneNumber) {
-            return DEFAULT_BUSINESS;
+            return DEFAULT_BUSINESS.id;
         }
 
         const cleanNumber = customerPhoneNumber.split('@')[0];
-        return this.phoneToBusinessMap.get(cleanNumber) || DEFAULT_BUSINESS;
+        return this.phoneToBusinessMap.get(cleanNumber) || DEFAULT_BUSINESS.id;
     }
 
-    // ENHANCED: Refresh mappings with dynamic discovery
+    // UPDATED: Refresh mappings with scalable discovery
     async refreshMappings() {
         try {
-            console.log('🔄 Refreshing business mappings with dynamic discovery...');
+            console.log('Refreshing business mappings with scalable discovery...');
             
             // Clear existing mappings
             this.phoneToBusinessMap.clear();
             this.botToBusinessMap.clear();
             
-            // Refresh Firebase vendor cache
-            await firebaseService.refreshVendorCache();
+            // Refresh Firebase vendor cache if the service supports it
+            if (typeof firebaseService.buildVendorDiscoveryCache === 'function') {
+                await firebaseService.buildVendorDiscoveryCache();
+            }
             
             // Reload mappings from Firebase
             await this.loadBusinessMappings();
             
-            console.log('✅ Business mappings refreshed with latest vendor data');
+            console.log('Business mappings refreshed with latest vendor data');
         } catch (error) {
-            console.error('❌ Failed to refresh business mappings:', error);
+            console.error('Failed to refresh business mappings:', error);
         }
     }
 
-    // ENHANCED: Force auto-mapping with dynamic discovery
+    // UPDATED: Force auto-mapping with scalable discovery
     async forceAutoMapping(botPhoneNumber) {
         try {
-            console.log(`🔧 FORCE MAPPING - Initiating dynamic discovery for bot: ${botPhoneNumber}`);
+            console.log(`FORCE MAPPING - Initiating scalable discovery for bot: ${botPhoneNumber}`);
             
             // Clear any existing cache for this bot
             const cleanBotNumber = cleanPhoneNumberForMapping(botPhoneNumber);
             this.botToBusinessMap.delete(cleanBotNumber);
             
-            // Force refresh vendor cache
-            await firebaseService.refreshVendorCache();
+            // Force refresh vendor cache if available
+            if (typeof firebaseService.buildVendorDiscoveryCache === 'function') {
+                await firebaseService.buildVendorDiscoveryCache();
+            }
             
-            // Attempt dynamic mapping
-            const businessId = await firebaseService.autoMapBotToVendor(botPhoneNumber);
+            // Attempt scalable mapping
+            const businessId = await firebaseService.getOrCreateBusinessMapping(botPhoneNumber);
             
             if (businessId) {
                 this.botToBusinessMap.set(cleanBotNumber, businessId);
-                console.log(`✅ FORCE MAPPING SUCCESS - Bot ${cleanBotNumber} mapped to business: ${businessId}`);
+                console.log(`FORCE MAPPING SUCCESS - Bot ${cleanBotNumber} mapped to business: ${businessId}`);
                 return businessId;
             } else {
-                console.log(`❌ FORCE MAPPING FAILED - No vendor found for bot: ${botPhoneNumber}`);
+                console.log(`FORCE MAPPING FAILED - No vendor found for bot: ${botPhoneNumber}`);
                 
-                // Show all available vendors for debugging
-                await this.debugAvailableVendors();
+                // Show debug info if available
+                if (typeof firebaseService.debugVendorDiscovery === 'function') {
+                    await firebaseService.debugVendorDiscovery();
+                }
                 return null;
             }
         } catch (error) {
-            console.error('❌ Error in force auto-mapping:', error);
+            console.error('Error in force auto-mapping:', error);
             return null;
         }
     }
 
-    // NEW: Debug available vendors
+    // ADDED: Missing debugAvailableVendors method that was causing the error
     async debugAvailableVendors() {
         try {
-            console.log(`🔍 DEBUG - Discovering all available vendors...`);
-            const vendors = await firebaseService.discoverAllVendors();
+            console.log(`DEBUG - Discovering all available vendors...`);
             
-            if (vendors.length === 0) {
-                console.log(`⚠️ No vendors found in Firebase`);
+            // Use Firebase service's discovery method if available
+            if (typeof firebaseService.discoverAllVendors === 'function') {
+                const vendors = await firebaseService.discoverAllVendors();
+                return vendors;
             } else {
-                console.log(`📋 Available vendors in Firebase:`);
-                vendors.forEach((vendor, index) => {
-                    console.log(`   ${index + 1}. ${vendor.id}`);
-                    console.log(`      Name: ${vendor.name}`);
-                    console.log(`      Phone: ${vendor.phone}`);
-                    console.log(`      Has Profile: ${vendor.hasProfile}`);
-                });
+                console.log(`Firebase service discovery method not available`);
+                return [];
             }
-            
-            return vendors;
         } catch (error) {
-            console.error('❌ Error debugging available vendors:', error);
+            console.error('Error debugging available vendors:', error);
             return [];
         }
     }
 
-    // NEW: Manual mapping creation
-    async createManualMapping(botPhoneNumber, vendorId) {
-        try {
-            console.log(`🔧 MANUAL MAPPING - Creating mapping: ${botPhoneNumber} → ${vendorId}`);
-            
-            const cleanBotNumber = cleanPhoneNumberForMapping(botPhoneNumber);
-            
-            // Verify vendor exists
-            const vendorProfile = await firebaseService.getBusinessProfile(vendorId);
-            if (!vendorProfile || vendorProfile.businessName === 'LLL Farm') {
-                console.log(`❌ Vendor ${vendorId} not found or has default profile`);
-                return false;
-            }
-            
-            // Create mapping in Firebase
-            const mappingData = {
-                phoneNumber: cleanBotNumber,
-                businessId: vendorId,
-                isBotNumber: true,
-                type: 'bot',
-                createdAt: new Date().toISOString(),
-                isActive: true,
-                autoMapped: false,
-                description: 'Manually created WhatsApp Bot mapping',
-                manuallyCreated: true,
-                createdBy: 'BusinessManager'
-            };
-            
-            const db = firebaseService.db;
-            const mappingRef = db.collection('whatsapp_business_mapping').doc(cleanBotNumber);
-            await mappingRef.set(mappingData);
-            
-            // Update local cache
-            this.botToBusinessMap.set(cleanBotNumber, vendorId);
-            
-            console.log(`✅ MANUAL MAPPING SUCCESS - Created mapping: ${cleanBotNumber} → ${vendorId}`);
-            return vendorId;
-            
-        } catch (error) {
-            console.error('❌ Error creating manual mapping:', error);
-            return false;
-        }
-    }
-
+    // UPDATED: Enhanced business data retrieval
     async getBusinessData(businessId) {
         try {
+            // Handle undefined businessId
+            if (!businessId || businessId === 'undefined') {
+                console.log('Invalid business ID, using default');
+                businessId = DEFAULT_BUSINESS.id;
+            }
+            
             // Check cache first
             if (this.businessData.has(businessId)) {
                 const cacheTime = this.cacheTimestamps.get(businessId);
@@ -311,8 +252,8 @@ class BusinessManager {
                 }
             }
 
-            // Load from Firebase
-            const businessData = await firebaseService.getBusinessProfile(businessId);
+            // Load from Firebase using the updated service
+            const businessData = await firebaseService.getBusinessData(businessId);
             
             // Cache the data
             this.businessData.set(businessId, businessData);
@@ -320,7 +261,7 @@ class BusinessManager {
             
             return businessData;
         } catch (error) {
-            console.error(`❌ Failed to get business data for ${businessId}:`, error);
+            console.error(`Failed to get business data for ${businessId}:`, error);
             return {
                 businessName: 'Our Business',
                 businessDescription: 'Welcome to our business',
@@ -331,114 +272,99 @@ class BusinessManager {
 
     async getBusinessProducts(businessId) {
         try {
+            // Handle undefined businessId
+            if (!businessId || businessId === 'undefined') {
+                console.log('Invalid business ID for products, returning empty array');
+                return [];
+            }
+            
             return await firebaseService.getBusinessProducts(businessId);
         } catch (error) {
-            console.error(`❌ Failed to get products for business ${businessId}:`, error);
+            console.error(`Failed to get products for business ${businessId}:`, error);
             return [];
         }
     }
 
-    // CUSTOMER MANAGEMENT METHODS - Enhanced with comprehensive debugging
+    // CUSTOMER MANAGEMENT METHODS - Enhanced for vendor subcollections
     async saveCustomer(businessId, customerData, whatsappId) {
-        console.log('🔍 BUSINESS MANAGER DEBUG - saveCustomer called');
-        console.log('🔍 BUSINESS MANAGER DEBUG - Business ID:', businessId);
-        console.log('🔍 BUSINESS MANAGER DEBUG - Customer Data:', JSON.stringify(customerData, null, 2));
-        console.log('🔍 BUSINESS MANAGER DEBUG - WhatsApp ID:', whatsappId);
+        console.log('BUSINESS MANAGER DEBUG - saveCustomer called');
+        console.log('BUSINESS MANAGER DEBUG - Business ID:', businessId);
+        console.log('BUSINESS MANAGER DEBUG - Customer Data:', JSON.stringify(customerData, null, 2));
+        console.log('BUSINESS MANAGER DEBUG - WhatsApp ID:', whatsappId);
         
         try {
             // Validate inputs
-            if (!businessId) {
-                console.error('❌ BUSINESS MANAGER DEBUG - Missing businessId');
+            if (!businessId || businessId === 'undefined') {
+                console.error('BUSINESS MANAGER DEBUG - Missing or invalid businessId');
                 return { success: false, message: 'Missing business ID' };
             }
             
             if (!customerData || !customerData.accountName) {
-                console.error('❌ BUSINESS MANAGER DEBUG - Missing customer data or account name');
+                console.error('BUSINESS MANAGER DEBUG - Missing customer data or account name');
                 return { success: false, message: 'Missing customer data' };
             }
             
             if (!whatsappId) {
-                console.error('❌ BUSINESS MANAGER DEBUG - Missing whatsappId');
+                console.error('BUSINESS MANAGER DEBUG - Missing whatsappId');
                 return { success: false, message: 'Missing WhatsApp ID' };
             }
 
-            // Clean WhatsApp ID using the enhanced function
+            // Clean WhatsApp ID
             const cleanWhatsAppId = cleanPhoneNumberForMapping(whatsappId);
-            console.log('🔍 BUSINESS MANAGER DEBUG - Clean WhatsApp ID:', cleanWhatsAppId);
+            console.log('BUSINESS MANAGER DEBUG - Clean WhatsApp ID:', cleanWhatsAppId);
             
             // Check if business ID is default (might indicate mapping issue)
-            if (businessId === DEFAULT_BUSINESS) {
-                console.log('⚠️ BUSINESS MANAGER DEBUG - Using default business, might indicate bot mapping issue');
+            if (businessId === DEFAULT_BUSINESS.id) {
+                console.log('BUSINESS MANAGER DEBUG - Using default business, might indicate bot mapping issue');
             }
-            
-            // Try using existing Firebase service methods first
-            if (typeof firebaseService.saveCustomer === 'function') {
-                console.log('🔍 BUSINESS MANAGER DEBUG - Using firebaseService.saveCustomer...');
-                
-                try {
-                    const success = await firebaseService.saveCustomer(cleanWhatsAppId, businessId, {
-                        ...customerData,
-                        whatsappId: cleanWhatsAppId,
-                        createdAt: new Date().toISOString(),
-                        isActive: true,
-                        score: 0,
-                        registrationMethod: 'whatsapp_bot'
-                    });
-                    
-                    if (success) {
-                        console.log('✅ BUSINESS MANAGER DEBUG - Customer saved via firebaseService');
-                        return { 
-                            success: true, 
-                            accountName: customerData.accountName,
-                            businessId: businessId
-                        };
-                    } else {
-                        console.log('❌ BUSINESS MANAGER DEBUG - firebaseService.saveCustomer returned false');
-                        return { success: false, message: 'Failed to save customer via Firebase service' };
-                    }
-                } catch (firebaseError) {
-                    console.error('❌ BUSINESS MANAGER DEBUG - Error with firebaseService.saveCustomer:', firebaseError);
-                    // Fall through to direct Firebase approach
-                }
-            }
-            
-            // Fallback: Direct Firebase approach
-            console.log('🔍 BUSINESS MANAGER DEBUG - Using direct Firebase approach...');
             
             // Import Firebase Admin directly
             const admin = require('firebase-admin');
             const db = admin.firestore();
             
-            // Check if account name already exists for this business
-            console.log('🔍 BUSINESS MANAGER DEBUG - Checking for existing account name...');
-            const existingCustomer = await db.collection('customers')
-                .where('businessId', '==', businessId)
+            // Verify the vendor document exists before proceeding
+            console.log('BUSINESS MANAGER DEBUG - Verifying vendor document exists...');
+            const vendorDoc = await db.collection('vendors').doc(businessId).get();
+            
+            if (!vendorDoc.exists) {
+                console.error('BUSINESS MANAGER DEBUG - Vendor document does not exist:', businessId);
+                return { success: false, message: 'Vendor not found. Please contact support.' };
+            }
+            
+            console.log('BUSINESS MANAGER DEBUG - Vendor document exists and verified');
+            
+            // Check if account name already exists in the vendor subcollection
+            console.log('BUSINESS MANAGER DEBUG - Checking for existing account name in vendor subcollection...');
+            const existingCustomer = await db.collection('vendors')
+                .doc(businessId)
+                .collection('customers')
                 .where('accountName', '==', customerData.accountName)
                 .get();
                 
-            console.log('🔍 BUSINESS MANAGER DEBUG - Existing customer query result empty:', existingCustomer.empty);
-            console.log('🔍 BUSINESS MANAGER DEBUG - Existing customer query size:', existingCustomer.size);
+            console.log('BUSINESS MANAGER DEBUG - Existing customer query result empty:', existingCustomer.empty);
+            console.log('BUSINESS MANAGER DEBUG - Existing customer query size:', existingCustomer.size);
             
             if (!existingCustomer.empty) {
-                console.log('❌ BUSINESS MANAGER DEBUG - Account name already exists for this business');
-                return { success: false, message: 'Account name already exists for this business' };
+                console.log('BUSINESS MANAGER DEBUG - Account name already exists for this vendor');
+                return { success: false, message: 'Account name already exists for this vendor' };
             }
             
-            // Check if WhatsApp ID already has an account for this business
-            console.log('🔍 BUSINESS MANAGER DEBUG - Checking for existing WhatsApp ID...');
-            const existingWhatsAppCustomer = await db.collection('customers')
-                .where('businessId', '==', businessId)
+            // Check if WhatsApp ID already has an account in the vendor subcollection
+            console.log('BUSINESS MANAGER DEBUG - Checking for existing WhatsApp ID in vendor subcollection...');
+            const existingWhatsAppCustomer = await db.collection('vendors')
+                .doc(businessId)
+                .collection('customers')
                 .where('whatsappId', '==', cleanWhatsAppId)
                 .get();
                 
             if (!existingWhatsAppCustomer.empty) {
-                console.log('❌ BUSINESS MANAGER DEBUG - WhatsApp ID already has an account for this business');
-                return { success: false, message: 'This WhatsApp number already has an account for this business' };
+                console.log('BUSINESS MANAGER DEBUG - WhatsApp ID already has an account for this vendor');
+                return { success: false, message: 'This WhatsApp number already has an account for this vendor' };
             }
             
-            // Create customer document
+            // Create customer document in the vendor subcollection
             const customerDoc = {
-                businessId: businessId,
+                vendorId: businessId,
                 whatsappId: cleanWhatsAppId,
                 name: customerData.name,
                 email: customerData.email,
@@ -451,38 +377,41 @@ class BusinessManager {
                 isActive: true,
                 totalOrders: 0,
                 totalSpent: 0,
-                registrationMethod: 'whatsapp_bot_direct'
+                registrationMethod: 'whatsapp_bot_scalable'
             };
             
-            console.log('🔍 BUSINESS MANAGER DEBUG - Customer document to save:', JSON.stringify(customerDoc, null, 2));
+            console.log('BUSINESS MANAGER DEBUG - Customer document to save:', JSON.stringify(customerDoc, null, 2));
             
-            // Save to Firestore
-            console.log('🔍 BUSINESS MANAGER DEBUG - Adding document to customers collection...');
-            const docRef = await db.collection('customers').add(customerDoc);
-            console.log('✅ BUSINESS MANAGER DEBUG - Customer saved with ID:', docRef.id);
+            // Save to the vendor subcollection
+            const vendorCustomersRef = db.collection('vendors').doc(businessId).collection('customers');
+            console.log('BUSINESS MANAGER DEBUG - Saving to vendor subcollection path: vendors/' + businessId + '/customers');
+            
+            const docRef = await vendorCustomersRef.add(customerDoc);
+            console.log('BUSINESS MANAGER DEBUG - Customer saved with ID:', docRef.id);
+            console.log('BUSINESS MANAGER DEBUG - Full path: vendors/' + businessId + '/customers/' + docRef.id);
             
             // Verify the document was created
             const savedDoc = await docRef.get();
             if (savedDoc.exists) {
-                console.log('✅ BUSINESS MANAGER DEBUG - Document verification successful');
-                console.log('✅ BUSINESS MANAGER DEBUG - Saved document data:', savedDoc.data());
+                console.log('BUSINESS MANAGER DEBUG - Document verification successful in vendor subcollection');
+                console.log('BUSINESS MANAGER DEBUG - Saved document data:', savedDoc.data());
             } else {
-                console.error('❌ BUSINESS MANAGER DEBUG - Document was not created properly');
+                console.error('BUSINESS MANAGER DEBUG - Document was not created properly in vendor subcollection');
             }
             
             return { 
                 success: true, 
                 accountName: customerData.accountName,
                 customerId: docRef.id,
-                businessId: businessId
+                vendorId: businessId,
+                documentPath: `vendors/${businessId}/customers/${docRef.id}`
             };
             
         } catch (error) {
-            console.error('❌ BUSINESS MANAGER DEBUG - Database error occurred');
-            console.error('❌ BUSINESS MANAGER DEBUG - Error name:', error.name);
-            console.error('❌ BUSINESS MANAGER DEBUG - Error message:', error.message);
-            console.error('❌ BUSINESS MANAGER DEBUG - Error code:', error.code);
-            console.error('❌ BUSINESS MANAGER DEBUG - Error stack:', error.stack);
+            console.error('BUSINESS MANAGER DEBUG - Database error occurred');
+            console.error('BUSINESS MANAGER DEBUG - Error name:', error.name);
+            console.error('BUSINESS MANAGER DEBUG - Error message:', error.message);
+            console.error('BUSINESS MANAGER DEBUG - Error code:', error.code);
             
             // Handle specific Firebase errors
             if (error.code === 'permission-denied') {
@@ -495,47 +424,46 @@ class BusinessManager {
         }
     }
 
-    // ENHANCED: Get existing customer with business-specific lookup
+    // Enhanced: Get existing customer from vendor subcollection
     async getExistingCustomer(businessId, whatsappId) {
-        console.log('🔍 BUSINESS MANAGER DEBUG - getExistingCustomer called');
-        console.log('🔍 BUSINESS MANAGER DEBUG - Business ID:', businessId);
-        console.log('🔍 BUSINESS MANAGER DEBUG - WhatsApp ID:', whatsappId);
+        console.log('BUSINESS MANAGER DEBUG - getExistingCustomer called');
+        console.log('BUSINESS MANAGER DEBUG - Business ID:', businessId);
+        console.log('BUSINESS MANAGER DEBUG - WhatsApp ID:', whatsappId);
         
         try {
-            // Clean the userId using the enhanced function
-            const cleanUserId = cleanPhoneNumberForMapping(whatsappId);
-            console.log('🔍 BUSINESS MANAGER DEBUG - Clean User ID:', cleanUserId);
-            
-            // Try using existing Firebase service method first
-            if (typeof firebaseService.getCustomer === 'function') {
-                const customer = await firebaseService.getCustomer(cleanUserId, businessId);
-                if (customer) {
-                    console.log('✅ BUSINESS MANAGER DEBUG - Customer found via firebaseService');
-                    return customer;
-                }
+            // Handle undefined businessId
+            if (!businessId || businessId === 'undefined') {
+                console.log('BUSINESS MANAGER DEBUG - Invalid business ID, cannot query customers');
+                return null;
             }
             
-            // Fallback: Direct Firebase query
+            // Clean the userId
+            const cleanUserId = cleanPhoneNumberForMapping(whatsappId);
+            console.log('BUSINESS MANAGER DEBUG - Clean User ID:', cleanUserId);
+            
+            // Query the vendor subcollection
             const admin = require('firebase-admin');
             const db = admin.firestore();
             
-            const customerQuery = await db.collection('customers')
-                .where('businessId', '==', businessId)
+            console.log('BUSINESS MANAGER DEBUG - Querying vendor subcollection: vendors/' + businessId + '/customers');
+            const customerQuery = await db.collection('vendors')
+                .doc(businessId)
+                .collection('customers')
                 .where('whatsappId', '==', cleanUserId)
                 .where('isActive', '==', true)
                 .get();
                 
-            console.log('🔍 BUSINESS MANAGER DEBUG - Customer query size:', customerQuery.size);
+            console.log('BUSINESS MANAGER DEBUG - Customer query size:', customerQuery.size);
             
             if (customerQuery.empty) {
-                console.log('👤 No existing customer found for business:', businessId, 'WhatsApp:', cleanUserId);
+                console.log('No existing customer found in vendor subcollection for:', businessId, 'WhatsApp:', cleanUserId);
                 return null;
             }
             
             const customerDoc = customerQuery.docs[0];
             const customerData = customerDoc.data();
             
-            console.log('✅ BUSINESS MANAGER DEBUG - Existing customer found:', customerData.accountName);
+            console.log('BUSINESS MANAGER DEBUG - Existing customer found in vendor subcollection:', customerData.accountName);
             
             return {
                 id: customerData.accountName,
@@ -546,48 +474,38 @@ class BusinessManager {
                 score: customerData.score || 0,
                 totalOrders: customerData.totalOrders || 0,
                 totalSpent: customerData.totalSpent || 0,
-                businessId: customerData.businessId
+                vendorId: customerData.vendorId || businessId,
+                documentId: customerDoc.id,
+                documentPath: `vendors/${businessId}/customers/${customerDoc.id}`
             };
             
         } catch (error) {
-            console.error('❌ BUSINESS MANAGER DEBUG - Error getting existing customer:', error);
-            console.log('👤 No existing customer found for business:', businessId, 'WhatsApp:', whatsappId);
+            console.error('BUSINESS MANAGER DEBUG - Error getting existing customer from vendor subcollection:', error);
+            console.log('No existing customer found for vendor:', businessId, 'WhatsApp:', whatsappId);
             return null;
         }
     }
 
-    // ORDER MANAGEMENT METHODS
+    // ORDER MANAGEMENT METHODS - Save orders in vendor subcollection
     async saveOrder(businessId, sender, order, messageId) {
-        console.log('🔍 BUSINESS MANAGER DEBUG - saveOrder called');
-        console.log('🔍 BUSINESS MANAGER DEBUG - Business ID:', businessId);
-        console.log('🔍 BUSINESS MANAGER DEBUG - Sender:', sender);
-        console.log('🔍 BUSINESS MANAGER DEBUG - Message ID:', messageId);
+        console.log('BUSINESS MANAGER DEBUG - saveOrder called');
+        console.log('BUSINESS MANAGER DEBUG - Business ID:', businessId);
+        console.log('BUSINESS MANAGER DEBUG - Sender:', sender);
+        console.log('BUSINESS MANAGER DEBUG - Message ID:', messageId);
         
         try {
-            // Try using existing Firebase service method first
-            if (typeof firebaseService.saveOrder === 'function') {
-                console.log('🔍 BUSINESS MANAGER DEBUG - Using firebaseService.saveOrder...');
-                const orderId = await firebaseService.saveOrder(businessId, {
-                    ...order,
-                    customerName: sender,
-                    messageId: messageId,
-                    status: 'pending',
-                    createdAt: new Date().toISOString(),
-                    businessId: businessId
-                });
-                
-                if (orderId) {
-                    console.log('✅ BUSINESS MANAGER DEBUG - Order saved via firebaseService with ID:', orderId);
-                    return true;
-                }
+            // Handle undefined businessId
+            if (!businessId || businessId === 'undefined') {
+                console.log('BUSINESS MANAGER DEBUG - Invalid business ID, cannot save order');
+                return false;
             }
             
-            // Fallback: Direct Firebase approach
+            // Save order in vendor subcollection
             const admin = require('firebase-admin');
             const db = admin.firestore();
             
             const orderDoc = {
-                businessId: businessId,
+                vendorId: businessId,
                 customerName: sender,
                 customerInfo: order.customerInfo,
                 items: order.items,
@@ -597,30 +515,44 @@ class BusinessManager {
                 messageId: messageId,
                 status: 'pending',
                 createdAt: new Date().toISOString(),
-                orderSource: 'whatsapp_bot'
+                orderSource: 'whatsapp_bot_scalable'
             };
             
-            const docRef = await db.collection('orders').add(orderDoc);
-            console.log('✅ BUSINESS MANAGER DEBUG - Order saved with ID:', docRef.id);
+            // Save to vendor subcollection
+            const vendorOrdersRef = db.collection('vendors').doc(businessId).collection('orders');
+            console.log('BUSINESS MANAGER DEBUG - Saving order to vendor subcollection: vendors/' + businessId + '/orders');
+            
+            const docRef = await vendorOrdersRef.add(orderDoc);
+            console.log('BUSINESS MANAGER DEBUG - Order saved with ID:', docRef.id);
+            console.log('BUSINESS MANAGER DEBUG - Full path: vendors/' + businessId + '/orders/' + docRef.id);
             
             return true;
         } catch (error) {
-            console.error('❌ BUSINESS MANAGER DEBUG - Error saving order:', error);
+            console.error('BUSINESS MANAGER DEBUG - Error saving order to vendor subcollection:', error);
             return false;
         }
     }
 
+    // Increment customer score in vendor subcollection
     async incrementCustomerScore(businessId, accountName) {
-        console.log('🔍 BUSINESS MANAGER DEBUG - incrementCustomerScore called');
-        console.log('🔍 BUSINESS MANAGER DEBUG - Business ID:', businessId);
-        console.log('🔍 BUSINESS MANAGER DEBUG - Account Name:', accountName);
+        console.log('BUSINESS MANAGER DEBUG - incrementCustomerScore called');
+        console.log('BUSINESS MANAGER DEBUG - Business ID:', businessId);
+        console.log('BUSINESS MANAGER DEBUG - Account Name:', accountName);
         
         try {
+            // Handle undefined businessId
+            if (!businessId || businessId === 'undefined') {
+                console.log('BUSINESS MANAGER DEBUG - Invalid business ID, cannot increment score');
+                return;
+            }
+            
             const admin = require('firebase-admin');
             const db = admin.firestore();
             
-            const customerQuery = await db.collection('customers')
-                .where('businessId', '==', businessId)
+            // Query vendor subcollection
+            const customerQuery = await db.collection('vendors')
+                .doc(businessId)
+                .collection('customers')
                 .where('accountName', '==', accountName)
                 .get();
                 
@@ -633,89 +565,130 @@ class BusinessManager {
                     updatedAt: new Date().toISOString()
                 });
                 
-                console.log('✅ BUSINESS MANAGER DEBUG - Customer score incremented from', currentScore, 'to', currentScore + 1);
+                console.log('BUSINESS MANAGER DEBUG - Customer score incremented from', currentScore, 'to', currentScore + 1);
+                console.log('BUSINESS MANAGER DEBUG - Updated in vendor subcollection: vendors/' + businessId + '/customers/' + customerDoc.id);
             }
         } catch (error) {
-            console.error('❌ BUSINESS MANAGER DEBUG - Error incrementing score:', error);
+            console.error('BUSINESS MANAGER DEBUG - Error incrementing score in vendor subcollection:', error);
         }
     }
 
-    // LEGACY METHODS - keeping for backward compatibility
+    // LEGACY METHODS - Updated to use vendor subcollections but keep interface
     async createCustomer(customerData, businessId) {
         try {
             const cleanUserId = cleanPhoneNumberForMapping(customerData.phone || customerData.userId);
-            const success = await firebaseService.saveCustomer(cleanUserId, businessId, customerData);
-            if (success) {
+            const result = await this.saveCustomer(businessId, customerData, cleanUserId);
+            if (result.success) {
                 return { ...customerData, phone: cleanUserId };
             }
-            throw new Error('Failed to save customer');
+            throw new Error(result.message || 'Failed to save customer');
         } catch (error) {
-            console.error(`❌ Failed to create customer for business ${businessId}:`, error);
+            console.error(`Failed to create customer for business ${businessId}:`, error);
             throw error;
         }
     }
 
     async updateCustomer(userId, customerData, businessId) {
         try {
+            const admin = require('firebase-admin');
+            const db = admin.firestore();
             const cleanUserId = cleanPhoneNumberForMapping(userId);
-            const success = await firebaseService.saveCustomer(cleanUserId, businessId, customerData);
-            if (success) {
+            
+            const customerQuery = await db.collection('vendors')
+                .doc(businessId)
+                .collection('customers')
+                .where('whatsappId', '==', cleanUserId)
+                .get();
+                
+            if (!customerQuery.empty) {
+                const customerDoc = customerQuery.docs[0];
+                await customerDoc.ref.update({
+                    ...customerData,
+                    updatedAt: new Date().toISOString()
+                });
                 return { ...customerData, phone: cleanUserId };
             }
-            throw new Error('Failed to update customer');
+            throw new Error('Customer not found in vendor subcollection');
         } catch (error) {
-            console.error(`❌ Failed to update customer ${userId} for business ${businessId}:`, error);
+            console.error(`Failed to update customer ${userId} for business ${businessId}:`, error);
             throw error;
         }
     }
 
     async getCustomerOrders(userId, businessId, limit = 10) {
         try {
+            const admin = require('firebase-admin');
+            const db = admin.firestore();
             const cleanUserId = cleanPhoneNumberForMapping(userId);
-            return await firebaseService.getOrderHistory(cleanUserId, businessId, limit);
+            
+            const ordersQuery = await db.collection('vendors')
+                .doc(businessId)
+                .collection('orders')
+                .where('customerInfo.whatsappId', '==', cleanUserId)
+                .orderBy('createdAt', 'desc')
+                .limit(limit)
+                .get();
+                
+            const orders = [];
+            ordersQuery.forEach(doc => {
+                orders.push({ id: doc.id, ...doc.data() });
+            });
+            
+            return orders;
         } catch (error) {
-            console.error(`❌ Failed to get orders for customer ${userId} in business ${businessId}:`, error);
+            console.error(`Failed to get orders for customer ${userId} in business ${businessId}:`, error);
             return [];
         }
     }
 
     async createOrder(orderData, businessId) {
         try {
-            const orderId = await firebaseService.saveOrder(businessId, orderData);
-            if (orderId) {
-                return { ...orderData, id: orderId };
-            }
-            throw new Error('Failed to save order');
+            const admin = require('firebase-admin');
+            const db = admin.firestore();
+            
+            const orderDoc = {
+                ...orderData,
+                vendorId: businessId,
+                createdAt: new Date().toISOString(),
+                status: orderData.status || 'pending'
+            };
+            
+            const docRef = await db.collection('vendors').doc(businessId).collection('orders').add(orderDoc);
+            return { ...orderData, id: docRef.id };
         } catch (error) {
-            console.error(`❌ Failed to create order for business ${businessId}:`, error);
+            console.error(`Failed to create order for business ${businessId}:`, error);
             throw error;
         }
     }
 
     async getOrder(orderId, businessId) {
         try {
-            if (typeof firebaseService.getOrder === 'function') {
-                return await firebaseService.getOrder(orderId, businessId);
-            } else {
-                console.log('⚠️ getOrder method not implemented in Firebase service');
-                return null;
+            const admin = require('firebase-admin');
+            const db = admin.firestore();
+            
+            const orderDoc = await db.collection('vendors').doc(businessId).collection('orders').doc(orderId).get();
+            if (orderDoc.exists) {
+                return { id: orderDoc.id, ...orderDoc.data() };
             }
+            return null;
         } catch (error) {
-            console.error(`❌ Failed to get order ${orderId} for business ${businessId}:`, error);
+            console.error(`Failed to get order ${orderId} for business ${businessId}:`, error);
             return null;
         }
     }
 
     async updateOrder(orderId, orderData, businessId) {
         try {
-            if (typeof firebaseService.updateOrder === 'function') {
-                return await firebaseService.updateOrder(orderId, orderData, businessId);
-            } else {
-                console.log('⚠️ updateOrder method not implemented in Firebase service');
-                return false;
-            }
+            const admin = require('firebase-admin');
+            const db = admin.firestore();
+            
+            await db.collection('vendors').doc(businessId).collection('orders').doc(orderId).update({
+                ...orderData,
+                updatedAt: new Date().toISOString()
+            });
+            return true;
         } catch (error) {
-            console.error(`❌ Failed to update order ${orderId} for business ${businessId}:`, error);
+            console.error(`Failed to update order ${orderId} for business ${businessId}:`, error);
             throw error;
         }
     }
@@ -736,68 +709,136 @@ class BusinessManager {
         return await this.getBusinessData(businessId);
     }
 
-    // ENHANCED: Statistics with dynamic mapping info
+    // UPDATED: Statistics with scalable mapping info
     getBusinessStats() {
-        const firebaseStats = firebaseService.getCacheStats();
+        const firebaseStats = typeof firebaseService.getCacheStats === 'function' 
+            ? firebaseService.getCacheStats() 
+            : { note: 'Stats not available' };
         
-        const stats = {
+        return {
             totalBusinesses: this.phoneToBusinessMap.size,
             botMappings: this.botToBusinessMap.size,
             cachedBusinessData: this.businessData.size,
             mappings: Array.from(this.phoneToBusinessMap.entries()),
-            botMappings: Array.from(this.botToBusinessMap.entries()),
+            botMappingsList: Array.from(this.botToBusinessMap.entries()),
             isInitialized: this.isInitialized,
-            dynamicMappingEnabled: this.dynamicMappingEnabled,
+            scalableMappingEnabled: this.scalableMappingEnabled,
             firebaseVendorCache: firebaseStats
         };
-        return stats;
     }
 
-    // List all mapped bots with enhanced info
+    // List all mapped bots
     listMappedBots() {
-        console.log('🤖 Currently mapped bots:');
+        console.log('Currently mapped bots:');
         if (this.botToBusinessMap.size === 0) {
             console.log('   No bots mapped yet');
-            console.log('   💡 Bots will be auto-mapped when they connect using dynamic discovery');
+            console.log('   Bots will be auto-mapped when they connect using scalable discovery');
         } else {
             this.botToBusinessMap.forEach((businessId, botNumber) => {
-                console.log(`   📱 ${botNumber} → 🏢 ${businessId}`);
+                console.log(`   ${botNumber} → ${businessId}`);
             });
         }
         
-        const firebaseStats = firebaseService.getCacheStats();
-        console.log(`📊 Firebase vendor cache: ${firebaseStats.vendorsInCache} vendors, ${firebaseStats.phoneMappingsInCache} phone mappings`);
+        if (typeof firebaseService.getCacheStats === 'function') {
+            const firebaseStats = firebaseService.getCacheStats();
+            console.log(`Firebase vendor cache: ${firebaseStats.vendorsInCache} vendors, ${firebaseStats.phoneMappingsInCache} phone mappings`);
+        }
     }
 
-    // NEW: Enable/disable dynamic mapping
-    setDynamicMapping(enabled) {
-        this.dynamicMappingEnabled = enabled;
-        console.log(`🔄 Dynamic vendor mapping ${enabled ? 'ENABLED' : 'DISABLED'}`);
+    // Enable/disable scalable mapping
+    setScalableMapping(enabled) {
+        this.scalableMappingEnabled = enabled;
+        console.log(`Scalable vendor mapping ${enabled ? 'ENABLED' : 'DISABLED'}`);
     }
 
-    // NEW: Get cache and mapping status
+    // Get cache and mapping status
     getStatus() {
         return {
             isInitialized: this.isInitialized,
-            dynamicMappingEnabled: this.dynamicMappingEnabled,
+            scalableMappingEnabled: this.scalableMappingEnabled,
             botMappings: this.botToBusinessMap.size,
             customerMappings: this.phoneToBusinessMap.size,
             cachedBusinessData: this.businessData.size,
-            firebaseCache: firebaseService.getCacheStats()
+            firebaseCache: typeof firebaseService.getCacheStats === 'function' 
+                ? firebaseService.getCacheStats() 
+                : { note: 'Stats not available' }
         };
     }
 
+    // Debug vendor discovery
+    async debugVendorDiscovery() {
+        console.log('BUSINESS MANAGER DEBUG: Vendor Discovery Status');
+        console.log('='.repeat(50));
+        
+        const stats = this.getStatus();
+        console.log('Business Manager Stats:', stats);
+        
+        // Call Firebase service debug if available
+        if (typeof firebaseService.debugVendorDiscovery === 'function') {
+            await firebaseService.debugVendorDiscovery();
+        } else {
+            console.log('Firebase service debug not available');
+        }
+    }
+
+    // Create manual mapping
+    async createManualMapping(botPhoneNumber, vendorId) {
+        try {
+            console.log(`MANUAL MAPPING - Creating mapping: ${botPhoneNumber} → ${vendorId}`);
+            
+            const cleanBotNumber = cleanPhoneNumberForMapping(botPhoneNumber);
+            
+            // Verify vendor exists
+            const vendorProfile = await firebaseService.getBusinessData(vendorId);
+            if (!vendorProfile || vendorProfile.businessName === 'Business') {
+                console.log(`Vendor ${vendorId} not found or has default profile`);
+                return false;
+            }
+            
+            // Create mapping in Firebase
+            const admin = require('firebase-admin');
+            const db = admin.firestore();
+            
+            const mappingData = {
+                phoneNumber: cleanBotNumber,
+                businessId: vendorId,
+                isBotNumber: true,
+                type: 'bot',
+                createdAt: new Date().toISOString(),
+                isActive: true,
+                autoCreated: false,
+                description: 'Manually created WhatsApp Bot mapping',
+                manuallyCreated: true,
+                createdBy: 'BusinessManager'
+            };
+            
+            const mappingRef = db.collection('whatsapp_business_mapping').doc(cleanBotNumber);
+            await mappingRef.set(mappingData);
+            
+            // Update local cache
+            this.botToBusinessMap.set(cleanBotNumber, vendorId);
+            
+            console.log(`MANUAL MAPPING SUCCESS - Created mapping: ${cleanBotNumber} → ${vendorId}`);
+            return vendorId;
+            
+        } catch (error) {
+            console.error('Error creating manual mapping:', error);
+            return false;
+        }
+    }
+
     async shutdown() {
-        console.log('🏢 Business Manager shutting down...');
+        console.log('Business Manager shutting down...');
         this.clearCache();
         this.phoneToBusinessMap.clear();
         this.botToBusinessMap.clear();
         this.isInitialized = false;
-        console.log('✅ Business Manager shutdown complete');
+        console.log('Business Manager shutdown complete');
     }
 
     isHealthy() {
-        return this.isInitialized && firebaseService.isServiceReady();
+        return this.isInitialized && 
+               (typeof firebaseService.isServiceReady === 'function' ? firebaseService.isServiceReady() : true);
     }
 }
 
