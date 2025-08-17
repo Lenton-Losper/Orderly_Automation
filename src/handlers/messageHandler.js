@@ -27,17 +27,73 @@ class MessageHandler {
         return remoteJid.endsWith('@g.us');
     }
 
+    // ENHANCED: Get bot phone number with comprehensive debugging
+    getBotPhoneNumber() {
+        console.log('🔍 BOT PHONE DETECTION - Starting bot phone number detection...');
+        
+        let botPhoneNumber = null;
+        
+        // Method 1: Try getBotPhoneNumber function
+        if (this.whatsappService && typeof this.whatsappService.getBotPhoneNumber === 'function') {
+            try {
+                botPhoneNumber = this.whatsappService.getBotPhoneNumber();
+                console.log('🔍 BOT PHONE DETECTION - Method 1 (getBotPhoneNumber):', botPhoneNumber);
+            } catch (error) {
+                console.log('🔍 BOT PHONE DETECTION - Method 1 failed:', error.message);
+            }
+        } else {
+            console.log('🔍 BOT PHONE DETECTION - Method 1 not available (getBotPhoneNumber function missing)');
+        }
+        
+        // Method 2: Try whatsappService.user.id
+        if (!botPhoneNumber && this.whatsappService && this.whatsappService.user && this.whatsappService.user.id) {
+            botPhoneNumber = this.whatsappService.user.id;
+            console.log('🔍 BOT PHONE DETECTION - Method 2 (user.id):', botPhoneNumber);
+        } else if (!botPhoneNumber) {
+            console.log('🔍 BOT PHONE DETECTION - Method 2 not available (user.id missing)');
+        }
+        
+        // Method 3: Try whatsappService.info.wid
+        if (!botPhoneNumber && this.whatsappService && this.whatsappService.info && this.whatsappService.info.wid) {
+            botPhoneNumber = this.whatsappService.info.wid;
+            console.log('🔍 BOT PHONE DETECTION - Method 3 (info.wid):', botPhoneNumber);
+        } else if (!botPhoneNumber) {
+            console.log('🔍 BOT PHONE DETECTION - Method 3 not available (info.wid missing)');
+        }
+        
+        // Method 4: Try whatsappService.authState
+        if (!botPhoneNumber && this.whatsappService && this.whatsappService.authState && this.whatsappService.authState.creds && this.whatsappService.authState.creds.me) {
+            botPhoneNumber = this.whatsappService.authState.creds.me.id;
+            console.log('🔍 BOT PHONE DETECTION - Method 4 (authState.creds.me.id):', botPhoneNumber);
+        } else if (!botPhoneNumber) {
+            console.log('🔍 BOT PHONE DETECTION - Method 4 not available (authState.creds.me missing)');
+        }
+        
+        // Debug available properties
+        if (!botPhoneNumber) {
+            console.log('🔍 BOT PHONE DETECTION - WhatsApp service properties:');
+            console.log('🔍 BOT PHONE DETECTION - whatsappService keys:', this.whatsappService ? Object.keys(this.whatsappService) : 'null');
+            console.log('🔍 BOT PHONE DETECTION - user object:', this.whatsappService ? this.whatsappService.user : 'undefined');
+            console.log('🔍 BOT PHONE DETECTION - info object:', this.whatsappService ? this.whatsappService.info : 'undefined');
+        }
+        
+        console.log('🔍 BOT PHONE DETECTION - Final bot phone number:', botPhoneNumber);
+        console.log('🔍 BOT PHONE DETECTION - Bot phone type:', typeof botPhoneNumber);
+        
+        return botPhoneNumber;
+    }
+
     // Get or create session with persistence
     getOrCreateSession(userId, businessId, businessData) {
         const sessionKey = `${userId}_${businessId}`;
-        console.log('🔍 SESSION DEBUG - Looking for session:', sessionKey);
+        console.log('SESSION DEBUG - Looking for session:', sessionKey);
         
         let session = this.sessions.get(sessionKey);
-        console.log('🔍 SESSION DEBUG - Existing session found:', !!session);
-        console.log('🔍 SESSION DEBUG - Session step before:', session?.step);
+        console.log('SESSION DEBUG - Existing session found:', !!session);
+        console.log('SESSION DEBUG - Session step before:', session?.step);
         
         if (!session) {
-            console.log('🔍 SESSION DEBUG - Creating new session');
+            console.log('SESSION DEBUG - Creating new session');
             session = { 
                 userId, 
                 businessId, 
@@ -52,9 +108,9 @@ class MessageHandler {
                 
                 // Required methods with debug logging
                 setStep: function(step) { 
-                    console.log('🔍 SESSION DEBUG - Setting step from', this.step, 'to', step);
+                    console.log('SESSION DEBUG - Setting step from', this.step, 'to', step);
                     this.step = step; 
-                    console.log('🔍 SESSION DEBUG - Step now set to:', this.step);
+                    console.log('SESSION DEBUG - Step now set to:', this.step);
                 },
                 getData: function(key) { return this.data[key]; },
                 setData: function(key, value) { this.data[key] = value; },
@@ -74,12 +130,12 @@ class MessageHandler {
                 
                 // Fixed Cart methods
                 addToCart: function(productKey) {
-                    console.log('🔍 ADD_TO_CART DEBUG - Product key:', productKey);
-                    console.log('🔍 ADD_TO_CART DEBUG - Available products:', Object.keys(this.businessData.products || {}));
+                    console.log('ADD_TO_CART DEBUG - Product key:', productKey);
+                    console.log('ADD_TO_CART DEBUG - Available products:', Object.keys(this.businessData.products || {}));
                     
                     if (this.businessData.products[productKey]) {
                         const product = this.businessData.products[productKey];
-                        console.log('🔍 ADD_TO_CART DEBUG - Found product:', product);
+                        console.log('ADD_TO_CART DEBUG - Found product:', product);
                         
                         // Create cart item with the structure that MessageGenerators expects
                         const cartItem = {
@@ -91,21 +147,21 @@ class MessageHandler {
                             productKey: productKey  // Keep reference to original product
                         };
                         
-                        console.log('🔍 ADD_TO_CART DEBUG - Created cart item:', cartItem);
+                        console.log('ADD_TO_CART DEBUG - Created cart item:', cartItem);
                         
                         this.cart.push(cartItem);
-                        console.log('🔍 ADD_TO_CART DEBUG - Cart after adding:', this.cart);
+                        console.log('ADD_TO_CART DEBUG - Cart after adding:', this.cart);
                         
                         return true;
                     } else {
-                        console.log('❌ ADD_TO_CART DEBUG - Product not found for key:', productKey);
-                        console.log('❌ ADD_TO_CART DEBUG - Available product keys:', Object.keys(this.businessData.products || {}));
+                        console.log('ADD_TO_CART DEBUG - Product not found for key:', productKey);
+                        console.log('ADD_TO_CART DEBUG - Available product keys:', Object.keys(this.businessData.products || {}));
                         return false;
                     }
                 },
                 
                 clearCart: function() { 
-                    console.log('🔍 CLEAR_CART DEBUG - Clearing cart');
+                    console.log('CLEAR_CART DEBUG - Clearing cart');
                     this.cart = []; 
                 },
                 
@@ -119,33 +175,33 @@ class MessageHandler {
                     if (discounts[code]) {
                         this.discountCode = code;
                         this.discountAmount = discounts[code];
-                        console.log(`🔍 DISCOUNT DEBUG - Applied ${code}: ${this.discountAmount * 100}%`);
+                        console.log(`DISCOUNT DEBUG - Applied ${code}: ${this.discountAmount * 100}%`);
                         return true;
                     }
-                    console.log(`❌ DISCOUNT DEBUG - Invalid code: ${code}`);
+                    console.log(`DISCOUNT DEBUG - Invalid code: ${code}`);
                     return false;
                 },
                 
                 removeDiscount: function() {
-                    console.log('🔍 DISCOUNT DEBUG - Removing discount');
+                    console.log('DISCOUNT DEBUG - Removing discount');
                     this.discountCode = null;
                     this.discountAmount = 0;
                 },
                 
                 // Fixed Total calculation
                 getTotal: function() {
-                    console.log('🔍 GET_TOTAL DEBUG - Calculating total for cart:', this.cart);
+                    console.log('GET_TOTAL DEBUG - Calculating total for cart:', this.cart);
                     
                     let subtotal = this.cart.reduce((sum, item) => {
                         const price = parseFloat(item.price) || 0;
                         const quantity = parseInt(item.quantity) || 1;
                         const itemTotal = price * quantity;
                         
-                        console.log(`🔍 GET_TOTAL DEBUG - Item: ${item.name}, Price: ${price}, Qty: ${quantity}, Total: ${itemTotal}`);
+                        console.log(`GET_TOTAL DEBUG - Item: ${item.name}, Price: ${price}, Qty: ${quantity}, Total: ${itemTotal}`);
                         return sum + itemTotal;
                     }, 0);
                     
-                    console.log('🔍 GET_TOTAL DEBUG - Subtotal:', subtotal);
+                    console.log('GET_TOTAL DEBUG - Subtotal:', subtotal);
                     
                     const tax = subtotal * 0.1; // 10% tax
                     const shipping = subtotal >= 50 ? 0 : 5; // Free shipping over N$50
@@ -154,16 +210,16 @@ class MessageHandler {
                     if (this.discountAmount > 0) {
                         const discountValue = total * this.discountAmount;
                         total = total - discountValue;
-                        console.log('🔍 GET_TOTAL DEBUG - Discount applied:', discountValue);
+                        console.log('GET_TOTAL DEBUG - Discount applied:', discountValue);
                     }
                     
-                    console.log('🔍 GET_TOTAL DEBUG - Final total:', total);
+                    console.log('GET_TOTAL DEBUG - Final total:', total);
                     return total;
                 },
                 
                 // Fixed Order generation
                 generateOrder: function() {
-                    console.log('🔍 GENERATE_ORDER DEBUG - Creating order from cart:', this.cart);
+                    console.log('GENERATE_ORDER DEBUG - Creating order from cart:', this.cart);
                     
                     return {
                         items: this.cart.map(item => ({
@@ -184,64 +240,107 @@ class MessageHandler {
             
             // Store the session
             this.sessions.set(sessionKey, session);
-            console.log(`✅ NEW Session created and stored: ${sessionKey}`);
+            console.log(`NEW Session created and stored: ${sessionKey}`);
         } else {
-            console.log(`✅ EXISTING Session retrieved: ${sessionKey}`);
-            console.log('🔍 SESSION DEBUG - Existing session step:', session.step);
+            console.log(`EXISTING Session retrieved: ${sessionKey}`);
+            console.log('SESSION DEBUG - Existing session step:', session.step);
         }
         
         // Ensure session has business data
         if (!session.businessData) {
             session.businessData = businessData;
-            console.log(`🔧 Added business data to session`);
+            console.log(`Added business data to session`);
         }
         
-        console.log('🔍 SESSION DEBUG - Final session step:', session.step);
+        console.log('SESSION DEBUG - Final session step:', session.step);
         return session;
     }
 
-    // Load products asynchronously from Firebase
-    async loadProductsAsync(businessId) {
+    // FIXED: Load products from vendor subcollection with comprehensive debugging
+    async loadProductsFromVendorSubcollection(businessId) {
         try {
-            console.log('🔍 Loading products asynchronously for business:', businessId);
+            console.log('PRODUCT DEBUG - Loading products from vendor subcollection for business:', businessId);
             
             // Import Firebase Admin
             const admin = require('firebase-admin');
             const db = admin.firestore();
             
+            console.log(`PRODUCT DEBUG - Querying path: vendors/${businessId}/products`);
+            
             // Load products from the vendors/{businessId}/products subcollection
             const productsRef = await db.collection('vendors')
                 .doc(businessId)
                 .collection('products')
-                .where('isAvailable', '==', true)
-                .get();
+                .get(); // Remove where clause temporarily for debugging
                 
+            console.log(`PRODUCT DEBUG - Query returned ${productsRef.size} documents`);
+            
+            if (productsRef.empty) {
+                console.log(`PRODUCT DEBUG - No products found in vendors/${businessId}/products`);
+                
+                // Debug: Check if vendor document exists
+                const vendorDoc = await db.collection('vendors').doc(businessId).get();
+                console.log(`PRODUCT DEBUG - Vendor document exists: ${vendorDoc.exists}`);
+                
+                if (vendorDoc.exists) {
+                    console.log(`PRODUCT DEBUG - Vendor data:`, vendorDoc.data());
+                } else {
+                    console.log(`PRODUCT DEBUG - Vendor document does not exist!`);
+                }
+                
+                return {};
+            }
+            
             const products = {};
+            console.log(`PRODUCT DEBUG - Processing ${productsRef.size} product documents:`);
+            
             productsRef.forEach(doc => {
                 const productData = doc.data();
-                products[doc.id] = {
+                console.log(`PRODUCT DEBUG - Processing product ${doc.id}:`, {
                     name: productData.name,
                     price: productData.price,
-                    description: productData.description || 'No description',
-                    category: productData.category || 'General',
-                    stock: productData.stock || 0,
-                    isAvailable: productData.isAvailable,
-                    image: productData.image || '🛍️'
-                };
+                    category: productData.category,
+                    isActive: productData.isActive,
+                    isAvailable: productData.isAvailable
+                });
+                
+                // Only include active/available products
+                if (productData.isActive !== false && productData.isAvailable !== false) {
+                    products[doc.id] = {
+                        name: productData.name,
+                        price: productData.price,
+                        description: productData.description || 'No description',
+                        category: productData.category || 'General',
+                        stock: productData.stock || 0,
+                        image: productData.image || '🛍️',
+                        isActive: productData.isActive,
+                        isAvailable: productData.isAvailable
+                    };
+                    console.log(`PRODUCT DEBUG - Added product to list: ${productData.name}`);
+                } else {
+                    console.log(`PRODUCT DEBUG - Skipped inactive product: ${productData.name}`);
+                }
             });
             
-            console.log('✅ Async loaded', Object.keys(products).length, 'products from Firebase');
+            console.log('PRODUCT DEBUG - Final product count:', Object.keys(products).length);
+            console.log('PRODUCT DEBUG - Product names:', Object.keys(products).map(key => products[key].name));
+            
             return products;
             
         } catch (error) {
-            console.error('❌ Error loading products async:', error);
+            console.error('PRODUCT DEBUG - Error loading products from vendor subcollection:', error);
+            console.error('PRODUCT DEBUG - Error details:', error.message);
+            console.error('PRODUCT DEBUG - Error stack:', error.stack);
             return {};
         }
     }
 
     // Helper method to normalize different business data structures
     async normalizeBusinessData(rawData, businessId) {
-        console.log('🔧 Normalizing business data structure...');
+        console.log('🔍 NORMALIZE DEBUG - Starting business data normalization...');
+        console.log('🔍 NORMALIZE DEBUG - Raw data type:', typeof rawData);
+        console.log('🔍 NORMALIZE DEBUG - Raw data keys:', rawData ? Object.keys(rawData) : 'null');
+        console.log('🔍 NORMALIZE DEBUG - Business ID:', businessId);
         
         // Handle different possible structures
         let profile = {};
@@ -251,16 +350,21 @@ class MessageHandler {
         // Extract profile information from various possible structures
         if (rawData.profile) {
             profile = rawData.profile;
+            console.log('🔍 NORMALIZE DEBUG - Using rawData.profile');
         } else if (rawData.businessProfile) {
             profile = rawData.businessProfile;
+            console.log('🔍 NORMALIZE DEBUG - Using rawData.businessProfile');
         } else if (rawData.vendor) {
             profile = rawData.vendor;
+            console.log('🔍 NORMALIZE DEBUG - Using rawData.vendor');
         } else if (rawData.business) {
             profile = rawData.business;
+            console.log('🔍 NORMALIZE DEBUG - Using rawData.business');
         } else {
             // Try to construct profile from top-level properties
+            console.log('🔍 NORMALIZE DEBUG - Constructing profile from top-level properties');
             profile = {
-                businessName: rawData.businessName || rawData.name || rawData.companyName || 'LLL Farm Bot',
+                businessName: rawData.businessName || rawData.name || rawData.companyName || 'LLL Farm',
                 contactInfo: rawData.contactInfo || rawData.contact || rawData.phone || 'Contact us for more information',
                 catalogUrl: rawData.catalogUrl || rawData.catalog || null,
                 description: rawData.description || rawData.about || null,
@@ -270,65 +374,79 @@ class MessageHandler {
             };
         }
         
+        console.log('🔍 NORMALIZE DEBUG - Profile extracted:', {
+            businessName: profile.businessName,
+            hasContactInfo: !!profile.contactInfo,
+            hasEmail: !!profile.email,
+            hasPhone: !!profile.phone
+        });
+        
         // Ensure required profile fields exist
         if (!profile.businessName) {
-            profile.businessName = 'LLL Farm Bot';
+            profile.businessName = 'LLL Farm';
+            console.log('🔍 NORMALIZE DEBUG - Set default business name');
         }
         if (!profile.contactInfo) {
             profile.contactInfo = 'Contact us for more information';
+            console.log('🔍 NORMALIZE DEBUG - Set default contact info');
         }
         
-        // Extract products information
+        // Extract products information with detailed debugging
+        console.log('🔍 NORMALIZE DEBUG - Starting product extraction...');
+        
         if (rawData.products) {
             products = rawData.products;
-            console.log('🔍 Found products in vendor profile:', Object.keys(products).length);
+            console.log('🔍 NORMALIZE DEBUG - Found products in rawData.products:', Object.keys(products).length);
+            console.log('🔍 NORMALIZE DEBUG - Product keys from rawData:', Object.keys(products));
         } else if (rawData.inventory) {
             products = rawData.inventory;
-            console.log('🔍 Found products in inventory:', Object.keys(products).length);
+            console.log('🔍 NORMALIZE DEBUG - Found products in rawData.inventory:', Object.keys(products).length);
         } else if (rawData.items) {
             products = rawData.items;
-            console.log('🔍 Found products in items:', Object.keys(products).length);
+            console.log('🔍 NORMALIZE DEBUG - Found products in rawData.items:', Object.keys(products).length);
         } else {
-            // LOAD PRODUCTS FROM FIREBASE
-            console.log('🔍 Products not found in vendor profile, loading from Firebase...');
+            // Load products from vendor subcollection with enhanced debugging
+            console.log('🔍 NORMALIZE DEBUG - No products in raw data, loading from vendor subcollection...');
+            console.log('🔍 NORMALIZE DEBUG - Loading products for business ID:', businessId);
+            
             try {
-                const admin = require('firebase-admin');
-                const db = admin.firestore();
+                products = await this.loadProductsFromVendorSubcollection(businessId);
+                console.log('🔍 NORMALIZE DEBUG - Loaded products from subcollection:', Object.keys(products).length);
+                console.log('🔍 NORMALIZE DEBUG - Product keys from subcollection:', Object.keys(products));
+                console.log('🔍 NORMALIZE DEBUG - Product names from subcollection:', Object.keys(products).map(key => products[key]?.name));
                 
-                const productsRef = await db.collection('vendors')
-                    .doc(businessId)
-                    .collection('products')
-                    .where('isAvailable', '==', true)
-                    .get();
-                    
-                productsRef.forEach(doc => {
-                    const productData = doc.data();
-                    products[doc.id] = {
-                        name: productData.name,
-                        price: productData.price,
-                        description: productData.description || 'No description',
-                        category: productData.category || 'General',
-                        stock: productData.stock || 0,
-                        image: productData.image || '🛍️'
-                    };
-                });
-                
-                console.log('✅ Loaded', Object.keys(products).length, 'products from Firebase');
+                if (Object.keys(products).length === 0) {
+                    console.log('❌ NORMALIZE DEBUG - No products loaded from subcollection!');
+                    console.log('💡 NORMALIZE DEBUG - This is likely the root cause of the issue');
+                } else {
+                    console.log('✅ NORMALIZE DEBUG - Successfully loaded products from subcollection');
+                }
             } catch (error) {
-                console.error('❌ Error loading products:', error);
+                console.error('❌ NORMALIZE DEBUG - Error loading products from subcollection:', error);
+                products = {};
             }
         }
         
-        // Extract product order
+        // Extract product order with debugging
+        console.log('🔍 NORMALIZE DEBUG - Extracting product order...');
+        
         if (rawData.productOrder) {
             productOrder = rawData.productOrder;
+            console.log('🔍 NORMALIZE DEBUG - Using rawData.productOrder:', productOrder.length);
         } else if (rawData.menuOrder) {
             productOrder = rawData.menuOrder;
+            console.log('🔍 NORMALIZE DEBUG - Using rawData.menuOrder:', productOrder.length);
         } else if (products && Object.keys(products).length > 0) {
             // Generate product order from products
             productOrder = Object.keys(products);
+            console.log('🔍 NORMALIZE DEBUG - Generated product order from products:', productOrder.length);
+            console.log('🔍 NORMALIZE DEBUG - Product order keys:', productOrder);
+        } else {
+            console.log('🔍 NORMALIZE DEBUG - No products available to create order');
+            productOrder = [];
         }
         
+        // Create normalized data with comprehensive debugging
         const normalizedData = {
             profile,
             products,
@@ -336,12 +454,21 @@ class MessageHandler {
             businessId
         };
         
-        console.log('✅ Business data normalized:', {
-            businessName: profile.businessName,
-            productCount: Object.keys(products).length,
-            productOrderCount: productOrder.length
-        });
+        console.log('🔍 NORMALIZE DEBUG - Final normalized data summary:');
+        console.log('🔍 NORMALIZE DEBUG - Business name:', profile.businessName);
+        console.log('🔍 NORMALIZE DEBUG - Products count:', Object.keys(products).length);
+        console.log('🔍 NORMALIZE DEBUG - Product order count:', productOrder.length);
+        console.log('🔍 NORMALIZE DEBUG - Product keys in final data:', Object.keys(products));
+        console.log('🔍 NORMALIZE DEBUG - Product names in final data:', Object.keys(products).map(key => products[key]?.name));
         
+        if (Object.keys(products).length === 0) {
+            console.log('❌ NORMALIZE DEBUG - WARNING: No products in final normalized data!');
+            console.log('🔍 NORMALIZE DEBUG - This will cause the "Loading products..." issue');
+        } else {
+            console.log('✅ NORMALIZE DEBUG - Products successfully included in normalized data');
+        }
+        
+        console.log('🔍 NORMALIZE DEBUG - Normalization complete');
         return normalizedData;
     }
 
@@ -374,13 +501,13 @@ class MessageHandler {
     async handleMessage({ messages, type }) {
         // Only process new messages
         if (type !== 'notify') {
-            console.log(`🚫 Ignoring message type: ${type}`);
+            console.log(`Ignoring message type: ${type}`);
             return;
         }
         
         const msg = messages[0];
         if (!msg || !msg.message) {
-            console.log('🚫 Ignoring message: no content');
+            console.log('Ignoring message: no content');
             return;
         }
 
@@ -392,18 +519,16 @@ class MessageHandler {
         const msgId = msg.key.id;
         const phoneNumber = userId.split('@')[0];
         
-        // ✅ NEW: Ignore group messages
+        // Ignore group messages
         if (this.isGroupMessage(userId)) {
-            console.log(`🚫 Ignoring group message from: ${userId}`);
+            console.log(`Ignoring group message from: ${userId}`);
             return;
         }
         
-        // Get bot's phone number to determine which business this is
-        const botPhoneNumber = this.whatsappService.getBotPhoneNumber ? 
-                             this.whatsappService.getBotPhoneNumber() : 
-                             this.whatsappService.user?.id;
+        // ENHANCED: Get bot's phone number with comprehensive debugging
+        const botPhoneNumber = this.getBotPhoneNumber();
         
-        console.log(`📩 Raw message received: {
+        console.log(`Raw message received: {
   hasMessage: ${!!msg.message},
   fromMe: ${msg.key.fromMe},
   remoteJid: '${userId}',
@@ -414,66 +539,102 @@ class MessageHandler {
 
         // Skip messages from owner
         if (userId === OWNER_NUMBER) {
-            console.log('👑 Ignoring message from owner');
+            console.log('Ignoring message from owner');
             return;
         }
 
         // Skip messages from bot itself
         if (msg.key.fromMe) {
-            console.log('🤖 Ignoring message from bot itself');
+            console.log('Ignoring message from bot itself');
             return;
         }
 
         try {
-            // Get business ID from bot phone number
+            // ENHANCED: Get business ID from bot phone number with comprehensive debugging
             let businessId;
+            
+            console.log('🔍 BUSINESS ID DEBUG - Starting business ID determination...');
+            console.log('🔍 BUSINESS ID DEBUG - Bot phone number:', botPhoneNumber);
+            console.log('🔍 BUSINESS ID DEBUG - Bot phone type:', typeof botPhoneNumber);
+            console.log('🔍 BUSINESS ID DEBUG - Customer phone number:', phoneNumber);
+            
             if (businessManager.getBusinessIdFromBot) {
-                businessId = await businessManager.getBusinessIdFromBot(botPhoneNumber);
+                console.log('🔍 BUSINESS ID DEBUG - Using businessManager.getBusinessIdFromBot method');
+                console.log('🔍 BUSINESS ID DEBUG - Calling getBusinessIdFromBot with:', botPhoneNumber);
+                
+                try {
+                    businessId = await businessManager.getBusinessIdFromBot(botPhoneNumber);
+                    console.log('🔍 BUSINESS ID DEBUG - getBusinessIdFromBot returned:', businessId);
+                    console.log('🔍 BUSINESS ID DEBUG - Business ID type:', typeof businessId);
+                } catch (businessError) {
+                    console.error('🔍 BUSINESS ID DEBUG - Error in getBusinessIdFromBot:', businessError);
+                    console.log('🔍 BUSINESS ID DEBUG - Falling back to legacy method...');
+                    businessId = businessManager.getBusinessId(phoneNumber);
+                    console.log('🔍 BUSINESS ID DEBUG - Legacy method returned:', businessId);
+                }
             } else {
+                console.log('🔍 BUSINESS ID DEBUG - getBusinessIdFromBot method not available, using legacy method');
                 businessId = businessManager.getBusinessId(phoneNumber);
+                console.log('🔍 BUSINESS ID DEBUG - Legacy method returned:', businessId);
             }
             
-            console.log(`🏢 Bot ${botPhoneNumber} determined business: ${businessId} for customer ${phoneNumber}`);
+            console.log('🔍 BUSINESS ID DEBUG - Final business ID determination:');
+            console.log('🔍 BUSINESS ID DEBUG - Bot phone:', botPhoneNumber);
+            console.log('🔍 BUSINESS ID DEBUG - Customer phone:', phoneNumber);
+            console.log('🔍 BUSINESS ID DEBUG - Determined business ID:', businessId);
+            
+            if (businessId === 'default') {
+                console.log('⚠️ BUSINESS ID DEBUG - WARNING: Using default business ID - this indicates mapping failure!');
+                console.log('⚠️ BUSINESS ID DEBUG - Check if Firebase service is updated and vendor mapping exists');
+            }
+            
+            console.log(`Bot ${botPhoneNumber} determined business: ${businessId} for customer ${phoneNumber}`);
 
             // Get business data - ROBUST VERSION
             let businessData;
             try {
                 let rawBusinessData = null;
                 
+                console.log('🔍 BUSINESS DATA DEBUG - Loading business data for:', businessId);
+                
                 // Try different methods to get business data
                 if (businessManager.getBusinessData) {
+                    console.log('🔍 BUSINESS DATA DEBUG - Using getBusinessData method');
                     rawBusinessData = await businessManager.getBusinessData(businessId);
                 } else if (businessManager.getBusiness) {
+                    console.log('🔍 BUSINESS DATA DEBUG - Using getBusiness method');
                     rawBusinessData = await businessManager.getBusiness(businessId);
                 } else if (businessManager.getVendorProfile) {
+                    console.log('🔍 BUSINESS DATA DEBUG - Using getVendorProfile method');
                     rawBusinessData = await businessManager.getVendorProfile(businessId);
                 }
                 
-                console.log('🔍 Raw business data type:', typeof rawBusinessData);
-                console.log('🔍 Raw business data keys:', rawBusinessData ? Object.keys(rawBusinessData) : 'null');
+                console.log('Raw business data type:', typeof rawBusinessData);
+                console.log('Raw business data keys:', rawBusinessData ? Object.keys(rawBusinessData) : 'null');
                 
                 // Transform/normalize the business data structure
                 if (rawBusinessData) {
                     businessData = await this.normalizeBusinessData(rawBusinessData, businessId);
                 } else {
+                    console.log('🔍 BUSINESS DATA DEBUG - No raw business data found, using default');
                     businessData = this.createDefaultBusinessData();
                 }
                 
-                console.log(`✅ Business data normalized for: ${businessData.profile.businessName}`);
+                console.log(`Business data normalized for: ${businessData.profile.businessName}`);
             } catch (businessError) {
-                console.error('❌ Error loading business data:', businessError.message);
-                console.error('❌ BusinessId:', businessId);
+                console.error('Error loading business data:', businessError.message);
+                console.error('BusinessId:', businessId);
                 
                 // Use default business data instead of failing
                 businessData = this.createDefaultBusinessData();
-                console.log('⚠️ Using default business data as fallback');
+                console.log('Using default business data as fallback');
             }
 
             // Security check (with safety check)
             if (this.securityMonitor && typeof this.securityMonitor.checkMessage === 'function') {
                 const securityCheck = await this.securityMonitor.checkMessage(userId, messageContent);
                 if (!securityCheck.allowed) {
-                    console.log(`🛡️ Message blocked by security: ${securityCheck.reason}`);
+                    console.log(`Message blocked by security: ${securityCheck.reason}`);
                     return;
                 }
             }
@@ -482,11 +643,11 @@ class MessageHandler {
             if (this.rateLimiter && typeof this.rateLimiter.checkLimit === 'function') {
                 const rateLimitCheck = await this.rateLimiter.checkLimit(userId, businessId);
                 if (!rateLimitCheck.allowed) {
-                    console.log(`⏰ Message rate limited: ${rateLimitCheck.reason}`);
+                    console.log(`Message rate limited: ${rateLimitCheck.reason}`);
                     
                     if (rateLimitCheck.shouldNotify) {
                         await this.sendMessage(userId, 
-                            '⏰ Please slow down! You\'re sending messages too quickly. Wait a moment and try again.');
+                            'Please slow down! You\'re sending messages too quickly. Wait a moment and try again.');
                     }
                     return;
                 }
@@ -504,7 +665,7 @@ class MessageHandler {
                 });
             }
 
-            console.log(`📨 Message from ${sender} (${phoneNumber}) to business ${businessId}: "${messageContent}"`);
+            console.log(`Message from ${sender} (${phoneNumber}) to business ${businessId}: "${messageContent}"`);
 
             // Use the new session management method that persists sessions
             let session = this.getOrCreateSession(userId, businessId, businessData);
@@ -527,12 +688,12 @@ class MessageHandler {
 
             // Send the response if we got one
             if (response && typeof response === 'string') {
-                console.log(`📤 Sending response to ${userId}`);
+                console.log(`Sending response to ${userId}`);
                 await this.sendMessage(userId, response);
             }
 
         } catch (error) {
-            console.error('❌ Error processing message:', error);
+            console.error('Error processing message:', error);
             
             // Log the error (with safety check)
             if (this.logger && typeof this.logger.logError === 'function') {
@@ -548,9 +709,9 @@ class MessageHandler {
             // Send error message to user
             try {
                 await this.sendMessage(userId, 
-                    '❌ Sorry, something went wrong. Please try again in a moment or contact support if this persists.');
+                    'Sorry, something went wrong. Please try again in a moment or contact support if this persists.');
             } catch (sendError) {
-                console.error('❌ Failed to send error message:', sendError);
+                console.error('Failed to send error message:', sendError);
             }
         }
     }
@@ -561,30 +722,30 @@ class MessageHandler {
             if (typeof message === 'string') {
                 // For string messages, use sendTextMessage if available
                 if (this.whatsappService && typeof this.whatsappService.sendTextMessage === 'function') {
-                    console.log(`📤 Sending text message to ${userId}: "${message}"`);
+                    console.log(`Sending text message to ${userId}: "${message}"`);
                     await this.whatsappService.sendTextMessage(userId, message);
                     return;
                 }
                 // Fallback to sendMessage with proper format
                 if (this.whatsappService && typeof this.whatsappService.sendMessage === 'function') {
-                    console.log(`📤 Sending formatted message to ${userId}`);
+                    console.log(`Sending formatted message to ${userId}`);
                     await this.whatsappService.sendMessage(userId, { text: message });
                     return;
                 }
             } else {
                 // For object messages, use sendMessage directly
                 if (this.whatsappService && typeof this.whatsappService.sendMessage === 'function') {
-                    console.log(`📤 Sending object message to ${userId}`);
+                    console.log(`Sending object message to ${userId}`);
                     await this.whatsappService.sendMessage(userId, message);
                     return;
                 }
             }
             
-            console.error('❌ No available WhatsApp send method found');
+            console.error('No available WhatsApp send method found');
         } catch (error) {
-            console.error('❌ Failed to send message:', error.message);
-            console.error('❌ Message type:', typeof message);
-            console.error('❌ Message content:', message);
+            console.error('Failed to send message:', error.message);
+            console.error('Message type:', typeof message);
+            console.error('Message content:', message);
         }
     }
 }

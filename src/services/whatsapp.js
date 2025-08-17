@@ -32,12 +32,12 @@ class WhatsAppService {
             throw new Error('DisconnectReason object not available from Baileys');
         }
         
-        console.log('✅ All Baileys imports validated successfully');
+        console.log('All Baileys imports validated successfully');
     }
 
     async initialize() {
         try {
-            console.log('🚀 Initializing WhatsApp connection with dynamic vendor mapping...');
+            console.log('Initializing WhatsApp connection with dynamic vendor mapping...');
             
             // Initialize auth state with better error handling
             let state, saveCreds;
@@ -49,17 +49,17 @@ class WhatsAppService {
                 
                 if (!fs.existsSync(authDir)) {
                     fs.mkdirSync(authDir, { recursive: true });
-                    console.log('📁 Created auth directory');
+                    console.log('Created auth directory');
                 }
                 
                 const authResult = await useMultiFileAuthState('auth');
                 state = authResult.state;
                 saveCreds = authResult.saveCreds;
                 
-                console.log('✅ Auth state initialized successfully');
+                console.log('Auth state initialized successfully');
             } catch (authError) {
-                console.error('❌ Auth state error:', authError.message);
-                console.log('🗑️ Clearing corrupted auth and retrying...');
+                console.error('Auth state error:', authError.message);
+                console.log('Clearing corrupted auth and retrying...');
                 
                 // Try to clear and recreate auth
                 await this.clearCorruptedAuth();
@@ -69,11 +69,11 @@ class WhatsAppService {
                 state = authResult.state;
                 saveCreds = authResult.saveCreds;
                 
-                console.log('✅ Auth state recreated successfully');
+                console.log('Auth state recreated successfully');
             }
 
             // Create socket with minimal configuration first
-            console.log('🧪 Testing minimal socket configuration...');
+            console.log('Testing minimal socket configuration...');
             
             try {
                 // Try minimal config first (removed deprecated printQRInTerminal)
@@ -83,12 +83,12 @@ class WhatsAppService {
                     syncFullHistory: false
                 };
                 
-                console.log('🔧 Creating WhatsApp socket with minimal config...');
+                console.log('Creating WhatsApp socket with minimal config...');
                 this.socket = makeWASocket(minimalConfig);
-                console.log('✅ Minimal socket created successfully');
+                console.log('Minimal socket created successfully');
                 
             } catch (minimalError) {
-                console.error('❌ Minimal socket failed, trying with full config...');
+                console.error('Minimal socket failed, trying with full config...');
                 console.error('Minimal error:', minimalError.message);
                 
                 // Fall back to full config
@@ -97,8 +97,8 @@ class WhatsAppService {
                     ...getSocketConfig()
                 };
                 
-                console.log('🔧 Creating WhatsApp socket with full config...');
-                console.log('📝 Full config keys:', Object.keys(socketConfig));
+                console.log('Creating WhatsApp socket with full config...');
+                console.log('Full config keys:', Object.keys(socketConfig));
                 
                 this.socket = makeWASocket(socketConfig);
             }
@@ -107,18 +107,18 @@ class WhatsAppService {
                 throw new Error('makeWASocket returned null/undefined');
             }
             
-            console.log('✅ WhatsApp socket created successfully');
-            console.log('📊 Socket properties:', Object.keys(this.socket));
+            console.log('WhatsApp socket created successfully');
+            console.log('Socket properties:', Object.keys(this.socket));
             this.botStartTime = Date.now();
 
             // Setup event handlers
             this.setupEventHandlers(saveCreds);
 
-            console.log(`⏰ WhatsApp service initialized at: ${new Date(this.botStartTime).toLocaleString()}`);
+            console.log(`WhatsApp service initialized at: ${new Date(this.botStartTime).toLocaleString()}`);
             
             return this.socket;
         } catch (error) {
-            console.error('❌ Failed to initialize WhatsApp service:', error.message);
+            console.error('Failed to initialize WhatsApp service:', error.message);
             throw error;
         }
     }
@@ -129,43 +129,42 @@ class WhatsAppService {
         
         // Connection update handler with enhanced bot info extraction
         this.socket.ev.on('connection.update', async ({ connection, lastDisconnect, qr, isNewLogin }) => {
-            console.log('📡 Connection update:', { connection, isNewLogin });
+            console.log('Connection update:', { connection, isNewLogin });
             
             if (connection === 'close') {
                 await this.handleConnectionClose(lastDisconnect);
             } else if (connection === 'open') {
                 await this.handleConnectionOpen();
             } else if (connection === 'connecting') {
-                console.log('🔄 Connecting to WhatsApp...');
+                console.log('Connecting to WhatsApp...');
             }
             
             // ENHANCED: Display QR code with dynamic mapping info
             if (qr) {
-                console.log('\n📱 ═══════════════════════════════════════');
-                console.log('📱 QR CODE TO SCAN:');
-                console.log('📱 ═══════════════════════════════════════');
+                console.log('\nQR CODE TO SCAN:');
+                console.log('='.repeat(50));
                 console.log(qr);
-                console.log('📱 ═══════════════════════════════════════');
-                console.log('📱 OPTION 1: Copy the text above and paste into WhatsApp Web');
-                console.log('📱 OPTION 2: Visit this URL to see QR code:');
-                console.log(`📱 https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`);
-                console.log('📱 OPTION 3: Open WhatsApp > Settings > Linked Devices > Link a Device');
-                console.log('📱 ═══════════════════════════════════════');
-                console.log('🔄 Once connected, bot will auto-discover vendor mapping...');
-                console.log('📱 ═══════════════════════════════════════\n');
+                console.log('='.repeat(50));
+                console.log('OPTION 1: Copy the text above and paste into WhatsApp Web');
+                console.log('OPTION 2: Visit this URL to see QR code:');
+                console.log(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`);
+                console.log('OPTION 3: Open WhatsApp > Settings > Linked Devices > Link a Device');
+                console.log('='.repeat(50));
+                console.log('Once connected, bot will auto-discover vendor mapping...');
+                console.log('='.repeat(50) + '\n');
             }
         });
 
         // Call handler
         this.socket.ev.on('CB:call', (node) => {
-            console.log('📞 Incoming call detected, rejecting...');
+            console.log('Incoming call detected, rejecting...');
             this.socket.rejectCall(node.content[0].attrs['call-id'], node.attrs.from);
         });
 
         // Credentials handler
         this.socket.ev.on('creds.update', ({ creds }) => {
             if (creds) {
-                console.log('🔐 Credentials updated');
+                console.log('Credentials updated');
             }
         });
     }
@@ -174,7 +173,7 @@ class WhatsAppService {
         const statusCode = lastDisconnect?.error?.output?.statusCode;
         const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
         
-        console.log('🔌 Connection closed:', {
+        console.log('Connection closed:', {
             statusCode,
             shouldReconnect,
             error: lastDisconnect?.error?.message
@@ -201,14 +200,14 @@ class WhatsAppService {
                 const jitter = Math.random() * 2000;
                 const delay = baseDelay + jitter;
                 
-                console.log(`⏳ Reconnecting in ${Math.round(delay/1000)} seconds... (Attempt ${this.connectionRetries}/${this.maxRetries})`);
+                console.log(`Reconnecting in ${Math.round(delay/1000)} seconds... (Attempt ${this.connectionRetries}/${this.maxRetries})`);
                 
                 clearTimeout(this.reconnectTimeout);
                 this.reconnectTimeout = setTimeout(() => {
                     this.initialize();
                 }, delay);
             } else {
-                console.error('❌ Max reconnection attempts reached. Waiting 5 minutes before retry...');
+                console.error('Max reconnection attempts reached. Waiting 5 minutes before retry...');
                 
                 setTimeout(() => {
                     this.connectionRetries = 0;
@@ -216,20 +215,20 @@ class WhatsAppService {
                 }, CONNECTION_CONFIG.FATAL_ERROR_RETRY_DELAY);
             }
         } else {
-            console.log('🛑 Bot logged out. Manual intervention required.');
+            console.log('Bot logged out. Manual intervention required.');
         }
     }
 
     // ENHANCED: Connection open handler with dynamic vendor mapping
     async handleConnectionOpen() {
-        console.log('✅ Bot connected to WhatsApp successfully!');
+        console.log('Bot connected to WhatsApp successfully!');
         this.connectionRetries = 0;
         
         try {
             await this.socket.sendPresenceUpdate('available');
-            console.log('👋 Presence set to available');
+            console.log('Presence set to available');
         } catch (err) {
-            console.log('⚠️ Could not set presence:', err.message);
+            console.log('Could not set presence:', err.message);
         }
 
         // Extract and store bot information
@@ -253,11 +252,11 @@ class WhatsAppService {
                 uptime: this.botStartTime ? Date.now() - this.botStartTime : 0
             };
             
-            console.log('📋 Bot Information Extracted:');
-            console.log(`   📱 Phone Number: ${this.botInfo.phoneNumber}`);
-            console.log(`   🆔 Full ID: ${this.botInfo.fullId}`);
-            console.log(`   📛 Name: ${this.botInfo.name}`);
-            console.log(`   ⏰ Connected At: ${new Date(this.botInfo.startTime).toLocaleString()}`);
+            console.log('Bot Information Extracted:');
+            console.log(`   Phone Number: ${this.botInfo.phoneNumber}`);
+            console.log(`   Full ID: ${this.botInfo.fullId}`);
+            console.log(`   Name: ${this.botInfo.name}`);
+            console.log(`   Connected At: ${new Date(this.botInfo.startTime).toLocaleString()}`);
         }
     }
 
@@ -268,14 +267,14 @@ class WhatsAppService {
         }
 
         try {
-            console.log('🔄 VENDOR MAPPING - Attempting dynamic vendor discovery...');
+            console.log('VENDOR MAPPING - Attempting dynamic vendor discovery...');
             this.vendorMappingAttempted = true;
 
             // Import business manager for dynamic mapping
             const businessManager = require('./businessManager');
             
             if (!businessManager.isHealthy()) {
-                console.log('⚠️ Business Manager not ready, will retry mapping on first message');
+                console.log('Business Manager not ready, will retry mapping on first message');
                 this.vendorMappingAttempted = false;
                 return;
             }
@@ -284,11 +283,11 @@ class WhatsAppService {
             const businessId = await businessManager.getBusinessIdFromBot(this.botInfo.fullId);
             
             if (businessId && businessId !== 'default') {
-                console.log(`✅ VENDOR MAPPING SUCCESS - Bot mapped to business: ${businessId}`);
+                console.log(`VENDOR MAPPING SUCCESS - Bot mapped to business: ${businessId}`);
                 
                 // Get vendor profile to show mapping details
                 const businessData = await businessManager.getBusinessData(businessId);
-                console.log(`🏢 Vendor Details:`);
+                console.log(`Vendor Details:`);
                 console.log(`   Business Name: ${businessData.businessName}`);
                 console.log(`   Email: ${businessData.businessEmail}`);
                 console.log(`   Phone: ${businessData.businessPhone}`);
@@ -298,15 +297,15 @@ class WhatsAppService {
                 this.botInfo.businessName = businessData.businessName;
                 
             } else {
-                console.log('⚠️ VENDOR MAPPING - Using default business (mapping may have failed)');
-                console.log('💡 Check if vendor profile exists with bot phone number');
+                console.log('VENDOR MAPPING - Using default business (mapping may have failed)');
+                console.log('Check if vendor profile exists with bot phone number');
                 
                 // Show troubleshooting info
                 await this.showVendorMappingTroubleshooting(businessManager);
             }
             
         } catch (error) {
-            console.error('❌ Error in vendor mapping attempt:', error);
+            console.error('Error in vendor mapping attempt:', error);
             this.vendorMappingAttempted = false; // Allow retry
         }
     }
@@ -314,26 +313,26 @@ class WhatsAppService {
     // NEW: Show troubleshooting information for vendor mapping
     async showVendorMappingTroubleshooting(businessManager) {
         try {
-            console.log('\n🔍 VENDOR MAPPING TROUBLESHOOTING:');
-            console.log('═══════════════════════════════════════');
+            console.log('\nVENDOR MAPPING TROUBLESHOOTING:');
+            console.log('='.repeat(50));
             
             // Show bot info
-            console.log(`📱 Bot Phone Number: ${this.botInfo.phoneNumber}`);
-            console.log(`🆔 Bot Full ID: ${this.botInfo.fullId}`);
+            console.log(`Bot Phone Number: ${this.botInfo.phoneNumber}`);
+            console.log(`Bot Full ID: ${this.botInfo.fullId}`);
             
             // Show business manager stats
             const stats = businessManager.getBusinessStats();
-            console.log(`📊 Current Mappings:`);
+            console.log(`Current Mappings:`);
             console.log(`   Bot Mappings: ${stats.botMappings}`);
             console.log(`   Customer Mappings: ${stats.totalBusinesses}`);
             console.log(`   Firebase Cache: ${stats.firebaseVendorCache.vendorsInCache} vendors`);
             
             // Show available vendors (first 5)
-            console.log('\n🔍 Discovering available vendors...');
+            console.log('\nDiscovering available vendors...');
             const vendors = await businessManager.debugAvailableVendors();
             
             if (vendors.length > 0) {
-                console.log('📋 Available Vendors (showing first 5):');
+                console.log('Available Vendors (showing first 5):');
                 vendors.slice(0, 5).forEach((vendor, index) => {
                     console.log(`   ${index + 1}. ${vendor.id}`);
                     console.log(`      Name: ${vendor.name}`);
@@ -346,15 +345,15 @@ class WhatsAppService {
                 }
             }
             
-            console.log('\n💡 SOLUTIONS:');
+            console.log('\nSOLUTIONS:');
             console.log('1. Ensure vendor profile exists with phone:', this.botInfo.phoneNumber);
             console.log('2. Check Firebase permissions for reading vendor profiles');
             console.log('3. Use forceAutoMapping() method to retry mapping');
             console.log('4. Create manual mapping if needed');
-            console.log('═══════════════════════════════════════\n');
+            console.log('='.repeat(50) + '\n');
             
         } catch (error) {
-            console.error('❌ Error showing troubleshooting info:', error);
+            console.error('Error showing troubleshooting info:', error);
         }
     }
 
@@ -364,7 +363,7 @@ class WhatsAppService {
                 const query = getHealthCheckQuery(this.socket);
                 await this.socket.query(query);
             } catch (err) {
-                console.log('💓 Connection ping failed:', err.message);
+                console.log('Connection ping failed:', err.message);
             }
         }, CACHE_CONFIG.CONNECTION_HEALTH_CHECK_INTERVAL);
     }
@@ -376,7 +375,7 @@ class WhatsAppService {
             const authDir = path.join(process.cwd(), 'auth');
             
             if (fs.existsSync(authDir)) {
-                console.log('🗑️ Clearing corrupted auth state...');
+                console.log('Clearing corrupted auth state...');
                 
                 // Remove all files in auth directory
                 const files = fs.readdirSync(authDir);
@@ -389,17 +388,17 @@ class WhatsAppService {
                             fs.unlinkSync(filePath);
                         }
                     } catch (fileError) {
-                        console.warn(`⚠️ Could not delete ${filePath}:`, fileError.message);
+                        console.warn(`Could not delete ${filePath}:`, fileError.message);
                     }
                 }
                 
-                console.log('✅ Auth directory cleared');
+                console.log('Auth directory cleared');
             } else {
-                console.log('📁 Auth directory does not exist, creating...');
+                console.log('Auth directory does not exist, creating...');
                 fs.mkdirSync(authDir, { recursive: true });
             }
         } catch (error) {
-            console.error('❌ Error clearing auth directory:', error.message);
+            console.error('Error clearing auth directory:', error.message);
             // Don't throw error, just log it
         }
     }
@@ -411,7 +410,7 @@ class WhatsAppService {
                 throw new Error('WhatsApp socket not initialized');
             }
             
-            console.log(`📤 Sending message to ${to} (Bot: ${this.botInfo?.businessName || 'Unknown Business'})`);
+            console.log(`Sending message to ${to} (Bot: ${this.botInfo?.businessName || 'Unknown Business'})`);
             
             // Add typing indicator for better UX
             await this.socket.sendPresenceUpdate('composing', to);
@@ -420,10 +419,10 @@ class WhatsAppService {
             
             // Send message
             await this.socket.sendMessage(to, content);
-            console.log(`✅ Message sent successfully to ${to}`);
+            console.log(`Message sent successfully to ${to}`);
             return true;
         } catch (error) {
-            console.error('❌ Failed to send message:', error.message);
+            console.error('Failed to send message:', error.message);
             return false;
         }
     }
@@ -435,8 +434,8 @@ class WhatsAppService {
     // ENHANCED: Send PDF document method with business context
     async sendDocument(userId, filepath, filename, caption = '') {
         try {
-            console.log(`📎 Sending PDF document to ${userId}: ${filename}`);
-            console.log(`🏢 Business Context: ${this.botInfo?.businessName || 'Unknown'}`);
+            console.log(`Sending PDF document to ${userId}: ${filename}`);
+            console.log(`Business Context: ${this.botInfo?.businessName || 'Unknown'}`);
             
             const fs = require('fs');
             
@@ -461,7 +460,7 @@ class WhatsAppService {
                 document: fileBuffer,
                 fileName: filename,
                 mimetype: 'application/pdf',
-                caption: caption || `📄 ${filename}\n\n🏢 From: ${this.botInfo?.businessName || 'LLL Farm'}`
+                caption: caption || `${filename}\n\nFrom: ${this.botInfo?.businessName || 'LLL Farm'}`
             };
 
             await this.socket.sendMessage(userId, message);
@@ -469,12 +468,12 @@ class WhatsAppService {
             // Reset presence
             await this.socket.sendPresenceUpdate('paused', userId);
             
-            console.log(`✅ PDF sent successfully to ${userId}`);
+            console.log(`PDF sent successfully to ${userId}`);
             
             return true;
         } catch (error) {
-            console.error('❌ Error sending PDF:', error.message);
-            console.error('❌ Error details:', {
+            console.error('Error sending PDF:', error.message);
+            console.error('Error details:', {
                 filepath,
                 filename,
                 userId,
@@ -489,8 +488,8 @@ class WhatsAppService {
     // ENHANCED: Send image method with business branding
     async sendImage(userId, imagePath, caption = '') {
         try {
-            console.log(`🖼️ Sending image to ${userId}`);
-            console.log(`🏢 Business Context: ${this.botInfo?.businessName || 'Unknown'}`);
+            console.log(`Sending image to ${userId}`);
+            console.log(`Business Context: ${this.botInfo?.businessName || 'Unknown'}`);
             
             const fs = require('fs');
             
@@ -507,8 +506,8 @@ class WhatsAppService {
             await this.socket.sendPresenceUpdate('composing', userId);
             
             const enhancedCaption = caption ? 
-                `${caption}\n\n🏢 From: ${this.botInfo?.businessName || 'LLL Farm'}` : 
-                `🏢 From: ${this.botInfo?.businessName || 'LLL Farm'}`;
+                `${caption}\n\nFrom: ${this.botInfo?.businessName || 'LLL Farm'}` : 
+                `From: ${this.botInfo?.businessName || 'LLL Farm'}`;
             
             const message = {
                 image: imageBuffer,
@@ -518,11 +517,11 @@ class WhatsAppService {
             await this.socket.sendMessage(userId, message);
             await this.socket.sendPresenceUpdate('paused', userId);
             
-            console.log(`✅ Image sent successfully to ${userId}`);
+            console.log(`Image sent successfully to ${userId}`);
             return true;
             
         } catch (error) {
-            console.error('❌ Error sending image:', error.message);
+            console.error('Error sending image:', error.message);
             return false;
         }
     }
@@ -530,11 +529,11 @@ class WhatsAppService {
     // ENHANCED: Send order confirmation with PDF invoice and business info
     async sendOrderConfirmationWithPDF(userId, textMessage, pdfPath, pdfFilename) {
         try {
-            console.log(`📋 Sending order confirmation with PDF to ${userId}`);
-            console.log(`🏢 Business: ${this.botInfo?.businessName || 'Unknown'}`);
+            console.log(`Sending order confirmation with PDF to ${userId}`);
+            console.log(`Business: ${this.botInfo?.businessName || 'Unknown'}`);
             
             // Enhance text message with business info
-            const enhancedMessage = `${textMessage}\n\n🏢 ${this.botInfo?.businessName || 'LLL Farm'}`;
+            const enhancedMessage = `${textMessage}\n\n${this.botInfo?.businessName || 'LLL Farm'}`;
             
             // Send text confirmation first
             const textSent = await this.sendTextMessage(userId, enhancedMessage);
@@ -549,28 +548,28 @@ class WhatsAppService {
                 userId, 
                 pdfPath, 
                 pdfFilename, 
-                `📄 Your invoice from ${this.botInfo?.businessName || 'LLL Farm'}`
+                `Your invoice from ${this.botInfo?.businessName || 'LLL Farm'}`
             );
             
             if (!pdfSent) {
                 // Fallback - send error message
                 await this.sendTextMessage(userId, 
-                    `❌ Sorry, there was an issue generating your invoice PDF. Please contact ${this.botInfo?.businessName || 'us'} for a copy.`);
+                    `Sorry, there was an issue generating your invoice PDF. Please contact ${this.botInfo?.businessName || 'us'} for a copy.`);
                 return false;
             }
             
-            console.log(`✅ Order confirmation with PDF sent successfully to ${userId}`);
+            console.log(`Order confirmation with PDF sent successfully to ${userId}`);
             return true;
             
         } catch (error) {
-            console.error('❌ Error sending order confirmation with PDF:', error.message);
+            console.error('Error sending order confirmation with PDF:', error.message);
             
             // Try to send at least an error message
             try {
                 await this.sendTextMessage(userId, 
-                    `❌ There was an issue processing your order confirmation. Please contact ${this.botInfo?.businessName || 'support'}.`);
+                    `There was an issue processing your order confirmation. Please contact ${this.botInfo?.businessName || 'support'}.`);
             } catch (fallbackError) {
-                console.error('❌ Failed to send fallback error message:', fallbackError.message);
+                console.error('Failed to send fallback error message:', fallbackError.message);
             }
             
             return false;
@@ -582,7 +581,7 @@ class WhatsAppService {
         try {
             if (!this.socket) return false;
             
-            console.log(`⌨️ Showing typing indicator to ${userId} (${this.botInfo?.businessName || 'Unknown Business'})`);
+            console.log(`Showing typing indicator to ${userId} (${this.botInfo?.businessName || 'Unknown Business'})`);
             
             await this.socket.sendPresenceUpdate('composing', userId);
             
@@ -590,13 +589,13 @@ class WhatsAppService {
                 try {
                     await this.socket.sendPresenceUpdate('paused', userId);
                 } catch (err) {
-                    console.log('⚠️ Could not clear typing indicator:', err.message);
+                    console.log('Could not clear typing indicator:', err.message);
                 }
             }, duration);
             
             return true;
         } catch (error) {
-            console.error('❌ Error sending typing indicator:', error.message);
+            console.error('Error sending typing indicator:', error.message);
             return false;
         }
     }
@@ -684,7 +683,7 @@ class WhatsAppService {
 
     // NEW: Force vendor re-mapping
     async forceVendorRemapping() {
-        console.log('🔄 FORCE REMAPPING - Forcing vendor re-discovery...');
+        console.log('FORCE REMAPPING - Forcing vendor re-discovery...');
         
         this.vendorMappingAttempted = false;
         this.botInfo = null;
@@ -712,7 +711,7 @@ class WhatsAppService {
 
     // Cleanup method
     cleanup() {
-        console.log('🧹 Cleaning up WhatsApp service...');
+        console.log('Cleaning up WhatsApp service...');
         
         if (this.reconnectTimeout) {
             clearTimeout(this.reconnectTimeout);
@@ -733,7 +732,7 @@ class WhatsAppService {
         this.botInfo = null;
         this.vendorMappingAttempted = false;
         
-        console.log('✅ WhatsApp service cleanup completed');
+        console.log('WhatsApp service cleanup completed');
     }
 }
 

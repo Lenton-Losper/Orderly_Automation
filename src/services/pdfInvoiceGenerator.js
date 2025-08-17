@@ -1,5 +1,6 @@
 // File: src/services/pdfInvoiceGenerator.js
 // Professional PDF Invoice Generator with Firebase Integration
+// FIXED: Proper method signatures for integration with commandHandler
 
 const fs = require('fs');
 const path = require('path');
@@ -8,9 +9,9 @@ const path = require('path');
 let PDFDocument;
 try {
     PDFDocument = require('pdfkit');
-    console.log('✅ PDFKit loaded successfully');
+    console.log('PDFKit loaded successfully');
 } catch (error) {
-    console.warn('⚠️ PDFKit not installed. Please run: npm install pdfkit');
+    console.warn('PDFKit not installed. Please run: npm install pdfkit');
     PDFDocument = null;
 }
 
@@ -52,13 +53,18 @@ class ProfessionalPDFInvoiceGenerator {
     ensureInvoicesDirectory() {
         if (!fs.existsSync(this.invoicesDir)) {
             fs.mkdirSync(this.invoicesDir, { recursive: true });
-            console.log('📁 Created invoices directory:', this.invoicesDir);
+            console.log('Created invoices directory:', this.invoicesDir);
         }
     }
 
-    // Method to generate invoice for completed orders (MAIN METHOD)
-    async generateInvoiceForOrder(session, businessId) {
+    // FIXED: Main method that commandHandler expects
+    async generateInvoice(orderData, businessProfile, businessId) {
         try {
+            console.log('PDF DEBUG - generateInvoice called with:');
+            console.log('PDF DEBUG - Order data type:', typeof orderData);
+            console.log('PDF DEBUG - Business profile type:', typeof businessProfile);
+            console.log('PDF DEBUG - Business ID:', businessId);
+            
             if (!this.isPDFKitAvailable()) {
                 return {
                     success: false,
@@ -66,49 +72,91 @@ class ProfessionalPDFInvoiceGenerator {
                 };
             }
 
-            console.log('🔍 Generating invoice for completed order...');
-            console.log('🔍 Session cart items:', session.cart?.length || 0);
-            console.log('🔍 Customer info:', session.customerInfo);
+            console.log('PDF DEBUG - Generating invoice for order...');
+            console.log('PDF DEBUG - Order items count:', orderData.items?.length || 0);
+            console.log('PDF DEBUG - Order total:', orderData.total);
             
-            // Create order data from session
-            const orderData = {
-                id: session.messageId || `ORDER_${Date.now()}`,
-                items: session.cart || [],
-                customerInfo: session.customerInfo || {
-                    name: 'Valued Customer',
-                    email: '',
-                    phone: '',
-                    address: ''
-                },
-                total: session.getTotal ? session.getTotal() : 0,
-                subtotal: 0,
-                tax: 0,
-                shipping: 0,
-                discountAmount: session.discountAmount || 0,
-                discountCode: session.discountCode || '',
-                createdAt: new Date().toISOString(),
-                status: 'completed'
-            };
-            
-            // Calculate proper totals from cart
-            if (session.cart && session.cart.length > 0) {
-                orderData.subtotal = session.cart.reduce((sum, item) => {
-                    const price = this.parsePrice(item.price);
-                    const quantity = parseInt(item.quantity) || 1;
-                    return sum + (price * quantity);
-                }, 0);
-                
-                orderData.tax = orderData.subtotal * 0.10;
-                orderData.shipping = orderData.subtotal >= 50 ? 0 : 5;
-                orderData.total = orderData.subtotal + orderData.tax + orderData.shipping - orderData.discountAmount;
+            // Validate order data
+            const validation = this.validateOrderData(orderData);
+            if (!validation.isValid) {
+                console.error('PDF DEBUG - Order validation failed:', validation.errors);
+                return {
+                    success: false,
+                    error: `Invalid order data: ${validation.errors.join(', ')}`
+                };
             }
             
-            console.log('🔍 Order data prepared:', {
-                id: orderData.id,
-                itemCount: orderData.items.length,
-                total: orderData.total,
-                subtotal: orderData.subtotal
-            });
+            // Convert business profile to expected format
+            const businessData = this.convertBusinessProfile(businessProfile);
+            console.log('PDF DEBUG - Converted business data:', businessData);
+            
+            // Generate the PDF
+            const result = await this.generateInvoicePDF(orderData, businessData);
+            console.log('PDF DEBUG - PDF generation result:', result);
+            
+            return result;
+            
+        } catch (error) {
+            console.error('PDF DEBUG - Error in generateInvoice:', error);
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    // Convert business profile from different possible formats
+    convertBusinessProfile(businessProfile) {
+        console.log('PDF DEBUG - Converting business profile:', businessProfile);
+        
+        if (!businessProfile || typeof businessProfile !== 'object') {
+            console.log('PDF DEBUG - No business profile provided, using defaults');
+            return this.getDefaultBusinessData();
+        }
+        
+        // Handle different possible property names
+        const businessData = {
+            businessName: businessProfile.businessName || 
+                         businessProfile.name || 
+                         businessProfile.companyName || 
+                         'LLL Farm',
+            businessAddress: businessProfile.businessAddress || 
+                           businessProfile.address || 
+                           'Windhoek, Namibia',
+            businessPhone: businessProfile.businessPhone || 
+                          businessProfile.phone || 
+                          businessProfile.contactInfo || 
+                          '+264 81 314 1453',
+            businessEmail: businessProfile.businessEmail || 
+                          businessProfile.email || 
+                          'info@lllfarm.com',
+            businessDescription: businessProfile.businessDescription || 
+                               businessProfile.description || 
+                               'Premium agricultural products and farming solutions'
+        };
+        
+        console.log('PDF DEBUG - Converted business data:', businessData);
+        return businessData;
+    }
+
+    // LEGACY: Keep this method for backward compatibility
+    async generateInvoiceForOrder(session, businessId) {
+        try {
+            console.log('PDF DEBUG - generateInvoiceForOrder called (legacy method)');
+            
+            if (!this.isPDFKitAvailable()) {
+                return {
+                    success: false,
+                    error: 'PDFKit not installed. Please run: npm install pdfkit'
+                };
+            }
+
+            console.log('PDF DEBUG - Session cart items:', session.cart?.length || 0);
+            console.log('PDF DEBUG - Customer info:', session.customerInfo);
+            
+            // Create order data from session
+            const orderData = this.createOrderDataFromSession(session);
+            console.log('PDF DEBUG - Order data created:', orderData);
             
             // Get business data
             const businessData = this.getDefaultBusinessData();
@@ -117,12 +165,49 @@ class ProfessionalPDFInvoiceGenerator {
             return await this.generateInvoicePDF(orderData, businessData);
             
         } catch (error) {
-            console.error('❌ Error generating invoice for order:', error);
+            console.error('PDF DEBUG - Error generating invoice for order:', error);
             return {
                 success: false,
                 error: error.message
             };
         }
+    }
+
+    // Create order data from session
+    createOrderDataFromSession(session) {
+        const orderData = {
+            id: session.messageId || `ORDER_${Date.now()}`,
+            items: session.cart || [],
+            customerInfo: session.customerInfo || {
+                name: 'Valued Customer',
+                email: '',
+                phone: '',
+                address: ''
+            },
+            total: session.getTotal ? session.getTotal() : 0,
+            subtotal: 0,
+            tax: 0,
+            shipping: 0,
+            discountAmount: session.discountAmount || 0,
+            discountCode: session.discountCode || '',
+            createdAt: new Date().toISOString(),
+            status: 'completed'
+        };
+        
+        // Calculate proper totals from cart
+        if (session.cart && session.cart.length > 0) {
+            orderData.subtotal = session.cart.reduce((sum, item) => {
+                const price = this.parsePrice(item.price);
+                const quantity = parseInt(item.quantity) || 1;
+                return sum + (price * quantity);
+            }, 0);
+            
+            orderData.tax = orderData.subtotal * 0.10;
+            orderData.shipping = orderData.subtotal >= 50 ? 0 : 5;
+            orderData.total = orderData.subtotal + orderData.tax + orderData.shipping - orderData.discountAmount;
+        }
+        
+        return orderData;
     }
 
     // Method to test PDF generation
@@ -135,7 +220,7 @@ class ProfessionalPDFInvoiceGenerator {
                 };
             }
 
-            console.log('🔍 Generating test invoice...');
+            console.log('Generating test invoice...');
             
             const testOrderData = {
                 id: `TEST_${Date.now()}`,
@@ -162,7 +247,7 @@ class ProfessionalPDFInvoiceGenerator {
             return await this.generateInvoicePDF(testOrderData, businessData);
             
         } catch (error) {
-            console.error('❌ Error generating test invoice:', error);
+            console.error('Error generating test invoice:', error);
             return { success: false, error: error.message };
         }
     }
@@ -174,6 +259,14 @@ class ProfessionalPDFInvoiceGenerator {
                 return { success: false, error: 'PDFKit not installed' };
             }
 
+            console.log('PDF DEBUG - Starting PDF generation');
+            console.log('PDF DEBUG - Order data:', {
+                id: orderData.id,
+                itemCount: orderData.items?.length,
+                total: orderData.total,
+                customerName: orderData.customerInfo?.name
+            });
+            
             const validation = this.validateOrderData(orderData);
             if (!validation.isValid) {
                 throw new Error(`Invalid order data: ${validation.errors.join(', ')}`);
@@ -184,13 +277,26 @@ class ProfessionalPDFInvoiceGenerator {
             const filename = `${businessName}_INV_${invoiceNumber}.pdf`;
             const filepath = path.join(this.invoicesDir, filename);
 
+            console.log('PDF DEBUG - Creating PDF document');
             const doc = new PDFDocument({ size: 'A4', margin: 50 });
-            doc.pipe(fs.createWriteStream(filepath));
+            
+            console.log('PDF DEBUG - Setting up file stream to:', filepath);
+            const writeStream = fs.createWriteStream(filepath);
+            doc.pipe(writeStream);
 
+            console.log('PDF DEBUG - Generating content');
             this.generateInvoiceContent(doc, orderData, businessData, invoiceNumber);
+            
+            console.log('PDF DEBUG - Finalizing document');
             doc.end();
 
-            console.log('✅ PDF Invoice generated:', filepath);
+            // Wait for the write stream to finish
+            await new Promise((resolve, reject) => {
+                writeStream.on('finish', resolve);
+                writeStream.on('error', reject);
+            });
+
+            console.log('PDF Invoice generated:', filepath);
 
             return {
                 success: true,
@@ -201,7 +307,7 @@ class ProfessionalPDFInvoiceGenerator {
             };
 
         } catch (error) {
-            console.error('❌ Error generating PDF:', error);
+            console.error('Error generating PDF:', error);
             return { success: false, error: error.message };
         }
     }
@@ -273,7 +379,7 @@ class ProfessionalPDFInvoiceGenerator {
 
         currentY = Math.max(currentY + 60, customerY + 40);
 
-        // Items table
+        // Items table header
         doc.fillColor('#000000').fontSize(11).font('Helvetica-Bold')
            .text('Items', 50, currentY)
            .text('Qty', 250, currentY)
@@ -284,11 +390,15 @@ class ProfessionalPDFInvoiceGenerator {
         doc.moveTo(50, currentY).lineTo(500, currentY).stroke('#BDBDBD');
         currentY += 15;
 
+        // Calculate totals if not provided
+        let calculatedSubtotal = 0;
+        
         // Items list
         orderData.items.forEach((item) => {
             const price = this.parsePrice(item.price);
             const quantity = parseInt(item.quantity) || 1;
             const total = price * quantity;
+            calculatedSubtotal += total;
 
             doc.fontSize(10).font('Helvetica')
                .text(item.name, 50, currentY, { width: 180, ellipsis: true })
@@ -300,12 +410,12 @@ class ProfessionalPDFInvoiceGenerator {
 
         currentY += 20;
 
-        // Totals section
-        const subtotal = orderData.subtotal || 0;
-        const tax = orderData.tax || 0;
-        const shipping = orderData.shipping || 0;
+        // Totals section - use provided totals or calculate them
+        const subtotal = orderData.subtotal || calculatedSubtotal;
+        const tax = orderData.tax || (subtotal * 0.10);
+        const shipping = orderData.shipping || (subtotal >= 50 ? 0 : 5);
         const discount = orderData.discountAmount || 0;
-        const finalTotal = subtotal + tax + shipping - discount;
+        const finalTotal = orderData.total || (subtotal + tax + shipping - discount);
 
         doc.fontSize(10).font('Helvetica')
            .text('SUBTOTAL', 250, currentY)
@@ -319,12 +429,12 @@ class ProfessionalPDFInvoiceGenerator {
         }
 
         doc.text('TAX (10%)', 250, currentY)
-           .text(`N$${tax.toFixed(2)}`, 400, currentY);
+           .text(`N${tax.toFixed(2)}`, 400, currentY);
         currentY += 15;
 
         if (discount > 0) {
             doc.text(`DISCOUNT${orderData.discountCode ? ` (${orderData.discountCode})` : ''}`, 250, currentY)
-               .text(`-N$${discount.toFixed(2)}`, 400, currentY);
+               .text(`-N${discount.toFixed(2)}`, 400, currentY);
             currentY += 15;
         }
 
@@ -333,7 +443,7 @@ class ProfessionalPDFInvoiceGenerator {
         currentY += 10;
         doc.fontSize(12).font('Helvetica-Bold')
            .text('TOTAL', 250, currentY)
-           .text(`N$${finalTotal.toFixed(2)}`, 400, currentY);
+           .text(`N${finalTotal.toFixed(2)}`, 400, currentY);
 
         // Thank you
         currentY += 60;
@@ -358,13 +468,39 @@ class ProfessionalPDFInvoiceGenerator {
 
     validateOrderData(orderData) {
         const errors = [];
+        
         if (!orderData || typeof orderData !== 'object') {
             errors.push('Order data is required');
             return { isValid: false, errors };
         }
-        if (!orderData.items || !Array.isArray(orderData.items) || orderData.items.length === 0) {
-            errors.push('Order must contain items');
+        
+        if (!orderData.items || !Array.isArray(orderData.items)) {
+            errors.push('Order must contain items array');
+        } else if (orderData.items.length === 0) {
+            errors.push('Order must contain at least one item');
+        } else {
+            // Validate each item
+            orderData.items.forEach((item, index) => {
+                if (!item.name) {
+                    errors.push(`Item ${index + 1} must have a name`);
+                }
+                if (item.price === undefined || item.price === null) {
+                    errors.push(`Item ${index + 1} must have a price`);
+                }
+                if (item.quantity === undefined || item.quantity === null || item.quantity < 1) {
+                    errors.push(`Item ${index + 1} must have a valid quantity`);
+                }
+            });
         }
+        
+        if (!orderData.customerInfo || typeof orderData.customerInfo !== 'object') {
+            errors.push('Order must contain customer information');
+        }
+        
+        if (orderData.total === undefined || orderData.total === null || orderData.total < 0) {
+            errors.push('Order must have a valid total amount');
+        }
+        
         return { isValid: errors.length === 0, errors };
     }
 
@@ -392,11 +528,18 @@ class ProfessionalPDFInvoiceGenerator {
             const files = fs.readdirSync(this.invoicesDir);
             const invoiceFiles = files.filter(file => file.endsWith('.pdf'));
             let totalSize = 0;
+            
             invoiceFiles.forEach(file => {
-                const filepath = path.join(this.invoicesDir, file);
-                const stats = fs.statSync(filepath);
-                totalSize += stats.size;
+                try {
+                    const filepath = path.join(this.invoicesDir, file);
+                    const stats = fs.statSync(filepath);
+                    totalSize += stats.size;
+                } catch (fileError) {
+                    // Skip files that can't be read
+                    console.warn(`Could not read file ${file}:`, fileError.message);
+                }
             });
+            
             return {
                 totalInvoices: invoiceFiles.length,
                 totalSize: Math.round(totalSize / 1024) + ' KB',
@@ -404,11 +547,13 @@ class ProfessionalPDFInvoiceGenerator {
                 directory: this.invoicesDir
             };
         } catch (error) {
+            console.error('Error getting invoice stats:', error);
             return {
                 totalInvoices: 0,
                 totalSize: '0 KB',
                 averageSize: '0 KB',
-                directory: this.invoicesDir
+                directory: this.invoicesDir,
+                error: error.message
             };
         }
     }
@@ -419,17 +564,130 @@ class ProfessionalPDFInvoiceGenerator {
             const cutoffDate = new Date();
             cutoffDate.setDate(cutoffDate.getDate() - daysOld);
             let cleanedCount = 0;
+            
             files.forEach(file => {
-                const filepath = path.join(this.invoicesDir, file);
-                const stats = fs.statSync(filepath);
-                if (stats.mtime < cutoffDate) {
-                    fs.unlinkSync(filepath);
-                    cleanedCount++;
+                try {
+                    const filepath = path.join(this.invoicesDir, file);
+                    const stats = fs.statSync(filepath);
+                    if (stats.mtime < cutoffDate) {
+                        fs.unlinkSync(filepath);
+                        cleanedCount++;
+                        console.log(`Cleaned up old invoice: ${file}`);
+                    }
+                } catch (fileError) {
+                    console.warn(`Could not process file ${file} during cleanup:`, fileError.message);
                 }
             });
+            
+            console.log(`Cleaned up ${cleanedCount} old invoice files`);
             return cleanedCount;
         } catch (error) {
+            console.error('Error during invoice cleanup:', error);
             return 0;
+        }
+    }
+
+    // NEW: Method to list all invoices
+    listInvoices() {
+        try {
+            const files = fs.readdirSync(this.invoicesDir);
+            const invoiceFiles = files.filter(file => file.endsWith('.pdf'));
+            
+            return invoiceFiles.map(file => {
+                try {
+                    const filepath = path.join(this.invoicesDir, file);
+                    const stats = fs.statSync(filepath);
+                    return {
+                        filename: file,
+                        size: Math.round(stats.size / 1024) + ' KB',
+                        created: stats.birthtime.toISOString(),
+                        modified: stats.mtime.toISOString()
+                    };
+                } catch (fileError) {
+                    return {
+                        filename: file,
+                        size: 'Unknown',
+                        created: 'Unknown',
+                        modified: 'Unknown',
+                        error: fileError.message
+                    };
+                }
+            });
+        } catch (error) {
+            console.error('Error listing invoices:', error);
+            return [];
+        }
+    }
+
+    // NEW: Method to delete specific invoice
+    deleteInvoice(filename) {
+        try {
+            const filepath = path.join(this.invoicesDir, filename);
+            if (fs.existsSync(filepath)) {
+                fs.unlinkSync(filepath);
+                console.log(`Deleted invoice: ${filename}`);
+                return true;
+            } else {
+                console.log(`Invoice not found: ${filename}`);
+                return false;
+            }
+        } catch (error) {
+            console.error(`Error deleting invoice ${filename}:`, error);
+            return false;
+        }
+    }
+
+    // NEW: Method to check if invoice exists
+    invoiceExists(filename) {
+        try {
+            const filepath = path.join(this.invoicesDir, filename);
+            return fs.existsSync(filepath);
+        } catch (error) {
+            console.error(`Error checking if invoice exists ${filename}:`, error);
+            return false;
+        }
+    }
+
+    // NEW: Method to get invoice path
+    getInvoicePath(filename) {
+        return path.join(this.invoicesDir, filename);
+    }
+
+    // NEW: Health check method
+    healthCheck() {
+        try {
+            const isPDFKitAvailable = this.isPDFKitAvailable();
+            const dirExists = fs.existsSync(this.invoicesDir);
+            const stats = this.getInvoiceStats();
+            
+            return {
+                status: 'healthy',
+                pdfKitAvailable: isPDFKitAvailable,
+                invoicesDirectoryExists: dirExists,
+                invoicesDirectory: this.invoicesDir,
+                totalInvoices: stats.totalInvoices,
+                totalSize: stats.totalSize,
+                canWrite: this.canWriteToDirectory()
+            };
+        } catch (error) {
+            return {
+                status: 'unhealthy',
+                error: error.message,
+                pdfKitAvailable: this.isPDFKitAvailable(),
+                invoicesDirectory: this.invoicesDir
+            };
+        }
+    }
+
+    // NEW: Check if we can write to the invoices directory
+    canWriteToDirectory() {
+        try {
+            const testFile = path.join(this.invoicesDir, 'test_write.tmp');
+            fs.writeFileSync(testFile, 'test');
+            fs.unlinkSync(testFile);
+            return true;
+        } catch (error) {
+            return false;
         }
     }
 }
