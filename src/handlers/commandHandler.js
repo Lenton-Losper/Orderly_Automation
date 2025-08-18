@@ -25,6 +25,29 @@ class CommandHandler {
         }
 
         try {
+            // CRITICAL: Check if session step is 'registration' BEFORE other commands
+            if (session.step === 'registration') {
+                console.log('COMMAND DEBUG - Session in registration step, processing registration input');
+                return await this.handleRegistrationInput(session, businessManager, text, messageData.userId);
+            }
+
+            // CRITICAL: Check if session step is 'checkout' BEFORE other commands
+            if (session.step === 'checkout') {
+                console.log('COMMAND DEBUG - Processing checkout input');
+                return this.handleCheckoutInput(session, text);
+            }
+
+            // CRITICAL: Step-specific handlers MUST come before global commands
+            if (session.step === 'quick_order' && /^[1-9]$/.test(command)) {
+                console.log('COMMAND DEBUG - Processing product selection');
+                return this.handleProductSelection(session, command);
+            }
+
+            if (session.step === 'menu' && /^[1-9]$/.test(command)) {
+                console.log('COMMAND DEBUG - Processing menu selection');
+                return this.handleMenuSelection(session, command);
+            }
+
             // Welcome and menu commands
             if (['hi', 'hello', 'start', 'menu', 'main'].includes(command)) {
                 console.log('COMMAND DEBUG - Processing welcome/menu command');
@@ -35,12 +58,6 @@ class CommandHandler {
             if (command === 'register') {
                 console.log('COMMAND DEBUG - Processing register command');
                 return await this.handleRegister(session, businessManager, messageData.userId);
-            }
-
-            // CRITICAL: Check if session step is 'registration' BEFORE other commands
-            if (session.step === 'registration') {
-                console.log('COMMAND DEBUG - Session in registration step, processing registration input');
-                return await this.handleRegistrationInput(session, businessManager, text, messageData.userId);
             }
 
             // PDF testing commands
@@ -64,13 +81,14 @@ class CommandHandler {
                 return this.handlePDFHelp();
             }
 
-            // Main menu options
-            if (['1', 'quick'].includes(command) && session.step === 'menu') {
+            // Main menu options - ONLY when in menu step or global context
+            if (['1', 'quick'].includes(command) && (session.step === 'menu' || session.step === 'start')) {
                 console.log('COMMAND DEBUG - Processing quick order');
                 return this.handleQuickOrder(session);
             }
 
-            if (['2', 'catalog', 'catalogue'].includes(command)) {
+            // FIXED: Only trigger catalog for non-quick_order steps or when explicitly requested
+            if (['catalog', 'catalogue'].includes(command) || (command === '2' && session.step === 'menu')) {
                 console.log('COMMAND DEBUG - Processing catalog');
                 return this.handleCatalog(session);
             }
@@ -99,22 +117,6 @@ class CommandHandler {
             if (command.startsWith('discount ')) {
                 console.log('COMMAND DEBUG - Processing discount');
                 return this.handleDiscount(session, command);
-            }
-
-            // Step-specific handlers
-            if (session.step === 'checkout') {
-                console.log('COMMAND DEBUG - Processing checkout input');
-                return this.handleCheckoutInput(session, text);
-            }
-
-            if (session.step === 'quick_order' && /^[1-9]$/.test(command)) {
-                console.log('COMMAND DEBUG - Processing product selection');
-                return this.handleProductSelection(session, command);
-            }
-
-            if (session.step === 'menu' && /^[1-9]$/.test(command)) {
-                console.log('COMMAND DEBUG - Processing menu selection');
-                return this.handleMenuSelection(session, command);
             }
 
             // Default fallback
