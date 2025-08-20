@@ -12,17 +12,24 @@ const CONNECTION_CONFIG = {
     HEALTH_CHECK_INTERVAL: 60000
 };
 
-// WhatsApp configuration
+// WhatsApp configuration with tenant support
 const WHATSAPP_CONFIG = {
     MARK_ONLINE_ON_CONNECT: true,
     BROWSER: ['LLL Farm Bot', 'Chrome', '120.0.0'],
     QR_TERMINAL: true,
-    AUTH_FOLDER: './auth'
+    AUTH_FOLDER: process.env.TENANT_ID ? `./tenants/${process.env.TENANT_ID}/auth` : './auth'
+};
+
+// Tenant configuration
+const TENANT_CONFIG = {
+    BASE_WEBSOCKET_PORT: 3000,
+    BASE_LOGS_DIR: './tenants',
+    BASE_INVOICES_DIR: './tenants'
 };
 
 // FIXED: Business configuration with proper ID
 const DEFAULT_BUSINESS = {
-    id: 'default',  // CRITICAL: This line was missing
+    id: 'default',
     businessName: 'LLL Farm',
     businessDescription: 'Fresh meat and agricultural products',
     businessPhone: '',
@@ -142,6 +149,7 @@ module.exports = {
     OWNER_NUMBER,
     CONNECTION_CONFIG,
     WHATSAPP_CONFIG,
+    TENANT_CONFIG,
     DEFAULT_BUSINESS,
     COLLECTIONS,
     SESSION_CONFIG,
