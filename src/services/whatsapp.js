@@ -195,9 +195,13 @@ class WhatsAppService {
             this.connectionRetries++;
             
             if (this.connectionRetries < this.maxRetries) {
+                // Provide sane fallbacks if constants are missing
+                const RECONNECT_BASE_DELAY = CONNECTION_CONFIG.RECONNECT_BASE_DELAY || CONNECTION_CONFIG.RETRY_DELAY || 3000;
+                const MAX_RECONNECT_DELAY = CONNECTION_CONFIG.MAX_RECONNECT_DELAY || 60000;
+                
                 const baseDelay = Math.min(
-                    CONNECTION_CONFIG.RECONNECT_BASE_DELAY * Math.pow(2, this.connectionRetries), 
-                    CONNECTION_CONFIG.MAX_RECONNECT_DELAY
+                    RECONNECT_BASE_DELAY * Math.pow(2, this.connectionRetries), 
+                    MAX_RECONNECT_DELAY
                 );
                 const jitter = Math.random() * 2000;
                 const delay = baseDelay + jitter;
@@ -211,10 +215,11 @@ class WhatsAppService {
             } else {
                 console.error('Max reconnection attempts reached. Waiting 5 minutes before retry...');
                 
+                const FATAL_ERROR_RETRY_DELAY = CONNECTION_CONFIG.FATAL_ERROR_RETRY_DELAY || 300000; // 5 minutes
                 setTimeout(() => {
                     this.connectionRetries = 0;
                     this.initialize();
-                }, CONNECTION_CONFIG.FATAL_ERROR_RETRY_DELAY);
+                }, FATAL_ERROR_RETRY_DELAY);
             }
         } else {
             console.log('Bot logged out. Manual intervention required.');
@@ -360,6 +365,7 @@ class WhatsAppService {
     }
 
     startHealthCheck() {
+        const intervalMs = CONNECTION_CONFIG.HEALTH_CHECK_INTERVAL || CONNECTION_CONFIG.PING_INTERVAL || 30000;
         this.connectionCheckInterval = setInterval(async () => {
             try {
                 const query = getHealthCheckQuery(this.socket);
@@ -367,7 +373,7 @@ class WhatsAppService {
             } catch (err) {
                 console.log('Connection ping failed:', err.message);
             }
-        }, CACHE_CONFIG.CONNECTION_HEALTH_CHECK_INTERVAL);
+        }, intervalMs);
     }
 
     async clearCorruptedAuth() {
