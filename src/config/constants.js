@@ -1,8 +1,50 @@
 // File: src/config/constants.js
 // Application constants and configuration
 
-// Owner configuration - Replace with your WhatsApp number to ignore
-const OWNER_NUMBER = process.env.OWNER_NUMBER || '264812345678@s.whatsapp.net';
+// Dynamic owner configuration - automatically uses bot's own number
+const getOwnerNumber = () => {
+    // If explicitly set via environment, use that
+    if (process.env.OWNER_NUMBER) {
+        return process.env.OWNER_NUMBER;
+    }
+    
+    // For multi-tenant: use the tenant's phone number as owner
+    if (process.env.TENANT_ID) {
+        const phoneVar = `PHONE_${process.env.TENANT_ID}`;
+        const phoneNumber = process.env[phoneVar];
+        if (phoneNumber) {
+            return `${phoneNumber}@s.whatsapp.net`;
+        }
+    }
+    
+    // Fallback to PHONE_1 if available
+    if (process.env.PHONE_1) {
+        return `${process.env.PHONE_1}@s.whatsapp.net`;
+    }
+    
+    // No owner restriction if none configured
+    return null;
+};
+
+const OWNER_NUMBER = getOwnerNumber();
+
+// Access control configuration for better security
+const ACCESS_CONFIG = {
+    // System admin - for critical system operations
+    SYSTEM_ADMIN: process.env.SYSTEM_ADMIN || null,
+    
+    // Business owner - the tenant's main number
+    BUSINESS_OWNER: OWNER_NUMBER,
+    
+    // Allow public access to business features (orders, inquiries, etc.)
+    PUBLIC_ACCESS: true,
+    
+    // Admin-only commands that require owner verification
+    ADMIN_COMMANDS: ['restart', 'config', 'shutdown', 'logs', 'stats'],
+    
+    // Public commands available to all users
+    PUBLIC_COMMANDS: ['menu', 'order', 'catalog', 'help', 'contact', 'status']
+};
 
 // Connection settings
 const CONNECTION_CONFIG = {
@@ -147,6 +189,7 @@ const ERROR_CONFIG = {
 // Export all configurations
 module.exports = {
     OWNER_NUMBER,
+    ACCESS_CONFIG,
     CONNECTION_CONFIG,
     WHATSAPP_CONFIG,
     TENANT_CONFIG,
