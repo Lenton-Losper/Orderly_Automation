@@ -1,4 +1,4 @@
-const { OWNER_NUMBER, RATE_LIMIT_CONFIG } = require('../config/constants');
+const { OWNER_NUMBER, ACCESS_CONFIG, RATE_LIMIT_CONFIG } = require('../config/constants');
 const OrderSession = require('../models/OrderSession');
 const sessionManager = require('../utils/sessionManager');
 const messageGenerators = require('../utils/messageGenerators');
@@ -25,6 +25,32 @@ class MessageHandler {
         // WhatsApp group JIDs end with '@g.us'
         // Individual chat JIDs end with '@s.whatsapp.net'
         return remoteJid.endsWith('@g.us');
+    }
+
+    // Check if user has permission for a specific command
+    hasPermission(userId, command, businessId) {
+        // If public access is enabled and it's not an admin command, allow it
+        if (ACCESS_CONFIG.PUBLIC_ACCESS && !ACCESS_CONFIG.ADMIN_COMMANDS.includes(command)) {
+            return true;
+        }
+
+        // Check if user is the business owner for this tenant
+        if (ACCESS_CONFIG.BUSINESS_OWNER && userId === ACCESS_CONFIG.BUSINESS_OWNER) {
+            return true;
+        }
+
+        // Check if user is system admin
+        if (ACCESS_CONFIG.SYSTEM_ADMIN && userId === ACCESS_CONFIG.SYSTEM_ADMIN) {
+            return true;
+        }
+
+        // For admin commands, require owner permissions
+        if (ACCESS_CONFIG.ADMIN_COMMANDS.includes(command)) {
+            return false;
+        }
+
+        // Default to allowing public commands
+        return ACCESS_CONFIG.PUBLIC_COMMANDS.includes(command) || ACCESS_CONFIG.PUBLIC_ACCESS;
     }
 
     // ENHANCED: Get bot phone number with comprehensive debugging
@@ -537,15 +563,23 @@ class MessageHandler {
   botNumber: '${botPhoneNumber}'
 }`);
 
-        // Skip messages from owner
-        if (userId === OWNER_NUMBER) {
-            console.log('Ignoring message from owner');
-            return;
-        }
-
         // Skip messages from bot itself
         if (msg.key.fromMe) {
             console.log('Ignoring message from bot itself');
+            return;
+        }
+
+        // Extract command for permission checking
+        const command = messageContent.toLowerCase().split(' ')[0];
+        
+        // Check permissions using new access control system
+        if (!this.hasPermission(userId, command, null)) {
+            console.log(`Access denied for user ${userId} command ${command}`);
+            if (ACCESS_CONFIG.ADMIN_COMMANDS.includes(command)) {
+                await this.sendMessage(userId, "This command requires owner privileges.");
+                return;
+            }
+            // For non-admin commands, don't send error message, just ignore
             return;
         }
 
