@@ -129,6 +129,16 @@ class WhatsAppService {
         // Credentials update handler
         this.socket.ev.on('creds.update', saveCreds);
         
+        // Low-level debug: log all upsert events for diagnostics
+        this.socket.ev.on('messages.upsert', ({ messages, type }) => {
+            try {
+                const first = messages && messages[0];
+                const keys = first && first.message ? Object.keys(first.message) : [];
+                const from = first && first.key ? first.key.remoteJid : 'unknown';
+                console.log(`WA DEBUG - upsert: type=${type}, from=${from}, keys=${JSON.stringify(keys)}`);
+            } catch (_) {}
+        });
+        
         // Connection update handler with enhanced bot info extraction
         this.socket.ev.on('connection.update', async ({ connection, lastDisconnect, qr, isNewLogin }) => {
             console.log('Connection update:', { connection, isNewLogin });
