@@ -537,9 +537,33 @@ class MessageHandler {
             return;
         }
 
+        // Robust text extraction supporting wrapped messages
+        const extractText = (messageNode) => {
+            if (!messageNode) return '';
+            const m = messageNode.message || messageNode;
+            // Plain text
+            if (m.conversation) return m.conversation;
+            if (m.extendedTextMessage && m.extendedTextMessage.text) return m.extendedTextMessage.text;
+            // Ephemeral wrapper
+            if (m.ephemeralMessage && m.ephemeralMessage.message) {
+                return extractText(m.ephemeralMessage);
+            }
+            // Device-sent wrapper
+            if (m.deviceSentMessage && m.deviceSentMessage.message) {
+                return extractText(m.deviceSentMessage);
+            }
+            // View once wrapper
+            if (m.viewOnceMessage && m.viewOnceMessage.message) {
+                return extractText(m.viewOnceMessage);
+            }
+            // Media captions
+            if (m.imageMessage && m.imageMessage.caption) return m.imageMessage.caption;
+            if (m.videoMessage && m.videoMessage.caption) return m.videoMessage.caption;
+            return '';
+        };
+
         // Extract message details
-        const messageContent = msg.message.conversation || 
-                             msg.message.extendedTextMessage?.text || '';
+        const messageContent = extractText(msg);
         const sender = msg.pushName || 'Customer';
         const userId = msg.key.remoteJid;
         const msgId = msg.key.id;
@@ -560,7 +584,8 @@ class MessageHandler {
   remoteJid: '${userId}',
   pushName: '${sender}',
   messageKeys: ${JSON.stringify(Object.keys(msg.message))},
-  botNumber: '${botPhoneNumber}'
+  botNumber: '${botPhoneNumber}',
+  text: ${JSON.stringify(messageContent)}
 }`);
 
         // Skip messages from bot itself
@@ -570,7 +595,7 @@ class MessageHandler {
         }
 
         // Extract command for permission checking
-        const command = messageContent.toLowerCase().split(' ')[0];
+        const command = (messageContent || '').toLowerCase().split(' ')[0];
         
         // Check permissions using new access control system
         if (!this.hasPermission(userId, command, null)) {
