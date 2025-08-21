@@ -7,7 +7,7 @@
 const { makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const { Boom } = require('@hapi/boom');
 const { getSocketConfig, getHealthCheckQuery } = require('../config/socket');
-const { CONNECTION_CONFIG, CACHE_CONFIG } = require('../config/constants');
+const { CONNECTION_CONFIG, CACHE_CONFIG, WHATSAPP_CONFIG } = require('../config/constants');
 
 class WhatsAppService {
     constructor() {
@@ -20,6 +20,11 @@ class WhatsAppService {
         this.eventHandlers = new Map();
         this.botInfo = null; // Store bot information for dynamic mapping
         this.vendorMappingAttempted = false; // Track if we've tried mapping this session
+        
+        // Resolve tenant-specific auth directory once
+        const path = require('path');
+        const authFolder = WHATSAPP_CONFIG && WHATSAPP_CONFIG.AUTH_FOLDER ? WHATSAPP_CONFIG.AUTH_FOLDER : 'auth';
+        this.authDir = path.isAbsolute(authFolder) ? authFolder : path.join(process.cwd(), authFolder);
         
         // Validate imports are available
         if (!makeWASocket || typeof makeWASocket !== 'function') {
@@ -44,15 +49,12 @@ class WhatsAppService {
             try {
                 // Ensure auth directory exists
                 const fs = require('fs');
-                const path = require('path');
-                const authDir = path.join(process.cwd(), 'auth');
-                
-                if (!fs.existsSync(authDir)) {
-                    fs.mkdirSync(authDir, { recursive: true });
-                    console.log('Created auth directory');
+                if (!fs.existsSync(this.authDir)) {
+                    fs.mkdirSync(this.authDir, { recursive: true });
+                    console.log(`Created auth directory: ${this.authDir}`);
                 }
                 
-                const authResult = await useMultiFileAuthState('auth');
+                const authResult = await useMultiFileAuthState(this.authDir);
                 state = authResult.state;
                 saveCreds = authResult.saveCreds;
                 
@@ -65,7 +67,7 @@ class WhatsAppService {
                 await this.clearCorruptedAuth();
                 
                 // Retry auth state creation
-                const authResult = await useMultiFileAuthState('auth');
+                const authResult = await useMultiFileAuthState(this.authDir);
                 state = authResult.state;
                 saveCreds = authResult.saveCreds;
                 
@@ -371,8 +373,7 @@ class WhatsAppService {
     async clearCorruptedAuth() {
         try {
             const fs = require('fs');
-            const path = require('path');
-            const authDir = path.join(process.cwd(), 'auth');
+            const authDir = this.authDir;
             
             if (fs.existsSync(authDir)) {
                 console.log('Clearing corrupted auth state...');
@@ -380,6 +381,7 @@ class WhatsAppService {
                 // Remove all files in auth directory
                 const files = fs.readdirSync(authDir);
                 for (const file of files) {
+                    const path = require('path');
                     const filePath = path.join(authDir, file);
                     try {
                         if (fs.statSync(filePath).isDirectory()) {
@@ -460,27 +462,14 @@ class WhatsAppService {
                 document: fileBuffer,
                 fileName: filename,
                 mimetype: 'application/pdf',
-                caption: caption || `${filename}\n\nFrom: ${this.botInfo?.businessName || 'LLL Farm'}`
+                caption
             };
-
+            
             await this.socket.sendMessage(userId, message);
-            
-            // Reset presence
-            await this.socket.sendPresenceUpdate('paused', userId);
-            
             console.log(`PDF sent successfully to ${userId}`);
-            
             return true;
         } catch (error) {
-            console.error('Error sending PDF:', error.message);
-            console.error('Error details:', {
-                filepath,
-                filename,
-                userId,
-                socketExists: !!this.socket,
-                botInfo: this.botInfo,
-                errorType: error.name
-            });
+            console.error('Failed to send PDF document:', error.message);
             return false;
         }
     }
@@ -623,7 +612,18 @@ class WhatsAppService {
     }
 
     getBotPhoneNumber() {
-        return this.socket?.user?.id?.split('@')[0] || null;
+        try {
+            if (this.socket && this.socket.user) {
+                // socket.user.id is like '123456789:1@s.whatsapp.net'
+                const fullId = this.socket.user.id;
+                const withoutDomain = fullId.split('@')[0];
+                const numberOnly = withoutDomain.split(':')[0];
+                return numberOnly;
+            }
+        } catch (error) {
+            console.error('Error extracting bot phone number:', error.message);
+        }
+        return 'unknown';
     }
 
     // ENHANCED: Get comprehensive bot info including vendor mapping
@@ -733,6 +733,29 @@ class WhatsAppService {
         this.vendorMappingAttempted = false;
         
         console.log('WhatsApp service cleanup completed');
+    }
+
+    // Shutdown method
+    async shutdown() {
+        try {
+            if (this.connectionCheckInterval) {
+                clearInterval(this.connectionCheckInterval);
+                this.connectionCheckInterval = null;
+            }
+
+            if (this.reconnectTimeout) {
+                clearTimeout(this.reconnectTimeout);
+                this.reconnectTimeout = null;
+            }
+
+            if (this.socket) {
+                await this.socket.sendPresenceUpdate('unavailable');
+                await this.socket.end(new Boom('Shutdown initiated'));
+                this.socket = null;
+            }
+        } catch (error) {
+            console.error('Error during WhatsApp service shutdown:', error.message);
+        }
     }
 }
 
