@@ -139,6 +139,12 @@ class WhatsAppService {
             } catch (_) {}
         });
         
+        // Reattach any registered external upsert handler on a fresh socket
+        const externalUpsertHandler = this.eventHandlers && this.eventHandlers.get('messages.upsert.external');
+        if (externalUpsertHandler) {
+            this.socket.ev.on('messages.upsert', externalUpsertHandler);
+        }
+        
         // Connection update handler with enhanced bot info extraction
         this.socket.ev.on('connection.update', async ({ connection, lastDisconnect, qr, isNewLogin }) => {
             console.log('Connection update:', { connection, isNewLogin });
@@ -608,6 +614,11 @@ class WhatsAppService {
     // Event handler registration
     onMessage(handler) {
         if (this.socket) {
+            // Store handler so it can be reattached after reconnections
+            if (!this.eventHandlers) {
+                this.eventHandlers = new Map();
+            }
+            this.eventHandlers.set('messages.upsert.external', handler);
             this.socket.ev.on('messages.upsert', handler);
         } else {
             throw new Error('Socket not initialized. Call initialize() first.');
