@@ -841,6 +841,21 @@ class MessageHandler {
             console.error('Message content:', message);
         }
     }
+
+    // Unsubscribe all live product listeners
+    async shutdown() {
+        try {
+            if (this.productUnsubscribers && this.productUnsubscribers.size > 0) {
+                console.log(`🧹 Unsubscribing ${this.productUnsubscribers.size} product listeners...`);
+                this.productUnsubscribers.forEach((unsubscribe) => {
+                    try { unsubscribe(); } catch (e) { /* ignore */ }
+                });
+                this.productUnsubscribers.clear();
+            }
+        } catch (err) {
+            console.error('Error during MessageHandler shutdown:', err);
+        }
+    }
 }
 
 module.exports = MessageHandler;
