@@ -254,6 +254,16 @@ class WhatsAppService {
             console.log('Could not set presence:', err.message);
         }
 
+        // Ensure pre-keys are uploaded to minimize decryption errors
+        try {
+            if (typeof this.socket.uploadPreKeysToServerIfRequired === 'function') {
+                await this.socket.uploadPreKeysToServerIfRequired();
+                console.log('Pre-keys uploaded (if required)');
+            }
+        } catch (preKeyErr) {
+            console.log('Pre-key upload skipped/failed:', preKeyErr.message);
+        }
+ 
         // Extract and store bot information
         this.extractBotInfo();
 
