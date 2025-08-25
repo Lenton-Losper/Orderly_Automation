@@ -794,6 +794,62 @@ class ScalableFirebaseService {
         }
     }
 
+    // Subscribe to real-time updates for a vendor's products
+    // Returns an unsubscribe function
+    subscribeToVendorProducts(businessId, onProductsChanged) {
+        try {
+            if (!businessId || businessId === 'undefined') {
+                console.log('SCALABLE: Invalid business ID for product subscription');
+                return () => {};
+            }
+
+            const productsRef = this.db
+                .collection('vendors')
+                .doc(businessId)
+                .collection('products');
+
+            const unsubscribe = productsRef.onSnapshot(
+                (snapshot) => {
+                    const products = {};
+
+                    snapshot.forEach((doc) => {
+                        const data = doc.data();
+
+                        if (data && data.isActive !== false && data.isAvailable !== false) {
+                            products[doc.id] = {
+                                name: data.name || 'Product',
+                                price: parseFloat(data.price) || 0,
+                                description: data.description || '',
+                                category: data.category || 'general',
+                                stock: parseInt(data.stockQuantity || data.stock) || 99,
+                                image: data.image || data.imageUrl || '🛍️',
+                                isActive: data.isActive !== false,
+                                isAvailable: data.isAvailable !== false
+                            };
+                        }
+                    });
+
+                    try {
+                        if (typeof onProductsChanged === 'function') {
+                            onProductsChanged(products);
+                        }
+                    } catch (cbErr) {
+                        console.error('SCALABLE: Error in onProductsChanged callback:', cbErr);
+                    }
+                },
+                (error) => {
+                    console.error(`SCALABLE: Product subscription error for ${businessId}:`, error);
+                }
+            );
+
+            console.log(`SCALABLE: Subscribed to products for vendor ${businessId}`);
+            return unsubscribe;
+        } catch (error) {
+            console.error('SCALABLE: Failed to subscribe to vendor products:', error);
+            return () => {};
+        }
+    }
+
     // Keep all your existing legacy methods unchanged...
     async getBusinessMappings() {
         if (!this.isInitialized) {
