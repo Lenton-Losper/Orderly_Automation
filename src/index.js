@@ -356,6 +356,12 @@ class WhatsAppBot {
                 await this.whatsappService.shutdown();
             }
 
+            // Shutdown message handler (unsubscribe listeners)
+            console.log('✉️  Shutting down message handler...');
+            if (this.messageHandler && typeof this.messageHandler.shutdown === 'function') {
+                await this.messageHandler.shutdown();
+            }
+
             // Shutdown business manager
             console.log('🏢 Shutting down business manager...');
             if (businessManager && typeof businessManager.shutdown === 'function') {
