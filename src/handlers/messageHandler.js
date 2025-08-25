@@ -18,6 +18,8 @@ class MessageHandler {
         
         // Business data cache for products
         this.businessDataCache = new Map();
+        // Track active Firestore product subscriptions by businessId
+        this.productUnsubscribers = new Map();
     }
 
     // Check if message is from a group
@@ -446,6 +448,38 @@ class MessageHandler {
                     console.log('💡 NORMALIZE DEBUG - This is likely the root cause of the issue');
                 } else {
                     console.log('✅ NORMALIZE DEBUG - Successfully loaded products from subcollection');
+                }
+
+                // Start realtime subscription once per businessId
+                if (!this.productUnsubscribers.has(businessId)) {
+                    const firebaseService = require('../services/firebase');
+                    const unsubscribe = firebaseService.subscribeToVendorProducts(
+                        businessId,
+                        (liveProducts) => {
+                            // Update cached business data
+                            const cached = this.businessDataCache.get(businessId);
+                            if (cached) {
+                                cached.products = liveProducts;
+                                if (!cached.productOrder || cached.productOrder.length === 0) {
+                                    cached.productOrder = Object.keys(liveProducts);
+                                }
+                                this.businessDataCache.set(businessId, cached);
+                            }
+
+                            // Update sessions bound to this business
+                            this.sessions.forEach((session) => {
+                                if (session.businessId === businessId && session.businessData) {
+                                    session.businessData.products = liveProducts;
+                                    if (!session.businessData.productOrder || session.businessData.productOrder.length === 0) {
+                                        session.businessData.productOrder = Object.keys(liveProducts);
+                                    }
+                                }
+                            });
+
+                            console.log(`🔄 Live products updated for business ${businessId} (count: ${Object.keys(liveProducts).length})`);
+                        }
+                    );
+                    this.productUnsubscribers.set(businessId, unsubscribe);
                 }
             } catch (error) {
                 console.error('❌ NORMALIZE DEBUG - Error loading products from subcollection:', error);
