@@ -1,0 +1,10 @@
+{"timestamp":"2025-08-24T08:40:04.881Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"264813141453","messageLength":0,"action":"received"},"pid":794770}
+{"timestamp":"2025-08-24T08:40:09.032Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"264813141453","messageLength":0,"action":"received"},"pid":794770}
+{"timestamp":"2025-08-24T08:40:12.267Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"264813141453","messageLength":0,"action":"received"},"pid":794770}
+{"timestamp":"2025-08-24T08:40:16.457Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"264813141453","messageLength":0,"action":"received"},"pid":794770}
+{"timestamp":"2025-08-24T08:40:22.139Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"264813141453","messageLength":0,"action":"received"},"pid":794770}
+{"timestamp":"2025-08-24T09:15:51.692Z","level":"INFO","message":"Message received","meta":{"userId":"status@broadcast","businessId":"264813141453","messageLength":0,"action":"received"},"pid":794770}
+{"timestamp":"2025-08-24T12:14:27.271Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"264813141453","messageLength":0,"action":"received"},"pid":794770}
+{"timestamp":"2025-08-24T12:14:31.660Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"264813141453","messageLength":0,"action":"received"},"pid":794770}
+{"timestamp":"2025-08-24T12:18:11.030Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"264813141453","messageLength":0,"action":"received"},"pid":794770}
+{"timestamp":"2025-08-24T12:18:16.040Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"264813141453","messageLength":0,"action":"received"},"pid":794770}

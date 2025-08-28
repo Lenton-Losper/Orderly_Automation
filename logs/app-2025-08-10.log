@@ -1,0 +1,310 @@
+{"timestamp":"2025-08-10T14:00:34.126Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":62674}
+{"timestamp":"2025-08-10T14:00:37.445Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":62674}
+{"timestamp":"2025-08-10T14:00:58.330Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":62674}
+{"timestamp":"2025-08-10T14:01:07.904Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":62674}
+{"timestamp":"2025-08-10T14:01:12.801Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":62674}
+{"timestamp":"2025-08-10T14:01:23.080Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":62674}
+{"timestamp":"2025-08-10T14:01:27.789Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":62674}
+{"timestamp":"2025-08-10T14:19:31.093Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":62674}
+{"timestamp":"2025-08-10T14:19:31.094Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754834434126,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":1136968}","meta":{},"pid":62674}
+{"timestamp":"2025-08-10T14:19:31.094Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":62674}
+{"timestamp":"2025-08-10T14:19:32.923Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":63069}
+{"timestamp":"2025-08-10T14:19:36.197Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":63069}
+{"timestamp":"2025-08-10T14:19:49.822Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:20:03.676Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:20:46.150Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:20:49.023Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:20:53.733Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:20:58.085Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:22:14.788Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:22:40.876Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:22:46.996Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:22:55.973Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:23:06.051Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:23:10.554Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:23:18.322Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:23:28.929Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:23:46.342Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:24:44.117Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:25:30.677Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:25:56.891Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:26:24.409Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:27:20.939Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:27:21.967Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:27:52.358Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:34:44.287Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63069}
+{"timestamp":"2025-08-10T14:39:06.886Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":63069}
+{"timestamp":"2025-08-10T14:39:06.886Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754835572923,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":1173963}","meta":{},"pid":63069}
+{"timestamp":"2025-08-10T14:39:06.886Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":63069}
+{"timestamp":"2025-08-10T14:39:08.115Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":63178}
+{"timestamp":"2025-08-10T14:39:11.074Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":63178}
+{"timestamp":"2025-08-10T14:39:44.313Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":63178}
+{"timestamp":"2025-08-10T14:39:44.314Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754836748114,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":36200}","meta":{},"pid":63178}
+{"timestamp":"2025-08-10T14:39:44.314Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":63178}
+{"timestamp":"2025-08-10T14:39:45.547Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":63202}
+{"timestamp":"2025-08-10T14:39:48.387Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":63202}
+{"timestamp":"2025-08-10T14:40:54.480Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63202}
+{"timestamp":"2025-08-10T14:41:04.926Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63202}
+{"timestamp":"2025-08-10T14:41:07.946Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63202}
+{"timestamp":"2025-08-10T14:41:13.173Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63202}
+{"timestamp":"2025-08-10T14:41:17.835Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63202}
+{"timestamp":"2025-08-10T14:44:41.956Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63202}
+{"timestamp":"2025-08-10T14:47:56.121Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63202}
+{"timestamp":"2025-08-10T14:48:17.157Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":63202}
+{"timestamp":"2025-08-10T14:48:17.157Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754836785546,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":511611}","meta":{},"pid":63202}
+{"timestamp":"2025-08-10T14:48:17.157Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":63202}
+{"timestamp":"2025-08-10T14:48:18.310Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":63510}
+{"timestamp":"2025-08-10T14:48:21.136Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":63510}
+{"timestamp":"2025-08-10T14:48:26.977Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63510}
+{"timestamp":"2025-08-10T14:48:27.838Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63510}
+{"timestamp":"2025-08-10T14:49:03.390Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63510}
+{"timestamp":"2025-08-10T14:49:09.094Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63510}
+{"timestamp":"2025-08-10T14:49:13.560Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63510}
+{"timestamp":"2025-08-10T14:49:21.493Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63510}
+{"timestamp":"2025-08-10T14:49:28.156Z","level":"INFO","message":"Message received","meta":{"userId":"264857176847@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":63510}
+{"timestamp":"2025-08-10T14:59:29.431Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":63510}
+{"timestamp":"2025-08-10T14:59:29.432Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754837298310,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":671122}","meta":{},"pid":63510}
+{"timestamp":"2025-08-10T14:59:29.432Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":63510}
+{"timestamp":"2025-08-10T14:59:30.441Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":63880}
+{"timestamp":"2025-08-10T14:59:33.344Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":63880}
+{"timestamp":"2025-08-10T15:07:39.356Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":63880}
+{"timestamp":"2025-08-10T15:07:39.356Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754837970441,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":488915}","meta":{},"pid":63880}
+{"timestamp":"2025-08-10T15:07:39.357Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":63880}
+{"timestamp":"2025-08-10T15:07:40.773Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":64148}
+{"timestamp":"2025-08-10T15:07:43.883Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":64148}
+{"timestamp":"2025-08-10T15:16:19.042Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":64148}
+{"timestamp":"2025-08-10T15:16:19.042Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754838460773,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":518269}","meta":{},"pid":64148}
+{"timestamp":"2025-08-10T15:16:19.042Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":64148}
+{"timestamp":"2025-08-10T15:16:20.498Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":64434}
+{"timestamp":"2025-08-10T15:16:23.339Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":64434}
+{"timestamp":"2025-08-10T15:23:31.159Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":64784}
+{"timestamp":"2025-08-10T15:23:34.141Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":64784}
+{"timestamp":"2025-08-10T15:31:08.922Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":64784}
+{"timestamp":"2025-08-10T15:31:08.922Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754839411159,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":457763}","meta":{},"pid":64784}
+{"timestamp":"2025-08-10T15:31:08.922Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":64784}
+{"timestamp":"2025-08-10T15:31:10.240Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":65048}
+{"timestamp":"2025-08-10T15:31:12.605Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":65048}
+{"timestamp":"2025-08-10T15:43:22.095Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":65048}
+{"timestamp":"2025-08-10T15:43:22.095Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754839870240,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":731855}","meta":{},"pid":65048}
+{"timestamp":"2025-08-10T15:43:22.095Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":65048}
+{"timestamp":"2025-08-10T15:43:23.229Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":65443}
+{"timestamp":"2025-08-10T15:43:26.122Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":65443}
+{"timestamp":"2025-08-10T15:54:37.470Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":65801}
+{"timestamp":"2025-08-10T15:54:40.351Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":65801}
+{"timestamp":"2025-08-10T16:06:50.064Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":65801}
+{"timestamp":"2025-08-10T16:06:50.065Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754841277470,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":732595}","meta":{},"pid":65801}
+{"timestamp":"2025-08-10T16:06:50.065Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":65801}
+{"timestamp":"2025-08-10T16:06:51.464Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":66199}
+{"timestamp":"2025-08-10T16:06:54.381Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":66199}
+{"timestamp":"2025-08-10T16:14:28.739Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":66199}
+{"timestamp":"2025-08-10T16:14:28.740Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754842011464,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":457276}","meta":{},"pid":66199}
+{"timestamp":"2025-08-10T16:14:28.740Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":66199}
+{"timestamp":"2025-08-10T16:14:29.782Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":66445}
+{"timestamp":"2025-08-10T16:14:32.603Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":66445}
+{"timestamp":"2025-08-10T16:22:38.704Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":66445}
+{"timestamp":"2025-08-10T16:22:38.705Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754842469782,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":488923}","meta":{},"pid":66445}
+{"timestamp":"2025-08-10T16:22:38.705Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":66445}
+{"timestamp":"2025-08-10T16:22:39.854Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":66712}
+{"timestamp":"2025-08-10T16:22:42.722Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":66712}
+{"timestamp":"2025-08-10T16:29:45.562Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":66712}
+{"timestamp":"2025-08-10T16:29:45.562Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754842959854,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":425708}","meta":{},"pid":66712}
+{"timestamp":"2025-08-10T16:29:45.562Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":66712}
+{"timestamp":"2025-08-10T16:29:46.601Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":67058}
+{"timestamp":"2025-08-10T16:29:49.443Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":67058}
+{"timestamp":"2025-08-10T16:38:55.842Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":67058}
+{"timestamp":"2025-08-10T16:38:55.843Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754843386601,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":549242}","meta":{},"pid":67058}
+{"timestamp":"2025-08-10T16:38:55.843Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":67058}
+{"timestamp":"2025-08-10T16:38:56.900Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":67351}
+{"timestamp":"2025-08-10T16:38:59.784Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":67351}
+{"timestamp":"2025-08-10T16:43:58.549Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":67351}
+{"timestamp":"2025-08-10T16:44:16.205Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":67351}
+{"timestamp":"2025-08-10T16:44:25.041Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":67351}
+{"timestamp":"2025-08-10T16:45:05.298Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":67351}
+{"timestamp":"2025-08-10T16:45:38.918Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":67351}
+{"timestamp":"2025-08-10T16:45:45.735Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":67351}
+{"timestamp":"2025-08-10T16:45:51.017Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":67351}
+{"timestamp":"2025-08-10T16:46:30.274Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":67351}
+{"timestamp":"2025-08-10T16:47:05.275Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":67351}
+{"timestamp":"2025-08-10T16:47:05.275Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754843936900,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":488375}","meta":{},"pid":67351}
+{"timestamp":"2025-08-10T16:47:05.276Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":67351}
+{"timestamp":"2025-08-10T16:47:06.361Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":67620}
+{"timestamp":"2025-08-10T16:47:09.217Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":67620}
+{"timestamp":"2025-08-10T16:47:15.434Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":67620}
+{"timestamp":"2025-08-10T16:53:45.370Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":67829}
+{"timestamp":"2025-08-10T16:53:47.750Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":67829}
+{"timestamp":"2025-08-10T17:00:52.259Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":67829}
+{"timestamp":"2025-08-10T17:00:52.259Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754844825370,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":426889}","meta":{},"pid":67829}
+{"timestamp":"2025-08-10T17:00:52.259Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":67829}
+{"timestamp":"2025-08-10T17:00:53.384Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":68055}
+{"timestamp":"2025-08-10T17:00:56.357Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":68055}
+{"timestamp":"2025-08-10T17:08:30.532Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":68055}
+{"timestamp":"2025-08-10T17:08:30.532Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754845253384,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":457148}","meta":{},"pid":68055}
+{"timestamp":"2025-08-10T17:08:30.532Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":68055}
+{"timestamp":"2025-08-10T17:08:31.508Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":68293}
+{"timestamp":"2025-08-10T17:08:33.851Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":68293}
+{"timestamp":"2025-08-10T17:09:46.443Z","level":"INFO","message":"Message received","meta":{"userId":"status@broadcast","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":68293}
+{"timestamp":"2025-08-10T17:16:08.928Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":68293}
+{"timestamp":"2025-08-10T17:16:08.928Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754845711508,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":457420}","meta":{},"pid":68293}
+{"timestamp":"2025-08-10T17:16:08.929Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":68293}
+{"timestamp":"2025-08-10T17:16:10.005Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":68537}
+{"timestamp":"2025-08-10T17:16:12.975Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":68537}
+{"timestamp":"2025-08-10T17:23:47.682Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":68537}
+{"timestamp":"2025-08-10T17:23:47.683Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754846170004,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":457679}","meta":{},"pid":68537}
+{"timestamp":"2025-08-10T17:23:47.683Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":68537}
+{"timestamp":"2025-08-10T17:23:49.095Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":68905}
+{"timestamp":"2025-08-10T17:23:51.634Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":68905}
+{"timestamp":"2025-08-10T17:31:26.657Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":68905}
+{"timestamp":"2025-08-10T17:31:26.658Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754846629094,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":457564}","meta":{},"pid":68905}
+{"timestamp":"2025-08-10T17:31:26.658Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":68905}
+{"timestamp":"2025-08-10T17:31:27.892Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":69160}
+{"timestamp":"2025-08-10T17:31:30.292Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":69160}
+{"timestamp":"2025-08-10T17:38:37.794Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":69384}
+{"timestamp":"2025-08-10T17:38:40.190Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":69384}
+{"timestamp":"2025-08-10T17:45:45.299Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":69384}
+{"timestamp":"2025-08-10T17:45:45.299Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754847517794,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":427505}","meta":{},"pid":69384}
+{"timestamp":"2025-08-10T17:45:45.299Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":69384}
+{"timestamp":"2025-08-10T17:45:46.439Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":69699}
+{"timestamp":"2025-08-10T17:45:48.908Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":69699}
+{"timestamp":"2025-08-10T17:52:52.478Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":69699}
+{"timestamp":"2025-08-10T17:52:52.480Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754847946439,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":426041}","meta":{},"pid":69699}
+{"timestamp":"2025-08-10T17:52:52.480Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":69699}
+{"timestamp":"2025-08-10T17:52:53.518Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":69926}
+{"timestamp":"2025-08-10T17:52:56.530Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":69926}
+{"timestamp":"2025-08-10T18:00:30.934Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":69926}
+{"timestamp":"2025-08-10T18:00:30.934Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754848373518,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":457416}","meta":{},"pid":69926}
+{"timestamp":"2025-08-10T18:00:30.934Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":69926}
+{"timestamp":"2025-08-10T18:00:32.452Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":70179}
+{"timestamp":"2025-08-10T18:00:35.575Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":70179}
+{"timestamp":"2025-08-10T18:08:10.138Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":70179}
+{"timestamp":"2025-08-10T18:08:10.139Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754848832451,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":457688}","meta":{},"pid":70179}
+{"timestamp":"2025-08-10T18:08:10.139Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":70179}
+{"timestamp":"2025-08-10T18:08:11.181Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":70419}
+{"timestamp":"2025-08-10T18:08:13.586Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":70419}
+{"timestamp":"2025-08-10T18:15:49.018Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":70419}
+{"timestamp":"2025-08-10T18:15:49.019Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754849291180,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":457839}","meta":{},"pid":70419}
+{"timestamp":"2025-08-10T18:15:49.019Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":70419}
+{"timestamp":"2025-08-10T18:15:50.041Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":70677}
+{"timestamp":"2025-08-10T18:15:52.343Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":70677}
+{"timestamp":"2025-08-10T18:23:26.726Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":70677}
+{"timestamp":"2025-08-10T18:23:26.726Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754849750041,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":456685}","meta":{},"pid":70677}
+{"timestamp":"2025-08-10T18:23:26.726Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":70677}
+{"timestamp":"2025-08-10T18:23:27.839Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":70942}
+{"timestamp":"2025-08-10T18:23:30.127Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":70942}
+{"timestamp":"2025-08-10T18:31:05.652Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":70942}
+{"timestamp":"2025-08-10T18:31:05.657Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754850207839,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":457818}","meta":{},"pid":70942}
+{"timestamp":"2025-08-10T18:31:05.657Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":70942}
+{"timestamp":"2025-08-10T18:31:07.141Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":71203}
+{"timestamp":"2025-08-10T18:31:09.581Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":71203}
+{"timestamp":"2025-08-10T18:43:21.101Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":71203}
+{"timestamp":"2025-08-10T18:43:21.102Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754850667141,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":733961}","meta":{},"pid":71203}
+{"timestamp":"2025-08-10T18:43:21.102Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":71203}
+{"timestamp":"2025-08-10T18:43:22.289Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":71756}
+{"timestamp":"2025-08-10T18:43:25.201Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":71756}
+{"timestamp":"2025-08-10T18:53:06.681Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":72092}
+{"timestamp":"2025-08-10T18:53:09.706Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":72092}
+{"timestamp":"2025-08-10T19:02:19.363Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":72408}
+{"timestamp":"2025-08-10T19:02:21.699Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":72408}
+{"timestamp":"2025-08-10T19:08:56.465Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":72408}
+{"timestamp":"2025-08-10T19:08:56.466Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754852539363,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":397103}","meta":{},"pid":72408}
+{"timestamp":"2025-08-10T19:08:56.466Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":72408}
+{"timestamp":"2025-08-10T19:08:57.880Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":72631}
+{"timestamp":"2025-08-10T19:09:00.454Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":72631}
+{"timestamp":"2025-08-10T19:16:36.202Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":72631}
+{"timestamp":"2025-08-10T19:16:36.203Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754852937880,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":458323}","meta":{},"pid":72631}
+{"timestamp":"2025-08-10T19:16:36.203Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":72631}
+{"timestamp":"2025-08-10T19:16:37.240Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":72890}
+{"timestamp":"2025-08-10T19:16:40.075Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":72890}
+{"timestamp":"2025-08-10T19:23:44.483Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":72890}
+{"timestamp":"2025-08-10T19:23:44.483Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754853397240,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":427243}","meta":{},"pid":72890}
+{"timestamp":"2025-08-10T19:23:44.483Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":72890}
+{"timestamp":"2025-08-10T19:23:45.628Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":73138}
+{"timestamp":"2025-08-10T19:23:48.557Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":73138}
+{"timestamp":"2025-08-10T19:32:26.150Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":73138}
+{"timestamp":"2025-08-10T19:32:26.151Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754853825628,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":520523}","meta":{},"pid":73138}
+{"timestamp":"2025-08-10T19:32:26.151Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":73138}
+{"timestamp":"2025-08-10T19:32:27.293Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":73556}
+{"timestamp":"2025-08-10T19:32:30.169Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":73556}
+{"timestamp":"2025-08-10T19:38:36.002Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":73556}
+{"timestamp":"2025-08-10T19:39:06.976Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":73556}
+{"timestamp":"2025-08-10T19:39:19.461Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":73556}
+{"timestamp":"2025-08-10T19:39:39.254Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":73556}
+{"timestamp":"2025-08-10T19:39:55.642Z","level":"INFO","message":"Message received","meta":{"userId":"264817375744@s.whatsapp.net","businessId":"r8DS3ktegrYoj3AIKvRWUByOKay1","messageLength":0,"action":"received"},"pid":73556}
+{"timestamp":"2025-08-10T19:41:40.668Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":73883}
+{"timestamp":"2025-08-10T19:41:43.617Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":73883}
+{"timestamp":"2025-08-10T19:49:19.736Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":73883}
+{"timestamp":"2025-08-10T19:49:19.737Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754854900668,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":459069}","meta":{},"pid":73883}
+{"timestamp":"2025-08-10T19:49:19.737Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":73883}
+{"timestamp":"2025-08-10T19:49:21.308Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":74164}
+{"timestamp":"2025-08-10T19:49:23.983Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":74164}
+{"timestamp":"2025-08-10T19:57:28.484Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":74164}
+{"timestamp":"2025-08-10T19:57:28.485Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754855361307,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":487178}","meta":{},"pid":74164}
+{"timestamp":"2025-08-10T19:57:28.485Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":74164}
+{"timestamp":"2025-08-10T19:57:29.637Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":74446}
+{"timestamp":"2025-08-10T19:57:32.483Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":74446}
+{"timestamp":"2025-08-10T20:05:39.456Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":74446}
+{"timestamp":"2025-08-10T20:05:39.457Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754855849637,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":489820}","meta":{},"pid":74446}
+{"timestamp":"2025-08-10T20:05:39.457Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":74446}
+{"timestamp":"2025-08-10T20:05:40.577Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":74735}
+{"timestamp":"2025-08-10T20:05:43.634Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":74735}
+{"timestamp":"2025-08-10T20:13:48.953Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":74735}
+{"timestamp":"2025-08-10T20:13:48.954Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754856340577,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":488377}","meta":{},"pid":74735}
+{"timestamp":"2025-08-10T20:13:48.954Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":74735}
+{"timestamp":"2025-08-10T20:13:50.039Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":75015}
+{"timestamp":"2025-08-10T20:13:52.921Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":75015}
+{"timestamp":"2025-08-10T20:20:57.024Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":75015}
+{"timestamp":"2025-08-10T20:20:57.024Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754856830039,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":426985}","meta":{},"pid":75015}
+{"timestamp":"2025-08-10T20:20:57.024Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":75015}
+{"timestamp":"2025-08-10T20:20:58.130Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":75418}
+{"timestamp":"2025-08-10T20:21:00.974Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":75418}
+{"timestamp":"2025-08-10T20:29:06.579Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":75418}
+{"timestamp":"2025-08-10T20:29:06.580Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754857258129,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":488451}","meta":{},"pid":75418}
+{"timestamp":"2025-08-10T20:29:06.580Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":75418}
+{"timestamp":"2025-08-10T20:29:07.975Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":75994}
+{"timestamp":"2025-08-10T20:29:11.346Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":75994}
+{"timestamp":"2025-08-10T20:38:16.362Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":75994}
+{"timestamp":"2025-08-10T20:38:16.363Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754857747975,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":548388}","meta":{},"pid":75994}
+{"timestamp":"2025-08-10T20:38:16.363Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":75994}
+{"timestamp":"2025-08-10T20:38:17.490Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":76477}
+{"timestamp":"2025-08-10T20:38:20.343Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":76477}
+{"timestamp":"2025-08-10T20:45:55.370Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":76477}
+{"timestamp":"2025-08-10T20:45:55.370Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754858297490,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":457880}","meta":{},"pid":76477}
+{"timestamp":"2025-08-10T20:45:55.370Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":76477}
+{"timestamp":"2025-08-10T20:45:56.966Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":76749}
+{"timestamp":"2025-08-10T20:46:00.166Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":76749}
+{"timestamp":"2025-08-10T20:54:04.821Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":76749}
+{"timestamp":"2025-08-10T20:54:04.821Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754858756965,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":487856}","meta":{},"pid":76749}
+{"timestamp":"2025-08-10T20:54:04.821Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":76749}
+{"timestamp":"2025-08-10T20:54:05.854Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":77025}
+{"timestamp":"2025-08-10T20:54:08.956Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":77025}
+{"timestamp":"2025-08-10T21:05:49.299Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":77025}
+{"timestamp":"2025-08-10T21:05:49.299Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754859245854,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":703445}","meta":{},"pid":77025}
+{"timestamp":"2025-08-10T21:05:49.299Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":77025}
+{"timestamp":"2025-08-10T21:05:50.469Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":77518}
+{"timestamp":"2025-08-10T21:05:52.191Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":77518}
+{"timestamp":"2025-08-10T21:14:29.294Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":77518}
+{"timestamp":"2025-08-10T21:14:29.295Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754859950469,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":518826}","meta":{},"pid":77518}
+{"timestamp":"2025-08-10T21:14:29.295Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":77518}
+{"timestamp":"2025-08-10T21:14:30.360Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":77798}
+{"timestamp":"2025-08-10T21:14:33.442Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":77798}
+{"timestamp":"2025-08-10T21:23:09.779Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":77798}
+{"timestamp":"2025-08-10T21:23:09.780Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754860470360,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":519420}","meta":{},"pid":77798}
+{"timestamp":"2025-08-10T21:23:09.780Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":77798}
+{"timestamp":"2025-08-10T21:23:10.921Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":78210}
+{"timestamp":"2025-08-10T21:23:13.904Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":78210}
+{"timestamp":"2025-08-10T21:31:18.495Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":78210}
+{"timestamp":"2025-08-10T21:31:18.496Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754860990921,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":487575}","meta":{},"pid":78210}
+{"timestamp":"2025-08-10T21:31:18.496Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":78210}
+{"timestamp":"2025-08-10T21:31:19.525Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":78473}
+{"timestamp":"2025-08-10T21:31:22.369Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":78473}
+{"timestamp":"2025-08-10T21:39:58.145Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":78473}
+{"timestamp":"2025-08-10T21:39:58.145Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754861479525,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":518620}","meta":{},"pid":78473}
+{"timestamp":"2025-08-10T21:39:58.145Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":78473}
+{"timestamp":"2025-08-10T21:39:59.144Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":78742}
+{"timestamp":"2025-08-10T21:40:02.071Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":78742}
+{"timestamp":"2025-08-10T21:49:37.944Z","level":"INFO","message":"🛑 Security Monitor shutting down...","meta":{},"pid":78742}
+{"timestamp":"2025-08-10T21:49:37.944Z","level":"INFO","message":"📊 Security stats: {\"threatsDetected\":0,\"usersBlocked\":0,\"messagesBlocked\":0,\"alertsSent\":0,\"startTime\":1754861999144,\"activeThreats\":0,\"blockedUsers\":0,\"whitelistedUsers\":0,\"suspiciousPatterns\":0,\"uptime\":578800}","meta":{},"pid":78742}
+{"timestamp":"2025-08-10T21:49:37.944Z","level":"INFO","message":"✅ Security Monitor shutdown complete","meta":{},"pid":78742}
+{"timestamp":"2025-08-10T21:49:38.991Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":79050}
+{"timestamp":"2025-08-10T21:49:41.830Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":79050}
+{"timestamp":"2025-08-10T21:59:51.472Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":79380}
+{"timestamp":"2025-08-10T21:59:54.470Z","level":"INFO","message":"🔒 Security Monitor initialized","meta":{},"pid":79380}
