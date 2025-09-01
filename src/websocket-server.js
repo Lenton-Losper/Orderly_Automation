@@ -2,20 +2,17 @@ const WebSocket = require('ws');
 const redis = require('redis');
 
 class WhatsAppWebSocketServer {
-  constructor() {
-    this.publisher = redis.createClient({
-      host: 'localhost',
-      port: 6379
-    });
-    
-    this.subscriber = redis.createClient({
-      host: 'localhost', 
-      port: 6379
-    });
+  constructor(options = {}) {
+    const { port = 8080, redisUrl = 'redis://localhost:6379' } = options;
 
-    this.wss = new WebSocket.Server({ port: 8080 });
+    this.port = port;
+
+    this.publisher = redis.createClient({ url: redisUrl });
+    this.subscriber = redis.createClient({ url: redisUrl });
+
+    this.wss = new WebSocket.Server({ port: this.port });
     this.connections = new Map(); // vendorId -> Set of WebSocket connections
-    
+
     this.init();
   }
 
@@ -32,7 +29,7 @@ class WhatsAppWebSocketServer {
       this.broadcastToVendor(channel, message);
     });
 
-    console.log('🔌 WebSocket server running on port 8080');
+    console.log(`🔌 WebSocket server running on port ${this.port}`);
   }
 
   handleConnection(ws, req) {
@@ -87,10 +84,34 @@ class WhatsAppWebSocketServer {
   async sendCurrentStatus(vendorId, ws) {
     // Send initial status message
     ws.send(JSON.stringify({
-      type: 'status',
-      status: 'checking',
-      message: 'Checking WhatsApp connection status...'
+      type: 'connection_status',
+      vendorId,
+      status: 'connecting',
+      timestamp: new Date().toISOString()
     }));
+  }
+
+  async shutdown() {
+    try {
+      console.log('🛑 Shutting down WebSocket server...');
+      if (this.wss) {
+        this.wss.clients.forEach(client => {
+          try { client.terminate(); } catch (_) {}
+        });
+        await new Promise(resolve => {
+          try { this.wss.close(() => resolve()); } catch (_) { resolve(); }
+        });
+      }
+      if (this.subscriber) {
+        try { await this.subscriber.quit(); } catch (_) {}
+      }
+      if (this.publisher) {
+        try { await this.publisher.quit(); } catch (_) {}
+      }
+      console.log('✅ WebSocket server stopped');
+    } catch (error) {
+      console.error('❌ Error shutting down WebSocket server:', error.message);
+    }
   }
 }
 

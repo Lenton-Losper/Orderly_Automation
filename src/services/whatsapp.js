@@ -5,6 +5,7 @@
 
 // Import Baileys functions directly (not as default)
 const { makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
+const redis = require('redis');
 const { Boom } = require('@hapi/boom');
 const { getSocketConfig, getHealthCheckQuery } = require('../config/socket');
 const { CONNECTION_CONFIG, CACHE_CONFIG, WHATSAPP_CONFIG } = require('../config/constants');
@@ -20,6 +21,8 @@ class WhatsAppService {
         this.eventHandlers = new Map();
         this.botInfo = null; // Store bot information for dynamic mapping
         this.vendorMappingAttempted = false; // Track if we've tried mapping this session
+        this.redisPublisher = null;
+        this.redisConnected = false;
         
         // Resolve tenant-specific auth directory once
         const path = require('path');
@@ -44,6 +47,18 @@ class WhatsAppService {
         try {
             console.log('Initializing WhatsApp connection with dynamic vendor mapping...');
             
+            // Initialize Redis publisher for WebSocket event fan-out
+            try {
+                const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+                this.redisPublisher = redis.createClient({ url: redisUrl });
+                await this.redisPublisher.connect();
+                this.redisConnected = true;
+                // Emit initial connecting status
+                await this.publishConnectionStatus('connecting');
+            } catch (redisError) {
+                console.error('Failed to initialize Redis publisher:', redisError.message);
+            }
+
             // Initialize auth state with better error handling
             let state, saveCreds;
             try {
@@ -151,10 +166,13 @@ class WhatsAppService {
             
             if (connection === 'close') {
                 await this.handleConnectionClose(lastDisconnect);
+                await this.publishConnectionStatus('disconnected', lastDisconnect?.error?.message);
             } else if (connection === 'open') {
                 await this.handleConnectionOpen();
+                await this.publishConnectionStatus('connected');
             } else if (connection === 'connecting') {
                 console.log('Connecting to WhatsApp...');
+                await this.publishConnectionStatus('connecting');
             }
             
             // ENHANCED: Display QR code with dynamic mapping info
@@ -170,6 +188,9 @@ class WhatsAppService {
                 console.log('='.repeat(50));
                 console.log('Once connected, bot will auto-discover vendor mapping...');
                 console.log('='.repeat(50) + '\n');
+
+                // Publish QR code over Redis for WebSocket broadcasting
+                await this.publishQrCode(qr);
             }
         });
 
@@ -185,6 +206,43 @@ class WhatsAppService {
                 console.log('Credentials updated');
             }
         });
+    }
+
+    // Publish connection status via Redis -> WebSocket
+    async publishConnectionStatus(status, reason) {
+        try {
+            if (!this.redisConnected || !this.redisPublisher) return;
+            const vendorId = process.env.TENANT_ID || this.botInfo?.mappedBusinessId || 'default';
+            const payload = {
+                type: 'connection_status',
+                vendorId,
+                status, // connecting|connected|disconnected|failed
+                reason,
+                timestamp: new Date().toISOString()
+            };
+            await this.redisPublisher.publish(`whatsapp:${vendorId}`, JSON.stringify(payload));
+        } catch (err) {
+            // Best-effort, do not crash
+        }
+    }
+
+    // Publish QR code via Redis -> WebSocket
+    async publishQrCode(qr) {
+        try {
+            if (!this.redisConnected || !this.redisPublisher || !qr) return;
+            const vendorId = process.env.TENANT_ID || this.botInfo?.mappedBusinessId || 'default';
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`;
+            const payload = {
+                type: 'qr_code',
+                vendorId,
+                qrCode: qr,
+                qrUrl,
+                timestamp: new Date().toISOString()
+            };
+            await this.redisPublisher.publish(`whatsapp:${vendorId}`, JSON.stringify(payload));
+        } catch (err) {
+            // Best-effort, do not crash
+        }
     }
 
     async handleConnectionClose(lastDisconnect) {
@@ -239,6 +297,7 @@ class WhatsAppService {
             }
         } else {
             console.log('Bot logged out. Manual intervention required.');
+            await this.publishConnectionStatus('failed', lastDisconnect?.error?.message || 'logged out');
         }
     }
 
@@ -789,6 +848,12 @@ class WhatsAppService {
                 await this.socket.sendPresenceUpdate('unavailable');
                 await this.socket.end(new Boom('Shutdown initiated'));
                 this.socket = null;
+            }
+
+            if (this.redisPublisher) {
+                try { await this.redisPublisher.quit(); } catch (_) {}
+                this.redisPublisher = null;
+                this.redisConnected = false;
             }
         } catch (error) {
             console.error('Error during WhatsApp service shutdown:', error.message);
