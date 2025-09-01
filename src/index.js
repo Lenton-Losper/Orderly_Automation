@@ -10,6 +10,8 @@ const { OWNER_NUMBER } = require('./config/constants');
 const businessManager = require('./services/businessManager');
 // Import WhatsApp service correctly - it might be a default export or instance
 const whatsappService = require('./services/whatsapp');
+const { getTenantConfig } = require('./config/tenant');
+const WhatsAppWebSocketServer = require('./websocket-server');
 
 // Handlers and utilities
 const MessageHandler = require('./handlers/messageHandler');
@@ -48,6 +50,7 @@ class WhatsAppBot {
             security: {},
             duplicateChecker: {}
         };
+        this.wsServer = null;
     }
 
     async initialize() {
@@ -78,7 +81,8 @@ class WhatsAppBot {
             // Step 8: Set up monitoring
             await this.setupMonitoring();
 
-            // Step 9: Set up graceful shutdown
+            // Step 9: Start WebSocket server and set up graceful shutdown
+            await this.startWebSocketServer();
             this.setupGracefulShutdown();
 
             this.isInitialized = true;
@@ -88,6 +92,20 @@ class WhatsAppBot {
         } catch (error) {
             console.error('❌ Failed to initialize WhatsApp Bot:', error);
             throw new Error(`Bot initialization failed: ${error.message}`);
+        }
+    }
+
+    async startWebSocketServer() {
+        try {
+            const tenantId = process.env.TENANT_ID || 'default';
+            const tenantConfig = getTenantConfig(tenantId);
+            const port = tenantConfig.websocketPort || 8080;
+            const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+
+            console.log(`🔧 Starting WebSocket server on port ${port} for tenant ${tenantId}`);
+            this.wsServer = new WhatsAppWebSocketServer({ port, redisUrl });
+        } catch (error) {
+            console.error('❌ Failed to start WebSocket server:', error.message);
         }
     }
 
@@ -354,6 +372,12 @@ class WhatsAppBot {
             console.log('📱 Shutting down WhatsApp service...');
             if (this.whatsappService && typeof this.whatsappService.shutdown === 'function') {
                 await this.whatsappService.shutdown();
+            }
+
+            // Shutdown WebSocket server
+            console.log('🔌 Shutting down WebSocket server...');
+            if (this.wsServer && typeof this.wsServer.shutdown === 'function') {
+                await this.wsServer.shutdown();
             }
 
             // Shutdown message handler (unsubscribe listeners)
