@@ -740,8 +740,8 @@ class ScalableFirebaseService {
         };
     }
 
-    // Enhanced product loading with guaranteed structure
-    async getBusinessProducts(businessId) {
+    // Enhanced product loading with guaranteed structure - Updated for multi-tenant support
+    async getBusinessProducts(businessId, tenantId = null) {
         try {
             // Handle undefined businessId
             if (!businessId || businessId === 'undefined') {
@@ -749,15 +749,31 @@ class ScalableFirebaseService {
                 return [];
             }
             
-            console.log(`SCALABLE: Loading products for vendor: ${businessId}`);
+            // Get tenantId from environment if not provided
+            const effectiveTenantId = tenantId || process.env.TENANT_ID || 'default';
             
-            const productsRef = this.db.collection('vendors').doc(businessId).collection('products');
-            const snapshot = await productsRef.get();
+            console.log(`SCALABLE: Loading products for vendor: ${businessId}, tenant: ${effectiveTenantId}`);
             
-            console.log(`SCALABLE: Found ${snapshot.size} products for ${businessId}`);
+            // Try multi-tenant path first
+            let productsRef = this.db.collection('vendors')
+                .doc(businessId)
+                .collection('tenants')
+                .doc(effectiveTenantId)
+                .collection('products');
+            
+            let snapshot = await productsRef.get();
+            
+            // If no products found in tenant path, try legacy path for backward compatibility
+            if (snapshot.empty && effectiveTenantId !== 'default') {
+                console.log(`SCALABLE: No products found in tenant path, trying legacy path for backward compatibility`);
+                productsRef = this.db.collection('vendors').doc(businessId).collection('products');
+                snapshot = await productsRef.get();
+            }
+            
+            console.log(`SCALABLE: Found ${snapshot.size} products for ${businessId} (tenant: ${effectiveTenantId})`);
             
             if (snapshot.empty) {
-                console.log(`SCALABLE: No products found for vendor ${businessId}`);
+                console.log(`SCALABLE: No products found for vendor ${businessId} (tenant: ${effectiveTenantId})`);
                 return [];
             }
             
@@ -780,16 +796,17 @@ class ScalableFirebaseService {
                         isActive: data.isActive !== false,
                         unit: data.unit || 'piece',
                         vendorId: businessId,
+                        tenantId: effectiveTenantId,
                         ...data
                     });
                 }
             });
             
-            console.log(`SCALABLE: Processed ${products.length} active products`);
+            console.log(`SCALABLE: Processed ${products.length} active products for tenant ${effectiveTenantId}`);
             return products;
             
         } catch (error) {
-            console.error(`SCALABLE: Error loading products for ${businessId}:`, error);
+            console.error(`SCALABLE: Error loading products for ${businessId} (tenant: ${tenantId}):`, error);
             return [];
         }
     }

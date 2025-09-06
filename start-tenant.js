@@ -6,12 +6,12 @@ const { getTenantConfig, createTenantDirectories } = require('./src/config/tenan
 async function startTenantBot() {
     try {
         // Get tenant ID and bot phone from command line arguments
-        const tenantId = process.argv[2] || '1';
+        const tenantId = process.argv[2] || 'tenant1';
         const botPhone = process.argv[3];
         
         if (!botPhone) {
             console.error('Usage: node start-tenant.js <tenantId> <botPhoneNumber>');
-            console.error('Example: node start-tenant.js 1 264813141453');
+            console.error('Example: node start-tenant.js tenant1 264817375723');
             process.exit(1);
         }
         
@@ -54,8 +54,8 @@ function showHelp() {
     console.log('  node start-tenant.js <tenantId> <botPhoneNumber>');
     console.log('');
     console.log('Examples:');
-    console.log('  node start-tenant.js 1 264813141453');
-    console.log('  node start-tenant.js 2 264813141454');
+    console.log('  node start-tenant.js tenant1 264817375723');
+    console.log('  node start-tenant.js tenant2 264813141454');
     console.log('  node start-tenant.js business1 264817375744');
     console.log('');
     console.log('Parameters:');

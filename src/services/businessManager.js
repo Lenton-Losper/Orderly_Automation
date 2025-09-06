@@ -285,12 +285,13 @@ class BusinessManager {
         }
     }
 
-    // CUSTOMER MANAGEMENT METHODS - Enhanced for vendor subcollections
-    async saveCustomer(businessId, customerData, whatsappId) {
+    // CUSTOMER MANAGEMENT METHODS - Enhanced for vendor subcollections with multi-tenant support
+    async saveCustomer(businessId, customerData, whatsappId, tenantId = null) {
         console.log('BUSINESS MANAGER DEBUG - saveCustomer called');
         console.log('BUSINESS MANAGER DEBUG - Business ID:', businessId);
         console.log('BUSINESS MANAGER DEBUG - Customer Data:', JSON.stringify(customerData, null, 2));
         console.log('BUSINESS MANAGER DEBUG - WhatsApp ID:', whatsappId);
+        console.log('BUSINESS MANAGER DEBUG - Tenant ID:', tenantId);
         
         try {
             // Validate inputs
@@ -308,6 +309,9 @@ class BusinessManager {
                 console.error('BUSINESS MANAGER DEBUG - Missing whatsappId');
                 return { success: false, message: 'Missing WhatsApp ID' };
             }
+
+            // Get tenantId from environment if not provided
+            const effectiveTenantId = tenantId || process.env.TENANT_ID || 'default';
 
             // Clean WhatsApp ID
             const cleanWhatsAppId = cleanPhoneNumberForMapping(whatsappId);
@@ -333,10 +337,12 @@ class BusinessManager {
             
             console.log('BUSINESS MANAGER DEBUG - Vendor document exists and verified');
             
-            // Check if account name already exists in the vendor subcollection
-            console.log('BUSINESS MANAGER DEBUG - Checking for existing account name in vendor subcollection...');
+            // Check if account name already exists in the tenant subcollection
+            console.log('BUSINESS MANAGER DEBUG - Checking for existing account name in tenant subcollection...');
             const existingCustomer = await db.collection('vendors')
                 .doc(businessId)
+                .collection('tenants')
+                .doc(effectiveTenantId)
                 .collection('customers')
                 .where('accountName', '==', customerData.accountName)
                 .get();
@@ -345,26 +351,29 @@ class BusinessManager {
             console.log('BUSINESS MANAGER DEBUG - Existing customer query size:', existingCustomer.size);
             
             if (!existingCustomer.empty) {
-                console.log('BUSINESS MANAGER DEBUG - Account name already exists for this vendor');
-                return { success: false, message: 'Account name already exists for this vendor' };
+                console.log('BUSINESS MANAGER DEBUG - Account name already exists for this vendor/tenant');
+                return { success: false, message: 'Account name already exists for this vendor/tenant' };
             }
             
-            // Check if WhatsApp ID already has an account in the vendor subcollection
-            console.log('BUSINESS MANAGER DEBUG - Checking for existing WhatsApp ID in vendor subcollection...');
+            // Check if WhatsApp ID already has an account in the tenant subcollection
+            console.log('BUSINESS MANAGER DEBUG - Checking for existing WhatsApp ID in tenant subcollection...');
             const existingWhatsAppCustomer = await db.collection('vendors')
                 .doc(businessId)
+                .collection('tenants')
+                .doc(effectiveTenantId)
                 .collection('customers')
                 .where('whatsappId', '==', cleanWhatsAppId)
                 .get();
                 
             if (!existingWhatsAppCustomer.empty) {
-                console.log('BUSINESS MANAGER DEBUG - WhatsApp ID already has an account for this vendor');
-                return { success: false, message: 'This WhatsApp number already has an account for this vendor' };
+                console.log('BUSINESS MANAGER DEBUG - WhatsApp ID already has an account for this vendor/tenant');
+                return { success: false, message: 'This WhatsApp number already has an account for this vendor/tenant' };
             }
             
-            // Create customer document in the vendor subcollection
+            // Create customer document in the tenant subcollection
             const customerDoc = {
                 vendorId: businessId,
+                tenantId: effectiveTenantId,
                 whatsappId: cleanWhatsAppId,
                 name: customerData.name,
                 email: customerData.email,
@@ -382,21 +391,25 @@ class BusinessManager {
             
             console.log('BUSINESS MANAGER DEBUG - Customer document to save:', JSON.stringify(customerDoc, null, 2));
             
-            // Save to the vendor subcollection
-            const vendorCustomersRef = db.collection('vendors').doc(businessId).collection('customers');
-            console.log('BUSINESS MANAGER DEBUG - Saving to vendor subcollection path: vendors/' + businessId + '/customers');
+            // Save to the tenant subcollection
+            const tenantCustomersRef = db.collection('vendors')
+                .doc(businessId)
+                .collection('tenants')
+                .doc(effectiveTenantId)
+                .collection('customers');
+            console.log('BUSINESS MANAGER DEBUG - Saving to tenant subcollection path: vendors/' + businessId + '/tenants/' + effectiveTenantId + '/customers');
             
-            const docRef = await vendorCustomersRef.add(customerDoc);
+            const docRef = await tenantCustomersRef.add(customerDoc);
             console.log('BUSINESS MANAGER DEBUG - Customer saved with ID:', docRef.id);
-            console.log('BUSINESS MANAGER DEBUG - Full path: vendors/' + businessId + '/customers/' + docRef.id);
+            console.log('BUSINESS MANAGER DEBUG - Full path: vendors/' + businessId + '/tenants/' + effectiveTenantId + '/customers/' + docRef.id);
             
             // Verify the document was created
             const savedDoc = await docRef.get();
             if (savedDoc.exists) {
-                console.log('BUSINESS MANAGER DEBUG - Document verification successful in vendor subcollection');
+                console.log('BUSINESS MANAGER DEBUG - Document verification successful in tenant subcollection');
                 console.log('BUSINESS MANAGER DEBUG - Saved document data:', savedDoc.data());
             } else {
-                console.error('BUSINESS MANAGER DEBUG - Document was not created properly in vendor subcollection');
+                console.error('BUSINESS MANAGER DEBUG - Document was not created properly in tenant subcollection');
             }
             
             return { 
@@ -404,7 +417,8 @@ class BusinessManager {
                 accountName: customerData.accountName,
                 customerId: docRef.id,
                 vendorId: businessId,
-                documentPath: `vendors/${businessId}/customers/${docRef.id}`
+                tenantId: effectiveTenantId,
+                documentPath: `vendors/${businessId}/tenants/${effectiveTenantId}/customers/${docRef.id}`
             };
             
         } catch (error) {
@@ -424,11 +438,12 @@ class BusinessManager {
         }
     }
 
-    // Enhanced: Get existing customer from vendor subcollection
-    async getExistingCustomer(businessId, whatsappId) {
+    // Enhanced: Get existing customer from vendor subcollection with multi-tenant support
+    async getExistingCustomer(businessId, whatsappId, tenantId = null) {
         console.log('BUSINESS MANAGER DEBUG - getExistingCustomer called');
         console.log('BUSINESS MANAGER DEBUG - Business ID:', businessId);
         console.log('BUSINESS MANAGER DEBUG - WhatsApp ID:', whatsappId);
+        console.log('BUSINESS MANAGER DEBUG - Tenant ID:', tenantId);
         
         try {
             // Handle undefined businessId
@@ -436,6 +451,9 @@ class BusinessManager {
                 console.log('BUSINESS MANAGER DEBUG - Invalid business ID, cannot query customers');
                 return null;
             }
+            
+            // Get tenantId from environment if not provided
+            const effectiveTenantId = tenantId || process.env.TENANT_ID || 'default';
             
             // Clean the userId
             const cleanUserId = cleanPhoneNumberForMapping(whatsappId);
@@ -445,18 +463,34 @@ class BusinessManager {
             const admin = require('firebase-admin');
             const db = admin.firestore();
             
-            console.log('BUSINESS MANAGER DEBUG - Querying vendor subcollection: vendors/' + businessId + '/customers');
-            const customerQuery = await db.collection('vendors')
+            // Try multi-tenant path first
+            console.log('BUSINESS MANAGER DEBUG - Querying tenant subcollection: vendors/' + businessId + '/tenants/' + effectiveTenantId + '/customers');
+            let customerQuery = await db.collection('vendors')
                 .doc(businessId)
+                .collection('tenants')
+                .doc(effectiveTenantId)
                 .collection('customers')
                 .where('whatsappId', '==', cleanUserId)
                 .where('isActive', '==', true)
                 .get();
                 
-            console.log('BUSINESS MANAGER DEBUG - Customer query size:', customerQuery.size);
+            console.log('BUSINESS MANAGER DEBUG - Tenant customer query size:', customerQuery.size);
+            
+            // If no customers found in tenant path, try legacy path for backward compatibility
+            if (customerQuery.empty && effectiveTenantId !== 'default') {
+                console.log('BUSINESS MANAGER DEBUG - No customers found in tenant path, trying legacy path for backward compatibility');
+                console.log('BUSINESS MANAGER DEBUG - Querying legacy subcollection: vendors/' + businessId + '/customers');
+                customerQuery = await db.collection('vendors')
+                    .doc(businessId)
+                    .collection('customers')
+                    .where('whatsappId', '==', cleanUserId)
+                    .where('isActive', '==', true)
+                    .get();
+                console.log('BUSINESS MANAGER DEBUG - Legacy customer query size:', customerQuery.size);
+            }
             
             if (customerQuery.empty) {
-                console.log('No existing customer found in vendor subcollection for:', businessId, 'WhatsApp:', cleanUserId);
+                console.log('No existing customer found in vendor subcollection for:', businessId, 'WhatsApp:', cleanUserId, 'Tenant:', effectiveTenantId);
                 return null;
             }
             
@@ -475,13 +509,14 @@ class BusinessManager {
                 totalOrders: customerData.totalOrders || 0,
                 totalSpent: customerData.totalSpent || 0,
                 vendorId: customerData.vendorId || businessId,
+                tenantId: effectiveTenantId,
                 documentId: customerDoc.id,
-                documentPath: `vendors/${businessId}/customers/${customerDoc.id}`
+                documentPath: `vendors/${businessId}/tenants/${effectiveTenantId}/customers/${customerDoc.id}`
             };
             
         } catch (error) {
             console.error('BUSINESS MANAGER DEBUG - Error getting existing customer from vendor subcollection:', error);
-            console.log('No existing customer found for vendor:', businessId, 'WhatsApp:', whatsappId);
+            console.log('No existing customer found for vendor:', businessId, 'WhatsApp:', whatsappId, 'Tenant:', tenantId);
             return null;
         }
     }
@@ -623,48 +658,76 @@ class BusinessManager {
         }
     }
 
-    async getCustomerOrders(userId, businessId, limit = 10) {
+    async getCustomerOrders(userId, businessId, limit = 10, tenantId = null) {
         try {
             const admin = require('firebase-admin');
             const db = admin.firestore();
             const cleanUserId = cleanPhoneNumberForMapping(userId);
             
-            const ordersQuery = await db.collection('vendors')
+            // Get tenantId from environment if not provided
+            const effectiveTenantId = tenantId || process.env.TENANT_ID || 'default';
+            
+            // Try multi-tenant path first
+            let ordersQuery = await db.collection('vendors')
                 .doc(businessId)
+                .collection('tenants')
+                .doc(effectiveTenantId)
                 .collection('orders')
                 .where('customerInfo.whatsappId', '==', cleanUserId)
                 .orderBy('createdAt', 'desc')
                 .limit(limit)
                 .get();
                 
+            // If no orders found in tenant path, try legacy path for backward compatibility
+            if (ordersQuery.empty && effectiveTenantId !== 'default') {
+                console.log(`BUSINESS MANAGER DEBUG - No orders found in tenant path, trying legacy path for backward compatibility`);
+                ordersQuery = await db.collection('vendors')
+                    .doc(businessId)
+                    .collection('orders')
+                    .where('customerInfo.whatsappId', '==', cleanUserId)
+                    .orderBy('createdAt', 'desc')
+                    .limit(limit)
+                    .get();
+            }
+                
             const orders = [];
             ordersQuery.forEach(doc => {
-                orders.push({ id: doc.id, ...doc.data() });
+                orders.push({ id: doc.id, tenantId: effectiveTenantId, ...doc.data() });
             });
             
             return orders;
         } catch (error) {
-            console.error(`Failed to get orders for customer ${userId} in business ${businessId}:`, error);
+            console.error(`Failed to get orders for customer ${userId} in business ${businessId} (tenant: ${tenantId}):`, error);
             return [];
         }
     }
 
-    async createOrder(orderData, businessId) {
+    async createOrder(orderData, businessId, tenantId = null) {
         try {
             const admin = require('firebase-admin');
             const db = admin.firestore();
             
+            // Get tenantId from environment if not provided
+            const effectiveTenantId = tenantId || process.env.TENANT_ID || 'default';
+            
             const orderDoc = {
                 ...orderData,
                 vendorId: businessId,
+                tenantId: effectiveTenantId,
                 createdAt: new Date().toISOString(),
                 status: orderData.status || 'pending'
             };
             
-            const docRef = await db.collection('vendors').doc(businessId).collection('orders').add(orderDoc);
-            return { ...orderData, id: docRef.id };
+            // Use multi-tenant path
+            const docRef = await db.collection('vendors')
+                .doc(businessId)
+                .collection('tenants')
+                .doc(effectiveTenantId)
+                .collection('orders')
+                .add(orderDoc);
+            return { ...orderData, id: docRef.id, tenantId: effectiveTenantId };
         } catch (error) {
-            console.error(`Failed to create order for business ${businessId}:`, error);
+            console.error(`Failed to create order for business ${businessId} (tenant: ${tenantId}):`, error);
             throw error;
         }
     }

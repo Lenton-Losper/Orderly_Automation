@@ -291,27 +291,42 @@ class MessageHandler {
         return session;
     }
 
-    // FIXED: Load products from vendor subcollection with comprehensive debugging
-    async loadProductsFromVendorSubcollection(businessId) {
+    // FIXED: Load products from vendor subcollection with multi-tenant support
+    async loadProductsFromVendorSubcollection(businessId, tenantId = null) {
         try {
-            console.log('PRODUCT DEBUG - Loading products from vendor subcollection for business:', businessId);
+            // Get tenantId from environment if not provided
+            const effectiveTenantId = tenantId || process.env.TENANT_ID || 'default';
+            
+            console.log('PRODUCT DEBUG - Loading products from vendor subcollection for business:', businessId, 'tenant:', effectiveTenantId);
             
             // Import Firebase Admin
             const admin = require('firebase-admin');
             const db = admin.firestore();
             
-            console.log(`PRODUCT DEBUG - Querying path: vendors/${businessId}/products`);
-            
-            // Load products from the vendors/{businessId}/products subcollection
-            const productsRef = await db.collection('vendors')
+            // Try multi-tenant path first
+            console.log(`PRODUCT DEBUG - Querying path: vendors/${businessId}/tenants/${effectiveTenantId}/products`);
+            let productsRef = await db.collection('vendors')
                 .doc(businessId)
+                .collection('tenants')
+                .doc(effectiveTenantId)
                 .collection('products')
-                .get(); // Remove where clause temporarily for debugging
+                .get();
                 
-            console.log(`PRODUCT DEBUG - Query returned ${productsRef.size} documents`);
+            console.log(`PRODUCT DEBUG - Tenant query returned ${productsRef.size} documents`);
+            
+            // If no products found in tenant path, try legacy path for backward compatibility
+            if (productsRef.empty && effectiveTenantId !== 'default') {
+                console.log(`PRODUCT DEBUG - No products found in tenant path, trying legacy path for backward compatibility`);
+                console.log(`PRODUCT DEBUG - Querying legacy path: vendors/${businessId}/products`);
+                productsRef = await db.collection('vendors')
+                    .doc(businessId)
+                    .collection('products')
+                    .get();
+                console.log(`PRODUCT DEBUG - Legacy query returned ${productsRef.size} documents`);
+            }
             
             if (productsRef.empty) {
-                console.log(`PRODUCT DEBUG - No products found in vendors/${businessId}/products`);
+                console.log(`PRODUCT DEBUG - No products found in vendors/${businessId}/tenants/${effectiveTenantId}/products`);
                 
                 // Debug: Check if vendor document exists
                 const vendorDoc = await db.collection('vendors').doc(businessId).get();
@@ -319,6 +334,14 @@ class MessageHandler {
                 
                 if (vendorDoc.exists) {
                     console.log(`PRODUCT DEBUG - Vendor data:`, vendorDoc.data());
+                    
+                    // Check if tenant document exists
+                    const tenantDoc = await db.collection('vendors')
+                        .doc(businessId)
+                        .collection('tenants')
+                        .doc(effectiveTenantId)
+                        .get();
+                    console.log(`PRODUCT DEBUG - Tenant document exists: ${tenantDoc.exists}`);
                 } else {
                     console.log(`PRODUCT DEBUG - Vendor document does not exist!`);
                 }
@@ -349,7 +372,8 @@ class MessageHandler {
                         stock: productData.stock || 0,
                         image: productData.image || '🛍️',
                         isActive: productData.isActive,
-                        isAvailable: productData.isAvailable
+                        isAvailable: productData.isAvailable,
+                        tenantId: effectiveTenantId
                     };
                     console.log(`PRODUCT DEBUG - Added product to list: ${productData.name}`);
                 } else {
@@ -371,7 +395,7 @@ class MessageHandler {
     }
 
     // Helper method to normalize different business data structures
-    async normalizeBusinessData(rawData, businessId) {
+    async normalizeBusinessData(rawData, businessId, tenantId = null) {
         console.log('🔍 NORMALIZE DEBUG - Starting business data normalization...');
         console.log('🔍 NORMALIZE DEBUG - Raw data type:', typeof rawData);
         console.log('🔍 NORMALIZE DEBUG - Raw data keys:', rawData ? Object.keys(rawData) : 'null');
@@ -445,7 +469,7 @@ class MessageHandler {
             console.log('🔍 NORMALIZE DEBUG - Loading products for business ID:', businessId);
             
             try {
-                products = await this.loadProductsFromVendorSubcollection(businessId);
+                products = await this.loadProductsFromVendorSubcollection(businessId, tenantId);
                 console.log('🔍 NORMALIZE DEBUG - Loaded products from subcollection:', Object.keys(products).length);
                 console.log('🔍 NORMALIZE DEBUG - Product keys from subcollection:', Object.keys(products));
                 console.log('🔍 NORMALIZE DEBUG - Product names from subcollection:', Object.keys(products).map(key => products[key]?.name));
@@ -714,7 +738,7 @@ class MessageHandler {
                 
                 // Transform/normalize the business data structure
                 if (rawBusinessData) {
-                    businessData = await this.normalizeBusinessData(rawBusinessData, businessId);
+                    businessData = await this.normalizeBusinessData(rawBusinessData, businessId, tenantId);
                 } else {
                     console.log('🔍 BUSINESS DATA DEBUG - No raw business data found, using default');
                     businessData = this.createDefaultBusinessData();

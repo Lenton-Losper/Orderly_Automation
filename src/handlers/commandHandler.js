@@ -137,7 +137,7 @@ class CommandHandler {
         console.log('WELCOME DEBUG - User ID:', userId);
         console.log('WELCOME DEBUG - Business ID:', session.businessId);
         
-        const existingCustomer = await businessManager.getExistingCustomer(session.businessId, userId);
+        const existingCustomer = await businessManager.getExistingCustomer(session.businessId, userId, session.tenantId);
         console.log('WELCOME DEBUG - Existing customer found:', !!existingCustomer);
         
         if (existingCustomer) {
@@ -160,7 +160,7 @@ class CommandHandler {
         console.log('REGISTER DEBUG - User ID:', userId);
         console.log('REGISTER DEBUG - Business ID:', session.businessId);
         
-        const existingCustomer = await businessManager.getExistingCustomer(session.businessId, userId);
+        const existingCustomer = await businessManager.getExistingCustomer(session.businessId, userId, session.tenantId);
         console.log('REGISTER DEBUG - Existing customer check result:', !!existingCustomer);
         
         if (existingCustomer) {
@@ -502,7 +502,7 @@ class CommandHandler {
                     return "Registration system error. Please contact support.";
                 }
                 
-                const result = await businessManager.saveCustomer(session.businessId, registrationData, userId);
+                const result = await businessManager.saveCustomer(session.businessId, registrationData, userId, session.tenantId);
                 
                 console.log('REGISTRATION DEBUG - Save result:', JSON.stringify(result, null, 2));
                 console.log('REGISTRATION DEBUG - Result type:', typeof result);
