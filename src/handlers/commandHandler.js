@@ -367,7 +367,8 @@ class CommandHandler {
                 session.businessId, 
                 messageData.sender, 
                 order, 
-                messageData.msgId
+                messageData.msgId,
+                session.tenantId || 'default' // Include tenantId in order saving
             );
 
             if (saved) {

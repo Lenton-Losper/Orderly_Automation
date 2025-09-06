@@ -213,34 +213,50 @@ class WhatsAppService {
         try {
             if (!this.redisConnected || !this.redisPublisher) return;
             const vendorId = process.env.TENANT_ID || this.botInfo?.mappedBusinessId || 'default';
+            const tenantId = process.env.TENANT_ID || 'default';
             const payload = {
                 type: 'connection_status',
                 vendorId,
+                tenantId, // Include tenantId in connection status
                 status, // connecting|connected|disconnected|failed
                 reason,
                 timestamp: new Date().toISOString()
             };
+            
+            // Publish to both vendor-specific and tenant-specific channels
             await this.redisPublisher.publish(`whatsapp:${vendorId}`, JSON.stringify(payload));
+            await this.redisPublisher.publish(`tenant:${tenantId}`, JSON.stringify(payload));
+            
+            console.log(`📡 Connection status published: ${status} for vendor: ${vendorId}, tenant: ${tenantId}`);
         } catch (err) {
+            console.error('❌ Error publishing connection status:', err.message);
             // Best-effort, do not crash
         }
     }
 
-    // Publish QR code via Redis -> WebSocket
+    // Publish QR code via Redis -> WebSocket with tenant context
     async publishQrCode(qr) {
         try {
             if (!this.redisConnected || !this.redisPublisher || !qr) return;
             const vendorId = process.env.TENANT_ID || this.botInfo?.mappedBusinessId || 'default';
+            const tenantId = process.env.TENANT_ID || 'default';
             const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`;
             const payload = {
                 type: 'qr_code',
                 vendorId,
+                tenantId, // Include tenantId in QR code payload
                 qrCode: qr,
                 qrUrl,
                 timestamp: new Date().toISOString()
             };
+            
+            // Publish to both vendor-specific and tenant-specific channels
             await this.redisPublisher.publish(`whatsapp:${vendorId}`, JSON.stringify(payload));
+            await this.redisPublisher.publish(`tenant:${tenantId}`, JSON.stringify(payload));
+            
+            console.log(`📱 QR code published for vendor: ${vendorId}, tenant: ${tenantId}`);
         } catch (err) {
+            console.error('❌ Error publishing QR code:', err.message);
             // Best-effort, do not crash
         }
     }

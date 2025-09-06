@@ -111,9 +111,15 @@ class MessageHandler {
         return botPhoneNumber;
     }
 
-    // Get or create session with persistence
-    getOrCreateSession(userId, businessId, businessData) {
-        const sessionKey = `${userId}_${businessId}`;
+    // Get or create session with persistence and tenant support
+    getOrCreateSession(userId, businessId, businessData, tenantId = null) {
+        // Fallback for single-tenant users - get primary tenant if not provided
+        if (!tenantId) {
+            tenantId = 'default'; // Default fallback
+            console.log(`⚠️ No tenantId provided for user ${userId}, using default tenant`);
+        }
+        
+        const sessionKey = `${userId}_${businessId}_${tenantId}`;
         console.log('SESSION DEBUG - Looking for session:', sessionKey);
         
         let session = this.sessions.get(sessionKey);
@@ -125,6 +131,7 @@ class MessageHandler {
             session = { 
                 userId, 
                 businessId, 
+                tenantId, // Include tenantId in session
                 businessData: businessData,  
                 step: 'start', 
                 data: {},
@@ -760,8 +767,11 @@ class MessageHandler {
 
             console.log(`Message from ${sender} (${phoneNumber}) to business ${businessId}: "${messageContent}"`);
 
-            // Use the new session management method that persists sessions
-            let session = this.getOrCreateSession(userId, businessId, businessData);
+            // Get tenantId from environment or use default fallback
+            const tenantId = process.env.TENANT_ID || 'default';
+            
+            // Use the new session management method that persists sessions with tenant support
+            let session = this.getOrCreateSession(userId, businessId, businessData, tenantId);
 
             // Process the message through command handler
             const response = await commandHandler.handleCommand(

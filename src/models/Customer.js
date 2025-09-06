@@ -7,6 +7,7 @@ class Customer {
         this.address = data.address || '';
         this.whatsappId = data.whatsappId || '';
         this.businessId = data.businessId || 'default';
+        this.tenantId = data.tenantId || 'default'; // Add tenantId field
         this.score = data.score || 0;
         this.accountName = data.accountName || data.id || '';
         this.createdAt = data.createdAt || new Date().toISOString();
@@ -122,6 +123,7 @@ class Customer {
             address: this.address,
             whatsappId: this.whatsappId,
             businessId: this.businessId,
+            tenantId: this.tenantId, // Include tenantId in Firebase data
             score: this.score,
             createdAt: this.createdAt,
             lastOrderDate: this.lastOrderDate,
@@ -235,7 +237,7 @@ class Customer {
         });
     }
 
-    static fromRegistrationData(registrationData, whatsappId, businessId = 'default') {
+    static fromRegistrationData(registrationData, whatsappId, businessId = 'default', tenantId = 'default') {
         return new Customer({
             name: registrationData.name,
             email: registrationData.email,
@@ -244,6 +246,7 @@ class Customer {
             accountName: registrationData.accountName,
             whatsappId,
             businessId,
+            tenantId, // Include tenantId in registration
             createdAt: new Date().toISOString()
         });
     }
@@ -251,7 +254,8 @@ class Customer {
     // Comparison methods
     equals(otherCustomer) {
         return this.whatsappId === otherCustomer.whatsappId && 
-               this.businessId === otherCustomer.businessId;
+               this.businessId === otherCustomer.businessId &&
+               this.tenantId === otherCustomer.tenantId;
     }
 
     // String representation

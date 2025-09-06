@@ -487,9 +487,10 @@ class BusinessManager {
     }
 
     // ORDER MANAGEMENT METHODS - Save orders in vendor subcollection
-    async saveOrder(businessId, sender, order, messageId) {
+    async saveOrder(businessId, sender, order, messageId, tenantId = 'default') {
         console.log('BUSINESS MANAGER DEBUG - saveOrder called');
         console.log('BUSINESS MANAGER DEBUG - Business ID:', businessId);
+        console.log('BUSINESS MANAGER DEBUG - Tenant ID:', tenantId);
         console.log('BUSINESS MANAGER DEBUG - Sender:', sender);
         console.log('BUSINESS MANAGER DEBUG - Message ID:', messageId);
         
@@ -500,12 +501,13 @@ class BusinessManager {
                 return false;
             }
             
-            // Save order in vendor subcollection
+            // Save order in tenant-scoped subcollection
             const admin = require('firebase-admin');
             const db = admin.firestore();
             
             const orderDoc = {
                 vendorId: businessId,
+                tenantId: tenantId, // Include tenantId in order
                 customerName: sender,
                 customerInfo: order.customerInfo,
                 items: order.items,
@@ -515,20 +517,26 @@ class BusinessManager {
                 messageId: messageId,
                 status: 'pending',
                 createdAt: new Date().toISOString(),
-                orderSource: 'whatsapp_bot_scalable'
+                orderSource: 'whatsapp_bot_multi_tenant'
             };
             
-            // Save to vendor subcollection
-            const vendorOrdersRef = db.collection('vendors').doc(businessId).collection('orders');
-            console.log('BUSINESS MANAGER DEBUG - Saving order to vendor subcollection: vendors/' + businessId + '/orders');
+            // Save to tenant-scoped subcollection
+            const tenantOrdersRef = db
+                .collection('vendors')
+                .doc(businessId)
+                .collection('tenants')
+                .doc(tenantId)
+                .collection('orders');
             
-            const docRef = await vendorOrdersRef.add(orderDoc);
+            console.log('BUSINESS MANAGER DEBUG - Saving order to tenant subcollection: vendors/' + businessId + '/tenants/' + tenantId + '/orders');
+            
+            const docRef = await tenantOrdersRef.add(orderDoc);
             console.log('BUSINESS MANAGER DEBUG - Order saved with ID:', docRef.id);
-            console.log('BUSINESS MANAGER DEBUG - Full path: vendors/' + businessId + '/orders/' + docRef.id);
+            console.log('BUSINESS MANAGER DEBUG - Full path: vendors/' + businessId + '/tenants/' + tenantId + '/orders/' + docRef.id);
             
             return true;
         } catch (error) {
-            console.error('BUSINESS MANAGER DEBUG - Error saving order to vendor subcollection:', error);
+            console.error('BUSINESS MANAGER DEBUG - Error saving order to tenant subcollection:', error);
             return false;
         }
     }

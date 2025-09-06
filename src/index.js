@@ -22,6 +22,7 @@ const rateLimiter = require('./middleware/rateLimiter');
 const duplicateChecker = require('./middleware/duplicateChecker');  
 const securityMonitor = require('./middleware/securityMonitor');
 const logger = require('./middleware/logger');
+const tenantValidator = require('./middleware/tenantValidator');
 
 class WhatsAppBot {
     constructor() {
@@ -32,7 +33,8 @@ class WhatsAppBot {
             rateLimiter: rateLimiter,
             duplicateChecker: duplicateChecker,
             securityMonitor: securityMonitor,
-            logger: logger
+            logger: logger,
+            tenantValidator: tenantValidator
         };
         this.isInitialized = false;
         this.startTime = Date.now();
@@ -104,6 +106,12 @@ class WhatsAppBot {
 
             console.log(`🔧 Starting WebSocket server on port ${port} for tenant ${tenantId}`);
             this.wsServer = new WhatsAppWebSocketServer({ port, redisUrl });
+            
+            // Add tenant validation to WebSocket server
+            if (this.middleware.tenantValidator) {
+                this.wsServer.tenantValidator = this.middleware.tenantValidator;
+                console.log('✅ Tenant validation enabled for WebSocket server');
+            }
         } catch (error) {
             console.error('❌ Failed to start WebSocket server:', error.message);
         }
@@ -198,6 +206,11 @@ class WhatsAppBot {
                 await this.middleware.logger.initialize();
             }
             console.log('✅ Logger ready');
+
+            if (this.middleware.tenantValidator && typeof this.middleware.tenantValidator.initialize === 'function') {
+                await this.middleware.tenantValidator.initialize();
+            }
+            console.log('✅ Tenant Validator ready');
 
         } catch (error) {
             console.error('❌ Middleware initialization failed:', error.message);

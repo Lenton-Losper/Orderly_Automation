@@ -1,9 +1,10 @@
 const { SESSION_CONFIG, PRICING_CONFIG, DISCOUNT_CODES } = require('../config/constants');
 
 class OrderSession {
-    constructor(userId, businessId) {
+    constructor(userId, businessId, tenantId = 'default') {
         this.userId = userId;
         this.businessId = businessId;
+        this.tenantId = tenantId; // Add tenantId field
         this.cart = [];
         this.customerInfo = {};
         this.step = 'menu';
@@ -235,6 +236,7 @@ class OrderSession {
             status: 'pending',
             accountName: this.customerAccount,
             businessId: this.businessId,
+            tenantId: this.tenantId, // Include tenantId in order
             sessionId: this.userId,
             createdAt: new Date().toISOString()
         };
@@ -248,6 +250,7 @@ class OrderSession {
         return {
             userId: this.userId,
             businessId: this.businessId,
+            tenantId: this.tenantId, // Include tenantId in summary
             step: this.step,
             cartItems: this.cart.length,
             cartValue: this.getSubtotal(),
