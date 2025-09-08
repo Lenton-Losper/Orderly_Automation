@@ -1,0 +1,163 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to get user's tenant membership
+    function getUserTenantMembership(tenantId) {
+      return exists(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid));
+    }
+    
+    // Helper function to check if user is admin of tenant
+    function isTenantAdmin(tenantId) {
+      return exists(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    // Helper function to check if user is member of tenant with specific role
+    function hasTenantRole(tenantId, role) {
+      return exists(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)).data.role == role;
+    }
+    
+    // Helper function to check if user has permission in tenant
+    function hasTenantPermission(tenantId, permission) {
+      let memberDoc = get(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid));
+      return memberDoc.data.permissions[permission] == true;
+    }
+
+    // Tenants collection - only authenticated users can access their own tenant
+    match /tenants/{tenantId} {
+      allow read, write: if isAuthenticated() && getUserTenantMembership(tenantId);
+      
+      // Bot session subcollection
+      match /botSession/{sessionId} {
+        allow read, write: if isAuthenticated() && getUserTenantMembership(tenantId);
+      }
+      
+      // Members subcollection - only admins can manage members
+      match /members/{userId} {
+        allow read: if isAuthenticated() && getUserTenantMembership(tenantId);
+        allow write: if isAuthenticated() && isTenantAdmin(tenantId);
+      }
+      
+      // Orders subcollection - tenant members can read/write
+      match /orders/{orderId} {
+        allow read, write: if isAuthenticated() && getUserTenantMembership(tenantId);
+      }
+      
+      // Customers subcollection - tenant members can read/write
+      match /customers/{customerId} {
+        allow read, write: if isAuthenticated() && getUserTenantMembership(tenantId);
+      }
+      
+      // Products subcollection - tenant members can read/write
+      match /products/{productId} {
+        allow read, write: if isAuthenticated() && getUserTenantMembership(tenantId);
+      }
+    }
+
+    // Vendors collection - only authenticated users can access their own vendor data
+    match /vendors/{vendorId} {
+      // Allow read/write only if user is a member of a tenant that owns this vendor
+      allow read, write: if isAuthenticated() && 
+        exists(/databases/$(database)/documents/tenants/$(resource.data.tenantId)/members/$(request.auth.uid));
+      
+      // Profile subcollection
+      match /profile/{profileId} {
+        allow read, write: if isAuthenticated() && 
+          exists(/databases/$(database)/documents/tenants/$(resource.data.tenantId)/members/$(request.auth.uid));
+      }
+      
+      // Products subcollection
+      match /products/{productId} {
+        allow read, write: if isAuthenticated() && 
+          exists(/databases/$(database)/documents/tenants/$(resource.data.tenantId)/members/$(request.auth.uid));
+      }
+      
+      // Customers subcollection
+      match /customers/{customerId} {
+        allow read, write: if isAuthenticated() && 
+          exists(/databases/$(database)/documents/tenants/$(resource.data.tenantId)/members/$(request.auth.uid));
+      }
+      
+      // Orders subcollection
+      match /orders/{orderId} {
+        allow read, write: if isAuthenticated() && 
+          exists(/databases/$(database)/documents/tenants/$(resource.data.tenantId)/members/$(request.auth.uid));
+      }
+      
+      // Tenants subcollection (for multi-tenant vendors)
+      match /tenants/{tenantId} {
+        allow read, write: if isAuthenticated() && getUserTenantMembership(tenantId);
+        
+        // Nested products for tenant-specific products
+        match /products/{productId} {
+          allow read, write: if isAuthenticated() && getUserTenantMembership(tenantId);
+        }
+        
+        // Nested customers for tenant-specific customers
+        match /customers/{customerId} {
+          allow read, write: if isAuthenticated() && getUserTenantMembership(tenantId);
+        }
+        
+        // Nested orders for tenant-specific orders
+        match /orders/{orderId} {
+          allow read, write: if isAuthenticated() && getUserTenantMembership(tenantId);
+        }
+      }
+    }
+
+    // WhatsApp business mapping - only authenticated users can access their own mappings
+    match /whatsapp_business_mapping/{phoneNumber} {
+      allow read, write: if isAuthenticated() && 
+        exists(/databases/$(database)/documents/tenants/$(resource.data.tenantId)/members/$(request.auth.uid));
+    }
+
+    // Orders collection (global) - only tenant members can access their orders
+    match /orders/{orderId} {
+      allow read, write: if isAuthenticated() && 
+        exists(/databases/$(database)/documents/tenants/$(resource.data.tenantId)/members/$(request.auth.uid));
+    }
+
+    // Customers collection (global) - only tenant members can access their customers
+    match /customers/{customerId} {
+      allow read, write: if isAuthenticated() && 
+        exists(/databases/$(database)/documents/tenants/$(resource.data.tenantId)/members/$(request.auth.uid));
+    }
+
+    // Products collection (global) - only tenant members can access their products
+    match /products/{productId} {
+      allow read, write: if isAuthenticated() && 
+        exists(/databases/$(database)/documents/tenants/$(resource.data.tenantId)/members/$(request.auth.uid));
+    }
+
+    // Invoices collection - only tenant members can access their invoices
+    match /invoices/{invoiceId} {
+      allow read, write: if isAuthenticated() && 
+        exists(/databases/$(database)/documents/tenants/$(resource.data.tenantId)/members/$(request.auth.uid));
+    }
+
+    // Analytics collection - only tenant members can access their analytics
+    match /analytics/{analyticsId} {
+      allow read, write: if isAuthenticated() && 
+        exists(/databases/$(database)/documents/tenants/$(resource.data.tenantId)/members/$(request.auth.uid));
+    }
+
+    // Settings collection - only tenant members can access their settings
+    match /settings/{settingId} {
+      allow read, write: if isAuthenticated() && 
+        exists(/databases/$(database)/documents/tenants/$(resource.data.tenantId)/members/$(request.auth.uid));
+    }
+
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

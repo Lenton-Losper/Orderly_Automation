@@ -12,6 +12,7 @@ const businessManager = require('./services/businessManager');
 const whatsappService = require('./services/whatsapp');
 const { getTenantConfig } = require('./config/tenant');
 const WhatsAppWebSocketServer = require('./websocket-server');
+const APIServer = require('./server');
 
 // Handlers and utilities
 const MessageHandler = require('./handlers/messageHandler');
@@ -29,6 +30,7 @@ class WhatsAppBot {
         this.whatsappService = null;
         this.messageHandler = null;
         this.firebaseService = null;
+        this.apiServer = null;
         this.middleware = {
             rateLimiter: rateLimiter,
             duplicateChecker: duplicateChecker,
@@ -83,7 +85,10 @@ class WhatsAppBot {
             // Step 8: Set up monitoring
             await this.setupMonitoring();
 
-            // Step 9: Start WebSocket server and set up graceful shutdown
+            // Step 9: Start API server
+            await this.startAPIServer();
+
+            // Step 10: Start WebSocket server and set up graceful shutdown
             await this.startWebSocketServer();
             this.setupGracefulShutdown();
 
@@ -94,6 +99,19 @@ class WhatsAppBot {
         } catch (error) {
             console.error('❌ Failed to initialize WhatsApp Bot:', error);
             throw new Error(`Bot initialization failed: ${error.message}`);
+        }
+    }
+
+    async startAPIServer() {
+        try {
+            console.log('🌐 Starting API Server...');
+            this.apiServer = new APIServer();
+            await this.apiServer.start();
+            console.log('✅ API Server started successfully');
+        } catch (error) {
+            console.error('❌ Failed to start API Server:', error.message);
+            // Don't throw error - continue without API server
+            console.log('⚠️ Continuing without API Server - some features may be limited');
         }
     }
 
@@ -385,6 +403,12 @@ class WhatsAppBot {
             console.log('📱 Shutting down WhatsApp service...');
             if (this.whatsappService && typeof this.whatsappService.shutdown === 'function') {
                 await this.whatsappService.shutdown();
+            }
+
+            // Shutdown API server
+            console.log('🌐 Shutting down API server...');
+            if (this.apiServer && typeof this.apiServer.shutdown === 'function') {
+                await this.apiServer.shutdown();
             }
 
             // Shutdown WebSocket server
