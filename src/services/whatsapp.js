@@ -214,6 +214,46 @@ class WhatsAppService {
         });
     }
 
+    // NEW: Store QR code in Firestore for frontend polling
+    async storeQRCodeInFirestore(qr, tenantId) {
+        try {
+            if (!this.db || !qr || !tenantId) return;
+            
+            const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`;
+            const qrData = {
+                qrCode: qr,
+                qrUrl: qrUrl,
+                status: 'pending',
+                lastUpdated: this.db.FieldValue.serverTimestamp(),
+                timestamp: Date.now()
+            };
+            
+            await this.db.collection('tenants').doc(tenantId).collection('botSession').doc('current').set(qrData);
+            console.log(`📱 QR code stored in Firestore for tenant: ${tenantId}`);
+        } catch (error) {
+            console.error('❌ Error storing QR code in Firestore:', error.message);
+        }
+    }
+
+    // NEW: Store connection status in Firestore
+    async storeConnectionStatusInFirestore(status, reason, tenantId) {
+        try {
+            if (!this.db || !tenantId) return;
+            
+            const statusData = {
+                status: status,
+                reason: reason || null,
+                lastUpdated: this.db.FieldValue.serverTimestamp(),
+                timestamp: Date.now()
+            };
+            
+            await this.db.collection('tenants').doc(tenantId).collection('botSession').doc('current').update(statusData);
+            console.log(`📡 Connection status stored in Firestore for tenant: ${tenantId} - ${status}`);
+        } catch (error) {
+            console.error('❌ Error storing connection status in Firestore:', error.message);
+        }
+    }
+
     // Publish connection status via Redis -> WebSocket
     async publishConnectionStatus(status, reason, vendorId = null, tenantId = null) {
         try {
@@ -235,6 +275,9 @@ class WhatsAppService {
             // Publish to both vendor-specific and tenant-specific channels
             await this.redisPublisher.publish(`whatsapp:${actualVendorId}`, JSON.stringify(payload));
             await this.redisPublisher.publish(`tenant:${actualTenantId}`, JSON.stringify(payload));
+            
+            // NEW: Store connection status in Firestore
+            await this.storeConnectionStatusInFirestore(status, reason, actualTenantId);
             
             console.log(`📡 Connection status published: ${status} for vendor: ${actualVendorId}, tenant: ${actualTenantId}`);
         } catch (err) {
@@ -265,6 +308,9 @@ class WhatsAppService {
             // Publish to both vendor-specific and tenant-specific channels
             await this.redisPublisher.publish(`whatsapp:${actualVendorId}`, JSON.stringify(payload));
             await this.redisPublisher.publish(`tenant:${actualTenantId}`, JSON.stringify(payload));
+            
+            // NEW: Store QR code in Firestore for frontend polling
+            await this.storeQRCodeInFirestore(qr, actualTenantId);
             
             console.log(`📱 QR code published for vendor: ${actualVendorId}, tenant: ${actualTenantId}`);
         } catch (err) {
@@ -391,9 +437,9 @@ class WhatsAppService {
                 };
             }
 
-            // Try to get business mapping from bot phone number
+            // Try to get business mapping from bot phone number (only if bot is connected)
             const botPhoneNumber = this.getBotPhoneNumber();
-            if (botPhoneNumber) {
+            if (botPhoneNumber && botPhoneNumber !== 'unknown') {
                 const businessManager = require('./businessManager');
                 if (businessManager.isHealthy()) {
                     const businessId = await businessManager.getBusinessIdFromBot(botPhoneNumber);
@@ -404,7 +450,7 @@ class WhatsAppService {
                             mappedBusinessId: businessId,
                             tenantId: businessId
                         };
-                        
+
                         return {
                             vendorId: businessId,
                             tenantId: businessId
@@ -413,11 +459,22 @@ class WhatsAppService {
                 }
             }
 
-            // Fallback to environment variables or default
-            const vendorId = process.env.TENANT_ID || 'default';
-            const tenantId = process.env.TENANT_ID || 'default';
+            // For QR generation phase (bot not connected yet), try to get tenant from environment
+            // or use a more intelligent fallback
+            let vendorId = process.env.TENANT_ID || 'default';
+            let tenantId = process.env.TENANT_ID || 'default';
+
+            // If we have a specific tenant ID in environment, use it
+            if (process.env.TENANT_ID && process.env.TENANT_ID !== 'default') {
+                console.log(`TENANT INFO - Using environment tenant: ${tenantId}`);
+                return { vendorId, tenantId };
+            }
+
+            // For QR generation, we might want to use a more specific approach
+            // Check if there's a way to determine the tenant from the current context
+            console.log(`TENANT INFO - Bot not connected yet, using fallback vendor: ${vendorId}, tenant: ${tenantId}`);
+            console.log(`TENANT INFO - Note: This will be updated once bot connects and phone number is available`);
             
-            console.log(`TENANT INFO - Using fallback vendor: ${vendorId}, tenant: ${tenantId}`);
             return { vendorId, tenantId };
         } catch (error) {
             console.error('Error getting bot tenant info:', error.message);

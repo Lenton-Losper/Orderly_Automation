@@ -191,16 +191,37 @@ class APIServer {
             try {
                 const { tenantId } = req.params;
                 
+                // Try to get the current QR code from the new structure
                 const botSessionDoc = await this.db.collection('tenants')
                     .doc(tenantId)
                     .collection('botSession')
-                    .doc('main')
+                    .doc('current')
                     .get();
 
                 if (!botSessionDoc.exists) {
-                    return res.status(404).json({
-                        success: false,
-                        error: 'Bot session not found for this tenant'
+                    // Fallback to old structure
+                    const fallbackDoc = await this.db.collection('tenants')
+                        .doc(tenantId)
+                        .collection('botSession')
+                        .doc('main')
+                        .get();
+                    
+                    if (!fallbackDoc.exists) {
+                        return res.status(404).json({
+                            success: false,
+                            error: 'Bot session not found for this tenant'
+                        });
+                    }
+                    
+                    const fallbackData = fallbackDoc.data();
+                    return res.json({
+                        success: true,
+                        tenantId,
+                        qrCode: fallbackData.qrCode,
+                        qrCodeUrl: fallbackData.qrCodeUrl,
+                        status: fallbackData.status || 'pending',
+                        lastUpdated: fallbackData.lastUpdated,
+                        timestamp: fallbackData.timestamp
                     });
                 }
 
@@ -209,9 +230,11 @@ class APIServer {
                 res.json({
                     success: true,
                     tenantId,
+                    qrCode: botData.qrCode,
                     qrCodeUrl: botData.qrCodeUrl,
-                    status: botData.status,
-                    lastUpdated: botData.lastUpdated
+                    status: botData.status || 'pending',
+                    lastUpdated: botData.lastUpdated,
+                    timestamp: botData.timestamp
                 });
             } catch (error) {
                 console.error('❌ Get QR code error:', error);
