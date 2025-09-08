@@ -166,13 +166,16 @@ class WhatsAppService {
             
             if (connection === 'close') {
                 await this.handleConnectionClose(lastDisconnect);
-                await this.publishConnectionStatus('disconnected', lastDisconnect?.error?.message);
+                const { vendorId, tenantId } = await this.getBotTenantInfo();
+                await this.publishConnectionStatus('disconnected', lastDisconnect?.error?.message, vendorId, tenantId);
             } else if (connection === 'open') {
                 await this.handleConnectionOpen();
-                await this.publishConnectionStatus('connected');
+                const { vendorId, tenantId } = await this.getBotTenantInfo();
+                await this.publishConnectionStatus('connected', null, vendorId, tenantId);
             } else if (connection === 'connecting') {
                 console.log('Connecting to WhatsApp...');
-                await this.publishConnectionStatus('connecting');
+                const { vendorId, tenantId } = await this.getBotTenantInfo();
+                await this.publishConnectionStatus('connecting', null, vendorId, tenantId);
             }
             
             // ENHANCED: Display QR code with dynamic mapping info
@@ -189,8 +192,11 @@ class WhatsAppService {
                 console.log('Once connected, bot will auto-discover vendor mapping...');
                 console.log('='.repeat(50) + '\n');
 
-                // Publish QR code over Redis for WebSocket broadcasting
-                await this.publishQrCode(qr);
+                // Get the correct vendor and tenant IDs for this bot
+                const { vendorId, tenantId } = await this.getBotTenantInfo();
+                
+                // Publish QR code over Redis for WebSocket broadcasting with correct tenant info
+                await this.publishQrCode(qr, vendorId, tenantId);
             }
         });
 
@@ -209,25 +215,28 @@ class WhatsAppService {
     }
 
     // Publish connection status via Redis -> WebSocket
-    async publishConnectionStatus(status, reason) {
+    async publishConnectionStatus(status, reason, vendorId = null, tenantId = null) {
         try {
             if (!this.redisConnected || !this.redisPublisher) return;
-            const vendorId = process.env.TENANT_ID || this.botInfo?.mappedBusinessId || 'default';
-            const tenantId = process.env.TENANT_ID || 'default';
+            
+            // Get vendor and tenant IDs - prioritize passed parameters, then bot info, then defaults
+            const actualVendorId = vendorId || this.botInfo?.mappedBusinessId || process.env.TENANT_ID || 'default';
+            const actualTenantId = tenantId || this.botInfo?.tenantId || process.env.TENANT_ID || 'default';
+            
             const payload = {
                 type: 'connection_status',
-                vendorId,
-                tenantId, // Include tenantId in connection status
+                vendorId: actualVendorId,
+                tenantId: actualTenantId, // Include tenantId in connection status
                 status, // connecting|connected|disconnected|failed
                 reason,
                 timestamp: new Date().toISOString()
             };
             
             // Publish to both vendor-specific and tenant-specific channels
-            await this.redisPublisher.publish(`whatsapp:${vendorId}`, JSON.stringify(payload));
-            await this.redisPublisher.publish(`tenant:${tenantId}`, JSON.stringify(payload));
+            await this.redisPublisher.publish(`whatsapp:${actualVendorId}`, JSON.stringify(payload));
+            await this.redisPublisher.publish(`tenant:${actualTenantId}`, JSON.stringify(payload));
             
-            console.log(`📡 Connection status published: ${status} for vendor: ${vendorId}, tenant: ${tenantId}`);
+            console.log(`📡 Connection status published: ${status} for vendor: ${actualVendorId}, tenant: ${actualTenantId}`);
         } catch (err) {
             console.error('❌ Error publishing connection status:', err.message);
             // Best-effort, do not crash
@@ -235,26 +244,29 @@ class WhatsAppService {
     }
 
     // Publish QR code via Redis -> WebSocket with tenant context
-    async publishQrCode(qr) {
+    async publishQrCode(qr, vendorId = null, tenantId = null) {
         try {
             if (!this.redisConnected || !this.redisPublisher || !qr) return;
-            const vendorId = process.env.TENANT_ID || this.botInfo?.mappedBusinessId || 'default';
-            const tenantId = process.env.TENANT_ID || 'default';
+            
+            // Get vendor and tenant IDs - prioritize passed parameters, then bot info, then defaults
+            const actualVendorId = vendorId || this.botInfo?.mappedBusinessId || process.env.TENANT_ID || 'default';
+            const actualTenantId = tenantId || this.botInfo?.tenantId || process.env.TENANT_ID || 'default';
+            
             const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`;
             const payload = {
                 type: 'qr_code',
-                vendorId,
-                tenantId, // Include tenantId in QR code payload
+                vendorId: actualVendorId,
+                tenantId: actualTenantId,
                 qrCode: qr,
                 qrUrl,
                 timestamp: new Date().toISOString()
             };
             
             // Publish to both vendor-specific and tenant-specific channels
-            await this.redisPublisher.publish(`whatsapp:${vendorId}`, JSON.stringify(payload));
-            await this.redisPublisher.publish(`tenant:${tenantId}`, JSON.stringify(payload));
+            await this.redisPublisher.publish(`whatsapp:${actualVendorId}`, JSON.stringify(payload));
+            await this.redisPublisher.publish(`tenant:${actualTenantId}`, JSON.stringify(payload));
             
-            console.log(`📱 QR code published for vendor: ${vendorId}, tenant: ${tenantId}`);
+            console.log(`📱 QR code published for vendor: ${actualVendorId}, tenant: ${actualTenantId}`);
         } catch (err) {
             console.error('❌ Error publishing QR code:', err.message);
             // Best-effort, do not crash
@@ -365,6 +377,54 @@ class WhatsAppService {
             console.log(`   Full ID: ${this.botInfo.fullId}`);
             console.log(`   Name: ${this.botInfo.name}`);
             console.log(`   Connected At: ${new Date(this.botInfo.startTime).toLocaleString()}`);
+        }
+    }
+
+    // NEW: Get bot tenant information for proper QR code publishing
+    async getBotTenantInfo() {
+        try {
+            // First try to get from bot info if already mapped
+            if (this.botInfo?.mappedBusinessId && this.botInfo?.mappedBusinessId !== 'default') {
+                return {
+                    vendorId: this.botInfo.mappedBusinessId,
+                    tenantId: this.botInfo.tenantId || this.botInfo.mappedBusinessId
+                };
+            }
+
+            // Try to get business mapping from bot phone number
+            const botPhoneNumber = this.getBotPhoneNumber();
+            if (botPhoneNumber) {
+                const businessManager = require('./businessManager');
+                if (businessManager.isHealthy()) {
+                    const businessId = await businessManager.getBusinessIdFromBot(botPhoneNumber);
+                    if (businessId && businessId !== 'default') {
+                        // Update bot info with the discovered business ID
+                        this.botInfo = {
+                            ...this.botInfo,
+                            mappedBusinessId: businessId,
+                            tenantId: businessId
+                        };
+                        
+                        return {
+                            vendorId: businessId,
+                            tenantId: businessId
+                        };
+                    }
+                }
+            }
+
+            // Fallback to environment variables or default
+            const vendorId = process.env.TENANT_ID || 'default';
+            const tenantId = process.env.TENANT_ID || 'default';
+            
+            console.log(`TENANT INFO - Using fallback vendor: ${vendorId}, tenant: ${tenantId}`);
+            return { vendorId, tenantId };
+        } catch (error) {
+            console.error('Error getting bot tenant info:', error.message);
+            return {
+                vendorId: process.env.TENANT_ID || 'default',
+                tenantId: process.env.TENANT_ID || 'default'
+            };
         }
     }
 
