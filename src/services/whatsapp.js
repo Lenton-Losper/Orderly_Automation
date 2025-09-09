@@ -9,6 +9,7 @@ const redis = require('redis');
 const { Boom } = require('@hapi/boom');
 const { getSocketConfig, getHealthCheckQuery } = require('../config/socket');
 const { CONNECTION_CONFIG, CACHE_CONFIG, WHATSAPP_CONFIG } = require('../config/constants');
+const { getDatabase, getFirebaseAdmin } = require('../config/database');
 
 class WhatsAppService {
     constructor() {
@@ -217,19 +218,27 @@ class WhatsAppService {
     // NEW: Store QR code in Firestore for frontend polling
     async storeQRCodeInFirestore(qr, tenantId) {
         try {
-            if (!this.db || !qr || !tenantId) return;
+            if (!qr || !tenantId) return;
+            
+            // Initialize database if not already set
+            if (!this.db) {
+                this.db = getDatabase();
+                this.FieldValue = getFirebaseAdmin().firestore.FieldValue;
+                console.log('✅ Database initialized in WhatsApp service');
+            }
             
             const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`;
             const qrData = {
                 qrCode: qr,
-                qrUrl: qrUrl,
+                qrCodeUrl: qrUrl, // Fixed: use qrCodeUrl to match API response
                 status: 'pending',
-                lastUpdated: this.db.FieldValue.serverTimestamp(),
+                lastUpdated: this.FieldValue.serverTimestamp(),
                 timestamp: Date.now()
             };
             
-            await this.db.collection('tenants').doc(tenantId).collection('botSession').doc('current').set(qrData);
-            console.log(`📱 QR code stored in Firestore for tenant: ${tenantId}`);
+            // Use merge: true to update existing document or create new one
+            await this.db.collection('tenants').doc(tenantId).collection('botSession').doc('current').set(qrData, { merge: true });
+            console.log(`📱 QR code updated in Firestore for tenant: ${tenantId} (timestamp: ${qrData.timestamp})`);
         } catch (error) {
             console.error('❌ Error storing QR code in Firestore:', error.message);
         }
@@ -238,17 +247,25 @@ class WhatsAppService {
     // NEW: Store connection status in Firestore
     async storeConnectionStatusInFirestore(status, reason, tenantId) {
         try {
-            if (!this.db || !tenantId) return;
+            if (!tenantId) return;
+            
+            // Initialize database if not already set
+            if (!this.db) {
+                this.db = getDatabase();
+                this.FieldValue = getFirebaseAdmin().firestore.FieldValue;
+                console.log('✅ Database initialized in WhatsApp service');
+            }
             
             const statusData = {
                 status: status,
                 reason: reason || null,
-                lastUpdated: this.db.FieldValue.serverTimestamp(),
+                lastUpdated: this.FieldValue.serverTimestamp(),
                 timestamp: Date.now()
             };
             
-            await this.db.collection('tenants').doc(tenantId).collection('botSession').doc('current').update(statusData);
-            console.log(`📡 Connection status stored in Firestore for tenant: ${tenantId} - ${status}`);
+            // Use merge: true to update existing document or create new one
+            await this.db.collection('tenants').doc(tenantId).collection('botSession').doc('current').set(statusData, { merge: true });
+            console.log(`📡 Connection status updated in Firestore for tenant: ${tenantId} - ${status} (timestamp: ${statusData.timestamp})`);
         } catch (error) {
             console.error('❌ Error storing connection status in Firestore:', error.message);
         }

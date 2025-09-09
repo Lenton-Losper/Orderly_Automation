@@ -188,6 +188,15 @@ class WhatsAppBot {
                 throw new Error('WhatsApp service import is not valid');
             }
             
+            // Pass database instance to WhatsApp service
+            if (this.firebaseService && this.firebaseService.db) {
+                this.whatsappService.db = this.firebaseService.db;
+                this.whatsappService.FieldValue = this.firebaseService.FieldValue;
+                console.log('✅ Database instance passed to WhatsApp service');
+            } else {
+                console.log('⚠️ No database instance available for WhatsApp service');
+            }
+            
             // Initialize the service
             if (typeof this.whatsappService.initialize === 'function') {
                 await this.whatsappService.initialize();
