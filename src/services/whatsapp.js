@@ -218,13 +218,22 @@ class WhatsAppService {
     // NEW: Store QR code in Firestore for frontend polling
     async storeQRCodeInFirestore(qr, tenantId) {
         try {
-            if (!qr || !tenantId) return;
+            if (!qr || !tenantId) {
+                console.log('⚠️ Missing QR code or tenant ID, skipping Firestore storage');
+                return;
+            }
             
             // Initialize database if not already set
             if (!this.db) {
                 this.db = getDatabase();
-                this.FieldValue = getFirebaseAdmin().firestore.FieldValue;
+                const admin = getFirebaseAdmin();
+                this.FieldValue = admin.firestore.FieldValue;
                 console.log('✅ Database initialized in WhatsApp service');
+            }
+            
+            if (!this.FieldValue) {
+                console.error('❌ FieldValue not initialized, cannot store QR code');
+                return;
             }
             
             const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`;
@@ -241,19 +250,29 @@ class WhatsAppService {
             console.log(`📱 QR code updated in Firestore for tenant: ${tenantId} (timestamp: ${qrData.timestamp})`);
         } catch (error) {
             console.error('❌ Error storing QR code in Firestore:', error.message);
+            console.error('❌ Error details:', error);
         }
     }
 
     // NEW: Store connection status in Firestore
     async storeConnectionStatusInFirestore(status, reason, tenantId) {
         try {
-            if (!tenantId) return;
+            if (!tenantId) {
+                console.log('⚠️ Missing tenant ID, skipping connection status storage');
+                return;
+            }
             
             // Initialize database if not already set
             if (!this.db) {
                 this.db = getDatabase();
-                this.FieldValue = getFirebaseAdmin().firestore.FieldValue;
+                const admin = getFirebaseAdmin();
+                this.FieldValue = admin.firestore.FieldValue;
                 console.log('✅ Database initialized in WhatsApp service');
+            }
+            
+            if (!this.FieldValue) {
+                console.error('❌ FieldValue not initialized, cannot store connection status');
+                return;
             }
             
             const statusData = {
@@ -268,6 +287,7 @@ class WhatsAppService {
             console.log(`📡 Connection status updated in Firestore for tenant: ${tenantId} - ${status} (timestamp: ${statusData.timestamp})`);
         } catch (error) {
             console.error('❌ Error storing connection status in Firestore:', error.message);
+            console.error('❌ Error details:', error);
         }
     }
 
