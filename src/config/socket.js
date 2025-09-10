@@ -1,4 +1,5 @@
 const { WHATSAPP_CONFIG, CONNECTION_CONFIG } = require('./constants');
+const pino = require('pino');
 
 // WhatsApp socket configuration
 function getSocketConfig() {
@@ -12,7 +13,7 @@ function getSocketConfig() {
         generateHighQualityLinkPreview: WHATSAPP_CONFIG.GENERATE_HIGH_QUALITY_LINK_PREVIEW,
         shouldSyncHistoryMessage: msg => false,
         shouldIgnoreJid: jid => false,
-        logger: undefined, // Disable detailed logging
+        logger: pino({ level: 'silent' }),
         version: WHATSAPP_CONFIG.VERSION,
         retryRequestDelayMs: CONNECTION_CONFIG.RETRY_REQUEST_DELAY,
         maxMsgRetryCount: CONNECTION_CONFIG.MAX_MSG_RETRY_COUNT,

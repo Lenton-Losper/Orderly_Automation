@@ -7,6 +7,7 @@
 const { makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
 const redis = require('redis');
 const { Boom } = require('@hapi/boom');
+const pino = require('pino');
 const { getSocketConfig, getHealthCheckQuery } = require('../config/socket');
 const { CONNECTION_CONFIG, CACHE_CONFIG, WHATSAPP_CONFIG } = require('../config/constants');
 const { getDatabase, getFirebaseAdmin } = require('../config/database');

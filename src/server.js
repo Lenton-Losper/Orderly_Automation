@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
+const pino = require('pino');
 const { initializeFirebase, getDatabase, getFirebaseAdmin } = require('./config/database');
 const { COLLECTIONS } = require('./config/constants');
 const QRCode = require('qrcode');
@@ -348,9 +349,7 @@ class APIServer {
                 auth: state,
                 printQRInTerminal: false, // We'll handle QR display ourselves
                 browser: ['LLL Farm Bot', 'Chrome', '120.0.0'],
-                logger: {
-                    level: 'silent' // Reduce noise
-                }
+                logger: pino({ level: 'silent' })
             });
 
             // Store the socket for this tenant
