@@ -1,3 +1,4 @@
+// Last modified: 2025-01-27
 // Required for WhatsApp Web compatibility
 require('dotenv').config();
 globalThis.crypto = require('crypto').webcrypto;

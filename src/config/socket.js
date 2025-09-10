@@ -1,3 +1,4 @@
+// Last modified: 2025-01-27
 const { WHATSAPP_CONFIG, CONNECTION_CONFIG } = require('./constants');
 const pino = require('pino');
 

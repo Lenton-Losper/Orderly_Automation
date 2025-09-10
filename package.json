@@ -17,6 +17,7 @@
     "pino": "^9.7.0",
     "qrcode": "^1.5.3",
     "qrcode-terminal": "^0.12.0",
+    "redis": "^5.8.2",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3"
   },
