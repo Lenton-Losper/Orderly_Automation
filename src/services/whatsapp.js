@@ -27,10 +27,7 @@ class WhatsAppService {
         this.redisPublisher = null;
         this.redisConnected = false;
         
-        // Initialize Firebase database and FieldValue
-        this.db = getDatabase();
-        const admin = getFirebaseAdmin();
-        this.FieldValue = admin.firestore.FieldValue;
+        // Firebase will be initialized when needed
         
         // Resolve tenant-specific auth directory once
         const path = require('path');
@@ -49,11 +46,17 @@ class WhatsAppService {
         }
         
         console.log('All Baileys imports validated successfully');
-        console.log('✅ Firebase database and FieldValue initialized in constructor');
+        console.log('✅ WhatsApp service constructor initialized');
     }
 
     async initialize() {
         try {
+            // Initialize Firebase database and FieldValue
+            this.db = getDatabase();
+            const admin = getFirebaseAdmin();
+            this.FieldValue = admin.firestore.FieldValue;
+            console.log('✅ Firebase database and FieldValue initialized in WhatsApp service');
+            
             console.log('Initializing WhatsApp connection with dynamic vendor mapping...');
             
             // Initialize Redis publisher for WebSocket event fan-out
