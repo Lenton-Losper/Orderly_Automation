@@ -27,6 +27,11 @@ class WhatsAppService {
         this.redisPublisher = null;
         this.redisConnected = false;
         
+        // Initialize Firebase database and FieldValue
+        this.db = getDatabase();
+        const admin = getFirebaseAdmin();
+        this.FieldValue = admin.firestore.FieldValue;
+        
         // Resolve tenant-specific auth directory once
         const path = require('path');
         const authFolder = WHATSAPP_CONFIG && WHATSAPP_CONFIG.AUTH_FOLDER ? WHATSAPP_CONFIG.AUTH_FOLDER : 'auth';
@@ -44,6 +49,7 @@ class WhatsAppService {
         }
         
         console.log('All Baileys imports validated successfully');
+        console.log('✅ Firebase database and FieldValue initialized in constructor');
     }
 
     async initialize() {
@@ -225,18 +231,7 @@ class WhatsAppService {
                 return;
             }
             
-            // Initialize database if not already set
-            if (!this.db) {
-                this.db = getDatabase();
-                const admin = getFirebaseAdmin();
-                this.FieldValue = admin.firestore.FieldValue;
-                console.log('✅ Database initialized in WhatsApp service');
-            }
-            
-            if (!this.FieldValue) {
-                console.error('❌ FieldValue not initialized, cannot store QR code');
-                return;
-            }
+            // Database and FieldValue are now initialized in constructor
             
             const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`;
             const qrData = {
@@ -264,18 +259,7 @@ class WhatsAppService {
                 return;
             }
             
-            // Initialize database if not already set
-            if (!this.db) {
-                this.db = getDatabase();
-                const admin = getFirebaseAdmin();
-                this.FieldValue = admin.firestore.FieldValue;
-                console.log('✅ Database initialized in WhatsApp service');
-            }
-            
-            if (!this.FieldValue) {
-                console.error('❌ FieldValue not initialized, cannot store connection status');
-                return;
-            }
+            // Database and FieldValue are now initialized in constructor
             
             const statusData = {
                 status: status,
