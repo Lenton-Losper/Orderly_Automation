@@ -491,8 +491,8 @@ class WhatsAppService {
 
             // For QR generation phase (bot not connected yet), try to get tenant from environment
             // or use a more intelligent fallback
-            let vendorId = process.env.TENANT_ID || 'tenant_1757499607349_xul4pq02s';
-            let tenantId = process.env.TENANT_ID || 'tenant_1757499607349_xul4pq02s';
+            let vendorId = process.env.TENANT_ID || 'default';
+            let tenantId = process.env.TENANT_ID || 'default';
 
             // If we have a specific tenant ID in environment, use it
             if (process.env.TENANT_ID && process.env.TENANT_ID !== 'default') {
@@ -508,8 +508,8 @@ class WhatsAppService {
         } catch (error) {
             console.error('Error getting bot tenant info:', error.message);
             return {
-                vendorId: process.env.TENANT_ID || 'tenant_1757499607349_xul4pq02s',
-                tenantId: process.env.TENANT_ID || 'tenant_1757499607349_xul4pq02s'
+                vendorId: process.env.TENANT_ID || 'default',
+                tenantId: process.env.TENANT_ID || 'default'
             };
         }
     }

@@ -202,7 +202,7 @@ class Validators {
         
         // Check for valid Namibian and international phone patterns
         const patterns = [
-            /^\+264\d{8,9}$/,     // +264812345678 or +264813141453
+            /^\+264\d{8,9}$/,     // +264812345678 (Namibian format)
             /^264\d{8,9}$/,       // 264812345678
             /^0\d{8,9}$/,         // 0812345678
             /^\d{8,9}$/,          // 812345678
@@ -433,7 +433,7 @@ class Validators {
     }
 
     getPhoneValidationMessage() {
-        return "Phone must be 8-15 digits (example: +264812345678 or 264817375744)";
+        return "Phone must be 8-15 digits (example: +264812345678 or 264812345678)";
     }
 
     getAddressValidationMessage() {

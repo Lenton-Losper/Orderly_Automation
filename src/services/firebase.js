@@ -83,8 +83,13 @@ class ScalableFirebaseService {
                     
                     // Try direct document access
                     console.log('FIREBASE DEBUG - Testing direct document access...');
-                    const directTest = await this.db.collection('vendors').doc('264813141453').get();
-                    console.log(`FIREBASE DEBUG - Direct access to 264813141453 exists: ${directTest.exists}`);
+                    // Test direct access to any vendor document (dynamic)
+                    const vendorQuery = await this.db.collection('vendors').limit(1).get();
+                    if (!vendorQuery.empty) {
+                        const firstVendor = vendorQuery.docs[0];
+                        const directTest = await this.db.collection('vendors').doc(firstVendor.id).get();
+                        console.log(`FIREBASE DEBUG - Direct access to ${firstVendor.id} exists: ${directTest.exists}`);
+                    }
                     
                     if (directTest.exists) {
                         const directData = directTest.data();
@@ -99,7 +104,7 @@ class ScalableFirebaseService {
                             console.log('FIREBASE DEBUG - Error checking subcollections:', subError.message);
                         }
                     } else {
-                        console.log('FIREBASE DEBUG - Document 264813141453 does not exist at all');
+                        console.log('FIREBASE DEBUG - No vendor documents found in collection');
                     }
                     
                     // Test with different query approaches
@@ -389,7 +394,7 @@ class ScalableFirebaseService {
                 const testVendorId = 'test-' + Date.now();
                 await this.db.collection('vendors').doc(testVendorId).set({
                     name: 'Test Vendor',
-                    phone: '1234567890',
+                    phone: process.env.DEFAULT_PHONE || '0000000000',
                     testDocument: true,
                     created: new Date()
                 });
