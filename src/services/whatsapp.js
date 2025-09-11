@@ -431,6 +431,10 @@ class WhatsAppService {
 
         // Start connection health check
         this.startHealthCheck();
+        
+        // Manually update connection status since the bot is working
+        const { vendorId, tenantId } = await this.getBotTenantInfo();
+        await this.publishConnectionStatus('connected', null, vendorId, tenantId);
     }
 
     // NEW: Extract bot information for vendor mapping
