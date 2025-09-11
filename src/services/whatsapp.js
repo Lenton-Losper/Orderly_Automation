@@ -487,8 +487,8 @@ class WhatsAppService {
 
             // For QR generation phase (bot not connected yet), try to get tenant from environment
             // or use a more intelligent fallback
-            let vendorId = process.env.TENANT_ID || 'default';
-            let tenantId = process.env.TENANT_ID || 'default';
+            let vendorId = process.env.TENANT_ID || 'tenant_1757499607349_xul4pq02s';
+            let tenantId = process.env.TENANT_ID || 'tenant_1757499607349_xul4pq02s';
 
             // If we have a specific tenant ID in environment, use it
             if (process.env.TENANT_ID && process.env.TENANT_ID !== 'default') {
@@ -496,17 +496,16 @@ class WhatsAppService {
                 return { vendorId, tenantId };
             }
 
-            // For QR generation, we might want to use a more specific approach
-            // Check if there's a way to determine the tenant from the current context
-            console.log(`TENANT INFO - Bot not connected yet, using fallback vendor: ${vendorId}, tenant: ${tenantId}`);
-            console.log(`TENANT INFO - Note: This will be updated once bot connects and phone number is available`);
+            // Use the existing tenant ID from Firebase
+            console.log(`TENANT INFO - Using existing tenant: ${tenantId}`);
+            console.log(`TENANT INFO - This will be updated once bot connects and phone number is available`);
             
             return { vendorId, tenantId };
         } catch (error) {
             console.error('Error getting bot tenant info:', error.message);
             return {
-                vendorId: process.env.TENANT_ID || 'default',
-                tenantId: process.env.TENANT_ID || 'default'
+                vendorId: process.env.TENANT_ID || 'tenant_1757499607349_xul4pq02s',
+                tenantId: process.env.TENANT_ID || 'tenant_1757499607349_xul4pq02s'
             };
         }
     }
