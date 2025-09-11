@@ -59,7 +59,7 @@ const WHATSAPP_CONFIG = {
     MARK_ONLINE_ON_CONNECT: true,
     BROWSER: ['LLL Farm Bot', 'Chrome', '120.0.0'],
     QR_TERMINAL: true,
-    AUTH_FOLDER: process.env.TENANT_ID ? `./tenants/${process.env.TENANT_ID}/auth` : './auth'
+    AUTH_FOLDER: process.env.TENANT_ID ? `./tenants/${process.env.TENANT_ID}/auth` : './auth_correct'
 };
 
 // Tenant configuration

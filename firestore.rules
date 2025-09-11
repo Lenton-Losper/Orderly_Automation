@@ -1,8 +1,7 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+
     // ------------------------
     // Helper Functions
     // ------------------------
@@ -46,32 +45,6 @@ service cloud.firestore {
              && get(/databases/$(database)/documents/tenants/$(tenantId)).data.ownerId == request.auth.uid;
     }
 
-    // NEW: Check if user is a member of a tenant (for new signup system)
-    function isTenantMember(tenantId) {
-      return isSignedIn() && exists(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid));
-    }
-
-    // NEW: Check if user is admin of tenant
-    function isTenantAdmin(tenantId) {
-      return isSignedIn() && 
-             exists(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)).data.role == 'admin';
-    }
-
-    // NEW: Check if user has specific role in tenant
-    function hasTenantRole(tenantId, role) {
-      return isSignedIn() && 
-             exists(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)).data.role == role;
-    }
-
-    // NEW: Check if user has permission in tenant
-    function hasTenantPermission(tenantId, permission) {
-      return isSignedIn() && 
-             exists(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/tenants/$(tenantId)/members/$(request.auth.uid)).data.permissions.hasAny([permission]);
-    }
-
     // ------------------------
     // UID → Phone Mapping
     // ------------------------
@@ -95,48 +68,41 @@ service cloud.firestore {
     // NEW: Tenants Collection (for new tenant system)
     // ------------------------
     match /tenants/{tenantId} {
-      // Allow creation by authenticated users (for signup)
-      allow create: if isSignedIn() && request.resource.data.ownerId == request.auth.uid;
-      // Allow read by tenant owner or members
-      allow read: if isSignedIn() && (isTenantOwner(tenantId) || isTenantMember(tenantId));
-      // Allow update/delete by tenant owner or admin
-      allow update, delete: if isSignedIn() && (isTenantOwner(tenantId) || isAdmin()) || isServiceAccount();
+      // FIXED: Allow service account to create and update tenant documents
+      allow create: if isSignedIn() && (request.resource.data.ownerId == request.auth.uid || isServiceAccount());
+      allow read: if isSignedIn() && (isTenantOwner(tenantId) || isServiceAccount());
+      allow update: if isSignedIn() && (isTenantOwner(tenantId) || isServiceAccount() || isAdmin());
+      allow delete: if isSignedIn() && (isTenantOwner(tenantId) || isAdmin());
 
-      // Bot Session for WhatsApp QR
+      // Bot Session for WhatsApp QR - FIXED: Allow service account access
       match /botSession/{sessionId} {
-        allow read: if isSignedIn() && (isTenantOwner(tenantId) || isTenantMember(tenantId));
-        allow create, update: if isSignedIn() && (isTenantOwner(tenantId) || isTenantMember(tenantId)) || isServiceAccount();
+        allow read: if isSignedIn() && (isTenantOwner(tenantId) || isServiceAccount());
+        allow create, update: if isSignedIn() && (isTenantOwner(tenantId) || isServiceAccount());
         allow delete: if isAdmin();
-      }
-
-      // Members subcollection - only admins can manage members
-      match /members/{userId} {
-        allow read: if isSignedIn() && (isTenantOwner(tenantId) || isTenantMember(tenantId));
-        allow create, update, delete: if isSignedIn() && (isTenantOwner(tenantId) || isTenantAdmin(tenantId)) || isServiceAccount();
       }
 
       // Tenant Products
       match /products/{productId} {
-        allow read: if isSignedIn() && (isTenantOwner(tenantId) || isTenantMember(tenantId));
-        allow create, update, delete: if isSignedIn() && (isTenantOwner(tenantId) || isTenantMember(tenantId)) || isServiceAccount();
+        allow read: if isSignedIn() && (isTenantOwner(tenantId) || isServiceAccount());
+        allow create, update, delete: if isSignedIn() && (isTenantOwner(tenantId) || isServiceAccount());
       }
 
       // Tenant Categories
       match /categories/{categoryId} {
-        allow read: if isSignedIn() && (isTenantOwner(tenantId) || isTenantMember(tenantId));
-        allow create, update, delete: if isSignedIn() && (isTenantOwner(tenantId) || isTenantMember(tenantId)) || isServiceAccount();
+        allow read: if isSignedIn() && (isTenantOwner(tenantId) || isServiceAccount());
+        allow create, update, delete: if isSignedIn() && (isTenantOwner(tenantId) || isServiceAccount());
       }
 
       // Tenant Customers
       match /customers/{customerId} {
         allow create: if true; // bot can create
-        allow read, update, delete: if isSignedIn() && (isTenantOwner(tenantId) || isTenantMember(tenantId)) || isServiceAccount();
+        allow read, update, delete: if isSignedIn() && (isTenantOwner(tenantId) || isServiceAccount());
       }
 
       // Tenant Orders
       match /orders/{orderId} {
         allow create: if true; // bot can create
-        allow read, update, delete: if isSignedIn() && (isTenantOwner(tenantId) || isTenantMember(tenantId)) || isServiceAccount();
+        allow read, update, delete: if isSignedIn() && (isTenantOwner(tenantId) || isServiceAccount());
       }
     }
 
