@@ -358,7 +358,7 @@ class MessageGenerators {
         msg += "Please enter your details in this format:\n";
         msg += "*name|email|phone|address|accountName*\n\n";
         msg += "📋 *Example:*\n";
-        msg += "*John Doe|john@gmail.com|+264812345678|123 Main St, Windhoek|JohnD*\n\n";
+        msg += "*Your Name|your.email@example.com|+264000000000|Your Address|YourAccount*\n\n";
         msg += "⚠️ *Important:*\n";
         msg += "• Use your real information\n";
         msg += "• Account name must be unique\n";
@@ -390,7 +390,7 @@ class MessageGenerators {
         msg += "Please provide your information for delivery:\n\n";
         msg += "Format: *name|email|phone|address*\n\n";
         msg += "📋 *Example:*\n";
-        msg += "*John Doe|john@gmail.com|+264812345678|123 Main St, Windhoek*\n\n";
+        msg += "*Your Name|your.email@example.com|+264000000000|Your Address*\n\n";
         msg += "💡 *Tip:* Register an account for faster future checkouts!";
         return msg;
     }

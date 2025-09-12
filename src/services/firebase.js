@@ -394,7 +394,7 @@ class ScalableFirebaseService {
                 const testVendorId = 'test-' + Date.now();
                 await this.db.collection('vendors').doc(testVendorId).set({
                     name: 'Test Vendor',
-                    phone: process.env.DEFAULT_PHONE || '0000000000',
+                    phone: process.env.DEFAULT_PHONE || 'Phone not configured',
                     testDocument: true,
                     created: new Date()
                 });
@@ -734,11 +734,11 @@ class ScalableFirebaseService {
     // Default business data fallback
     getDefaultBusinessData() {
         return {
-            businessName: 'Business',
-            businessDescription: 'Welcome to our business',
-            businessPhone: '',
-            businessEmail: '',
-            businessAddress: '',
+            businessName: 'Business Profile Required',
+            businessDescription: 'Please complete your business profile',
+            businessPhone: 'Phone not configured',
+            businessEmail: 'Email not configured',
+            businessAddress: 'Address not configured',
             isActive: true,
             logo: '',
             category: 'general'

@@ -77,12 +77,22 @@ class ProfessionalPDFInvoiceGenerator {
             console.log('PDF DEBUG - Order total:', orderData.total);
             
             // Validate order data
-            const validation = this.validateOrderData(orderData);
-            if (!validation.isValid) {
-                console.error('PDF DEBUG - Order validation failed:', validation.errors);
+            const orderValidation = this.validateOrderData(orderData);
+            if (!orderValidation.isValid) {
+                console.error('PDF DEBUG - Order validation failed:', orderValidation.errors);
                 return {
                     success: false,
-                    error: `Invalid order data: ${validation.errors.join(', ')}`
+                    error: `Invalid order data: ${orderValidation.errors.join(', ')}`
+                };
+            }
+
+            // Validate business profile
+            const businessValidation = this.validateBusinessProfile(businessProfile);
+            if (!businessValidation.isValid) {
+                console.error('PDF DEBUG - Business profile incomplete, missing fields:', businessValidation.missingFields);
+                return {
+                    success: false,
+                    error: `Business profile incomplete. Missing fields: ${businessValidation.missingFields.join(', ')}. Please complete your business profile first.`
                 };
             }
             
@@ -105,6 +115,32 @@ class ProfessionalPDFInvoiceGenerator {
         }
     }
 
+    // Validate business profile completeness
+    validateBusinessProfile(businessProfile) {
+        if (!businessProfile || typeof businessProfile !== 'object') {
+            return { isValid: false, missingFields: ['businessName', 'businessPhone', 'businessEmail', 'businessAddress'] };
+        }
+
+        const missingFields = [];
+        if (!businessProfile.businessName && !businessProfile.name && !businessProfile.companyName) {
+            missingFields.push('businessName');
+        }
+        if (!businessProfile.businessPhone && !businessProfile.phone && !businessProfile.contactInfo) {
+            missingFields.push('businessPhone');
+        }
+        if (!businessProfile.businessEmail && !businessProfile.email) {
+            missingFields.push('businessEmail');
+        }
+        if (!businessProfile.businessAddress && !businessProfile.address) {
+            missingFields.push('businessAddress');
+        }
+
+        return {
+            isValid: missingFields.length === 0,
+            missingFields
+        };
+    }
+
     // Convert business profile from different possible formats
     convertBusinessProfile(businessProfile) {
         console.log('PDF DEBUG - Converting business profile:', businessProfile);
@@ -113,26 +149,33 @@ class ProfessionalPDFInvoiceGenerator {
             console.log('PDF DEBUG - No business profile provided, using defaults');
             return this.getDefaultBusinessData();
         }
+
+        // Validate business profile
+        const validation = this.validateBusinessProfile(businessProfile);
+        if (!validation.isValid) {
+            console.log('PDF DEBUG - Business profile incomplete, missing fields:', validation.missingFields);
+            // Still return the data but with clear indicators of missing fields
+        }
         
         // Handle different possible property names
         const businessData = {
             businessName: businessProfile.businessName || 
                          businessProfile.name || 
                          businessProfile.companyName || 
-                         'LLL Farm',
+                         'Business Name Required',
             businessAddress: businessProfile.businessAddress || 
                            businessProfile.address || 
-                           'Windhoek, Namibia',
+                           'Address Required',
             businessPhone: businessProfile.businessPhone || 
                           businessProfile.phone || 
                           businessProfile.contactInfo || 
-                          '+264 81 314 1453',
+                          'Contact us for phone number',
             businessEmail: businessProfile.businessEmail || 
                           businessProfile.email || 
-                          'info@lllfarm.com',
+                          'Contact us for email address',
             businessDescription: businessProfile.businessDescription || 
                                businessProfile.description || 
-                               'Premium agricultural products and farming solutions'
+                               'Please complete your business profile'
         };
         
         console.log('PDF DEBUG - Converted business data:', businessData);
@@ -158,8 +201,20 @@ class ProfessionalPDFInvoiceGenerator {
             const orderData = this.createOrderDataFromSession(session);
             console.log('PDF DEBUG - Order data created:', orderData);
             
-            // Get business data
-            const businessData = this.getDefaultBusinessData();
+            // Get business data from Firebase
+            const businessProfile = await this.getBusinessProfile(businessId);
+            
+            // Validate business profile
+            const businessValidation = this.validateBusinessProfile(businessProfile);
+            if (!businessValidation.isValid) {
+                console.error('PDF DEBUG - Business profile incomplete, missing fields:', businessValidation.missingFields);
+                return {
+                    success: false,
+                    error: `Business profile incomplete. Missing fields: ${businessValidation.missingFields.join(', ')}. Please complete your business profile first.`
+                };
+            }
+            
+            const businessData = this.convertBusinessProfile(businessProfile);
             
             // Generate PDF
             return await this.generateInvoicePDF(orderData, businessData);
@@ -230,10 +285,10 @@ class ProfessionalPDFInvoiceGenerator {
                     { name: 'Farm Fresh Carrots', price: 12.00, quantity: 3 }
                 ],
                 customerInfo: {
-                    name: 'John Doe',
-                    email: 'john.doe@example.com',
-                    phone: '+264 81 234 5678',
-                    address: '123 Main Street, Windhoek, Namibia'
+                    name: 'Sample Customer',
+                    email: 'customer@example.com',
+                    phone: '+264 00 000 0000',
+                    address: 'Sample Address, Windhoek, Namibia'
                 },
                 subtotal: 103.48,
                 tax: 10.35,
@@ -515,11 +570,11 @@ class ProfessionalPDFInvoiceGenerator {
 
     getDefaultBusinessData() {
         return {
-            businessName: 'LLL Farm',
-            businessAddress: 'Windhoek, Namibia',
-            businessPhone: '+264 81 314 1453',
-            businessEmail: 'info@lllfarm.com',
-            businessDescription: 'Premium agricultural products and farming solutions'
+            businessName: 'Business Name Required',
+            businessAddress: 'Address Required',
+            businessPhone: 'Phone Required',
+            businessEmail: 'Email Required',
+            businessDescription: 'Please complete your business profile'
         };
     }
 
