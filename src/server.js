@@ -465,8 +465,11 @@ class APIServer {
         try {
             await this.initialize();
             
-            this.app.listen(this.port, () => {
-                console.log(`🌐 API Server running on port ${this.port}`);
+            // Use environment variable for port with fallback
+            const port = parseInt(process.env.API_PORT) || this.port;
+            
+            this.app.listen(port, () => {
+                console.log(`✅ API Server started successfully on port ${port}`);
                 console.log(`📋 Available endpoints:`);
                 console.log(`   POST /auth/signup - Vendor registration`);
                 console.log(`   GET  /tenant/:tenantId - Get tenant info`);
@@ -474,7 +477,7 @@ class APIServer {
                 console.log(`   GET  /health - Health check`);
             });
         } catch (error) {
-            console.error('❌ Failed to start API Server:', error);
+            console.error(`❌ Failed to start API server on port ${this.port}:`, error);
             throw error;
         }
     }

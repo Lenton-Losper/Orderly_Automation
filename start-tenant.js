@@ -2,6 +2,7 @@
 // Multi-tenant WhatsApp bot startup script
 const { startBot } = require('./src/index');
 const { getTenantConfig, createTenantDirectories } = require('./src/config/tenant');
+const { getAvailableTenantPorts } = require('./src/utils/portAllocator');
 
 async function startTenantBot() {
     try {
@@ -18,9 +19,18 @@ async function startTenantBot() {
         console.log(`Starting multi-tenant bot for tenant: ${tenantId}`);
         console.log(`Bot phone number: ${botPhone}`);
         
+        // Calculate unique ports for this tenant
+        const tenantPorts = await getAvailableTenantPorts(tenantId);
+        console.log(`Allocated ports for tenant ${tenantId}:`, {
+            apiPort: tenantPorts.apiPort,
+            websocketPort: tenantPorts.websocketPort
+        });
+        
         // Set environment variables for this tenant
         process.env.TENANT_ID = tenantId;
         process.env[`PHONE_${tenantId}`] = botPhone;
+        process.env.API_PORT = tenantPorts.apiPort;
+        process.env.WEBSOCKET_PORT = tenantPorts.websocketPort;
         
         // Get tenant configuration
         const tenantConfig = getTenantConfig(tenantId);
@@ -32,7 +42,8 @@ async function startTenantBot() {
         console.log(`  - Auth Directory: ${tenantConfig.authDir}`);
         console.log(`  - Logs Directory: ${tenantConfig.logsDir}`);
         console.log(`  - Invoices Directory: ${tenantConfig.invoicesDir}`);
-        console.log(`  - WebSocket Port: ${tenantConfig.websocketPort}`);
+        console.log(`  - API Port: ${tenantPorts.apiPort}`);
+        console.log(`  - WebSocket Port: ${tenantPorts.websocketPort}`);
         console.log(`  - Business Phone: ${tenantConfig.businessPhone}`);
         
         // Start the bot with tenant-specific configuration

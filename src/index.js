@@ -120,7 +120,8 @@ class WhatsAppBot {
         try {
             const tenantId = process.env.TENANT_ID || 'default';
             const tenantConfig = getTenantConfig(tenantId);
-            const port = tenantConfig.websocketPort || 8080;
+            // Use environment variable for WebSocket port with fallback
+            const port = parseInt(process.env.WEBSOCKET_PORT) || tenantConfig.websocketPort || 8080;
             const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
 
             console.log(`🔧 Starting WebSocket server on port ${port} for tenant ${tenantId}`);
