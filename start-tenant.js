@@ -1,95 +1,91 @@
-// start-tenant.js
-// Multi-tenant WhatsApp bot startup script
-const { startBot } = require('./src/index');
-const { getTenantConfig, createTenantDirectories } = require('./src/config/tenant');
+const { TenantConfigManager } = require('./src/utils/tenantConfig');
 const { getAvailableTenantPorts } = require('./src/utils/portAllocator');
 
-async function startTenantBot() {
+async function startTenant() {
     try {
-        // Get tenant ID and bot phone from command line arguments
-        const tenantId = process.argv[2] || 'tenant1';
-        const botPhone = process.argv[3];
+        const tenantId = process.argv[2];
         
-        if (!botPhone) {
-            console.error('Usage: node start-tenant.js <tenantId> <botPhoneNumber>');
-            console.error('Example: node start-tenant.js tenant1 264817375723');
+        if (!tenantId) {
+            console.log('❌ Missing tenant ID');
+            console.log('Usage: node start-tenant.js <tenantId>');
+            console.log('Example: node start-tenant.js tenant_1757499607349_xul4pq02s');
+            console.log('\n💡 Create a tenant first: node create-tenant.js <tenantId> <phone>');
             process.exit(1);
         }
+
+        console.log(`🚀 Starting tenant: ${tenantId}`);
         
-        console.log(`Starting multi-tenant bot for tenant: ${tenantId}`);
-        console.log(`Bot phone number: ${botPhone}`);
+        const configManager = new TenantConfigManager();
         
-        // Calculate unique ports for this tenant
-        const tenantPorts = await getAvailableTenantPorts(tenantId);
-        console.log(`Allocated ports for tenant ${tenantId}:`, {
-            apiPort: tenantPorts.apiPort,
-            websocketPort: tenantPorts.websocketPort
-        });
-        
-        // Set environment variables for this tenant
+        // Load tenant configuration from persistent storage
+        let tenantConfig;
+        try {
+            tenantConfig = await configManager.loadTenantConfig(tenantId);
+        } catch (error) {
+            console.error(`❌ ${error.message}`);
+            console.log('\n💡 Create the tenant first:');
+            console.log(`node create-tenant.js ${tenantId} <businessPhone> [businessName]`);
+            process.exit(1);
+        }
+
+        // Verify tenant is active
+        if (!tenantConfig.isActive) {
+            console.log(`⚠️ Tenant ${tenantId} is marked as inactive`);
+            process.exit(1);
+        }
+
+        // Get or assign ports
+        let ports = tenantConfig.allocatedPorts;
+        if (!ports) {
+            console.log('📊 Allocating new ports for tenant...');
+            ports = await getAvailableTenantPorts(tenantId);
+            
+            // Update tenant config with allocated ports
+            await configManager.updateTenantConfig(tenantId, {
+                allocatedPorts: ports
+            });
+        }
+
+        console.log('📋 Tenant Configuration:');
+        console.log(`   Tenant ID: ${tenantConfig.tenantId}`);
+        console.log(`   Business Phone: ${tenantConfig.businessPhone}`);
+        console.log(`   Business Name: ${tenantConfig.businessName}`);
+        console.log(`   API Port: ${ports.apiPort}`);
+        console.log(`   WebSocket Port: ${ports.websocketPort}`);
+
+        // Set environment variables for the tenant process
+        process.env.API_PORT = ports.apiPort.toString();
+        process.env.WEBSOCKET_PORT = ports.websocketPort.toString();
         process.env.TENANT_ID = tenantId;
-        process.env[`PHONE_${tenantId}`] = botPhone;
-        process.env.API_PORT = tenantPorts.apiPort;
-        process.env.WEBSOCKET_PORT = tenantPorts.websocketPort;
-        
-        // Get tenant configuration
-        const tenantConfig = getTenantConfig(tenantId);
-        
-        // Create tenant directories
-        createTenantDirectories(tenantConfig);
-        
-        console.log(`Tenant configuration:`);
-        console.log(`  - Auth Directory: ${tenantConfig.authDir}`);
-        console.log(`  - Logs Directory: ${tenantConfig.logsDir}`);
-        console.log(`  - Invoices Directory: ${tenantConfig.invoicesDir}`);
-        console.log(`  - API Port: ${tenantPorts.apiPort}`);
-        console.log(`  - WebSocket Port: ${tenantPorts.websocketPort}`);
-        console.log(`  - Business Phone: ${tenantConfig.businessPhone}`);
-        
-        // Start the bot with tenant-specific configuration
-        console.log(`\nStarting WhatsApp bot for tenant ${tenantId}...`);
+        process.env.BUSINESS_PHONE = tenantConfig.businessPhone;
+        process.env.BUSINESS_NAME = tenantConfig.businessName || '';
+
+        console.log('🔧 Environment configured successfully');
+        console.log(`   API_PORT=${ports.apiPort}`);
+        console.log(`   WEBSOCKET_PORT=${ports.websocketPort}`);
+        console.log(`   BUSINESS_PHONE=${tenantConfig.businessPhone}`);
+
+        // Start the bot with loaded configuration
+        console.log('🎯 Initializing WhatsApp bot...');
+        const { startBot } = require('./src/index');
         await startBot();
-        
+
     } catch (error) {
-        console.error(`Failed to start tenant bot:`, error);
+        console.error('💥 Failed to start tenant:', error.message);
+        console.error(error.stack);
         process.exit(1);
     }
 }
 
-// Help function
-function showHelp() {
-    console.log('Multi-Tenant WhatsApp Bot Startup');
-    console.log('=================================');
-    console.log('');
-    console.log('Usage:');
-    console.log('  node start-tenant.js <tenantId> <botPhoneNumber>');
-    console.log('');
-    console.log('Examples:');
-    console.log('  node start-tenant.js tenant1 264817375723');
-    console.log('  node start-tenant.js tenant2 264813141454');
-    console.log('  node start-tenant.js business1 264817375744');
-    console.log('');
-    console.log('Parameters:');
-    console.log('  tenantId        - Unique identifier for this tenant (alphanumeric)');
-    console.log('  botPhoneNumber  - WhatsApp bot phone number (with country code)');
-    console.log('');
-    console.log('Each tenant will get:');
-    console.log('  - Separate authentication folder');
-    console.log('  - Separate logs directory');
-    console.log('  - Separate invoices directory');
-    console.log('  - Unique WebSocket port');
-    console.log('  - Independent business configuration');
-}
+// Handle graceful shutdown
+process.on('SIGINT', () => {
+    console.log('🛑 Received SIGINT, shutting down gracefully...');
+    process.exit(0);
+});
 
-// Run the startup script
-if (require.main === module) {
-    // Check if help is requested
-    if (process.argv.includes('--help') || process.argv.includes('-h')) {
-        showHelp();
-        process.exit(0);
-    }
-    
-    startTenantBot();
-}
+process.on('SIGTERM', () => {
+    console.log('🛑 Received SIGTERM, shutting down gracefully...');
+    process.exit(0);
+});
 
-module.exports = { startTenantBot, showHelp };
+startTenant();
