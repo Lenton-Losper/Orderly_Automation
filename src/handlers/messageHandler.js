@@ -710,6 +710,26 @@ class MessageHandler {
             
             console.log(`Bot ${botPhoneNumber} determined business: ${businessId} for customer ${phoneNumber}`);
 
+            // DYNAMIC TENANT RESOLUTION: Find tenant based on user's phone number
+            let tenantId = 'default';
+            let tenantData = null;
+            
+            try {
+                console.log('🔍 TENANT DEBUG - Looking up tenant for phone number:', phoneNumber);
+                tenantData = await this.tenantFinder.findBestTenantForPhone(phoneNumber);
+                
+                if (tenantData) {
+                    tenantId = tenantData.id;
+                    console.log('🔍 TENANT DEBUG - Found tenant:', tenantId, 'for phone:', phoneNumber);
+                    console.log('🔍 TENANT DEBUG - Tenant business name:', tenantData.businessName);
+                } else {
+                    console.log('🔍 TENANT DEBUG - No tenant found for phone:', phoneNumber, 'using default');
+                }
+            } catch (tenantError) {
+                console.error('🔍 TENANT DEBUG - Error finding tenant:', tenantError);
+                console.log('🔍 TENANT DEBUG - Falling back to default tenant');
+            }
+
             // Get business data - ROBUST VERSION
             let businessData;
             try {
@@ -791,26 +811,6 @@ class MessageHandler {
 
             console.log(`Message from ${sender} (${phoneNumber}) to business ${businessId}: "${messageContent}"`);
 
-            // DYNAMIC TENANT RESOLUTION: Find tenant based on user's phone number
-            let tenantId = 'default';
-            let tenantData = null;
-            
-            try {
-                console.log('🔍 TENANT DEBUG - Looking up tenant for phone number:', phoneNumber);
-                tenantData = await this.tenantFinder.findBestTenantForPhone(phoneNumber);
-                
-                if (tenantData) {
-                    tenantId = tenantData.id;
-                    console.log('🔍 TENANT DEBUG - Found tenant:', tenantId, 'for phone:', phoneNumber);
-                    console.log('🔍 TENANT DEBUG - Tenant business name:', tenantData.businessName);
-                } else {
-                    console.log('🔍 TENANT DEBUG - No tenant found for phone:', phoneNumber, 'using default');
-                }
-            } catch (tenantError) {
-                console.error('🔍 TENANT DEBUG - Error finding tenant:', tenantError);
-                console.log('🔍 TENANT DEBUG - Falling back to default tenant');
-            }
-            
             // Use the new session management method that persists sessions with tenant support
             let session = this.getOrCreateSession(userId, businessId, businessData, tenantId);
 
