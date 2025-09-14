@@ -283,9 +283,17 @@ class MessageHandler {
         } else {
             console.log(`EXISTING Session retrieved: ${sessionKey}`);
             console.log('SESSION DEBUG - Existing session step:', session.step);
+            
+            // CRITICAL FIX: Always update session with fresh business data
+            console.log('🔄 SESSION DEBUG - Updating existing session with fresh business data');
+            console.log('🔄 SESSION DEBUG - Old products count:', Object.keys(session.businessData?.products || {}).length);
+            console.log('🔄 SESSION DEBUG - New products count:', Object.keys(businessData?.products || {}).length);
+            
+            session.businessData = businessData;
+            console.log('🔄 SESSION DEBUG - Session updated with fresh business data');
         }
         
-        // Ensure session has business data
+        // Ensure session has business data (fallback for new sessions)
         if (!session.businessData) {
             session.businessData = businessData;
             console.log(`Added business data to session`);
