@@ -60,6 +60,10 @@ class APIServer {
             });
         });
 
+        // User tenant routes
+        const userTenantRoutes = require('./routes/userTenant');
+        this.app.use('/api/user', userTenantRoutes);
+
         // Vendor signup endpoint
         this.app.post('/auth/signup', async (req, res) => {
             try {

@@ -57,7 +57,7 @@ const CONNECTION_CONFIG = {
 // WhatsApp configuration with tenant support
 const WHATSAPP_CONFIG = {
     MARK_ONLINE_ON_CONNECT: true,
-    BROWSER: ['LLL Farm Bot', 'Chrome', '120.0.0'],
+    BROWSER: ['WhatsApp Bot', 'Chrome', '120.0.0'],
     QR_TERMINAL: true,
     AUTH_FOLDER: process.env.TENANT_ID ? `./tenants/${process.env.TENANT_ID}/auth` : './auth_correct'
 };
@@ -72,14 +72,14 @@ const TENANT_CONFIG = {
 // FIXED: Business configuration with proper ID
 const DEFAULT_BUSINESS = {
     id: 'default',
-    businessName: 'LLL Farm',
-    businessDescription: 'Fresh meat and agricultural products',
+    businessName: 'Business Profile Required',
+    businessDescription: 'Please complete your business profile',
     businessPhone: '',
     businessEmail: '',
     businessAddress: '',
     isActive: true,
     logo: '',
-    category: 'agriculture'
+    category: 'general'
 };
 
 // Firebase collections

@@ -108,7 +108,7 @@ class WhatsAppService {
                 // Try minimal config first (removed deprecated printQRInTerminal)
                 const minimalConfig = {
                     auth: state,
-                    browser: ['LLL Farm Bot', 'Chrome', '120.0.0'],
+                    browser: ['WhatsApp Bot', 'Chrome', '120.0.0'],
                     syncFullHistory: false
                 };
                 
@@ -443,7 +443,7 @@ class WhatsAppService {
             this.botInfo = {
                 phoneNumber: this.getBotPhoneNumber(),
                 fullId: this.socket.user.id,
-                name: this.socket.user.name || 'LLL Farm Bot',
+                name: this.socket.user.name || 'WhatsApp Bot',
                 startTime: this.botStartTime,
                 uptime: this.botStartTime ? Date.now() - this.botStartTime : 0
             };
@@ -892,7 +892,7 @@ class WhatsAppService {
         
         return {
             phoneNumber: this.getBotPhoneNumber(),
-            name: this.socket.user.name || 'LLL Farm Bot',
+            name: this.socket.user.name || 'WhatsApp Bot',
             id: this.socket.user.id,
             startTime: this.botStartTime,
             uptime: this.botStartTime ? Date.now() - this.botStartTime : 0,

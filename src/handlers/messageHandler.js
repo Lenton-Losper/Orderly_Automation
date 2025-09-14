@@ -3,6 +3,7 @@ const OrderSession = require('../models/OrderSession');
 const sessionManager = require('../utils/sessionManager');
 const messageGenerators = require('../utils/messageGenerators');
 const commandHandler = require('./commandHandler');
+const { TenantFinder } = require('../utils/tenantFinder');
 const businessManager = require('../services/businessManager');
 
 class MessageHandler {
@@ -20,6 +21,9 @@ class MessageHandler {
         this.businessDataCache = new Map();
         // Track active Firestore product subscriptions by businessId
         this.productUnsubscribers = new Map();
+        
+        // Tenant finder for dynamic tenant resolution
+        this.tenantFinder = new TenantFinder();
     }
 
     // Check if message is from a group
@@ -567,24 +571,16 @@ class MessageHandler {
     createDefaultBusinessData() {
         return {
             profile: {
-                businessName: 'LLL Farm Bot',
-                contactInfo: 'Welcome to our service! Contact us for more information.',
+                businessName: 'Business Profile Required',
+                contactInfo: 'Please complete your business profile to start receiving orders.',
                 catalogUrl: null,
-                description: 'Your trusted agricultural partner',
+                description: 'Complete your business setup to begin',
                 address: null,
                 email: null,
                 phone: null
             },
-            products: {
-                'sample1': {
-                    name: 'Sample Product',
-                    price: 10.00,
-                    description: 'Sample product for demonstration',
-                    category: 'General',
-                    image: '🛍️'
-                }
-            },
-            productOrder: ['sample1'],
+            products: {},
+            productOrder: [],
             businessId: 'default'
         };
     }
@@ -739,6 +735,10 @@ class MessageHandler {
                 // Transform/normalize the business data structure
                 if (rawBusinessData) {
                     businessData = await this.normalizeBusinessData(rawBusinessData, businessId, tenantId);
+                } else if (tenantData) {
+                    // Use tenant data if available
+                    console.log('🔍 BUSINESS DATA DEBUG - Using tenant data for business profile');
+                    businessData = await this.normalizeBusinessData(tenantData, businessId, tenantId);
                 } else {
                     console.log('🔍 BUSINESS DATA DEBUG - No raw business data found, using default');
                     businessData = this.createDefaultBusinessData();
@@ -791,8 +791,25 @@ class MessageHandler {
 
             console.log(`Message from ${sender} (${phoneNumber}) to business ${businessId}: "${messageContent}"`);
 
-            // Get tenantId from environment or use default fallback
-            const tenantId = process.env.TENANT_ID || 'default';
+            // DYNAMIC TENANT RESOLUTION: Find tenant based on user's phone number
+            let tenantId = 'default';
+            let tenantData = null;
+            
+            try {
+                console.log('🔍 TENANT DEBUG - Looking up tenant for phone number:', phoneNumber);
+                tenantData = await this.tenantFinder.findBestTenantForPhone(phoneNumber);
+                
+                if (tenantData) {
+                    tenantId = tenantData.id;
+                    console.log('🔍 TENANT DEBUG - Found tenant:', tenantId, 'for phone:', phoneNumber);
+                    console.log('🔍 TENANT DEBUG - Tenant business name:', tenantData.businessName);
+                } else {
+                    console.log('🔍 TENANT DEBUG - No tenant found for phone:', phoneNumber, 'using default');
+                }
+            } catch (tenantError) {
+                console.error('🔍 TENANT DEBUG - Error finding tenant:', tenantError);
+                console.log('🔍 TENANT DEBUG - Falling back to default tenant');
+            }
             
             // Use the new session management method that persists sessions with tenant support
             let session = this.getOrCreateSession(userId, businessId, businessData, tenantId);

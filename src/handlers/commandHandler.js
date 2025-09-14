@@ -382,10 +382,9 @@ class CommandHandler {
                 
                 try {
                     // FIXED: Use the correct method parameters
-                    const pdfResult = await pdfInvoiceGenerator.generateInvoice(
+                    const pdfResult = await pdfInvoiceGenerator.generateInvoicePDF(
                         order,  // Pass the order object
-                        session.businessData.profile,  // Pass business profile
-                        session.businessId  // Pass business ID
+                        session.businessData.profile  // Pass business profile
                     );
                     
                     console.log('PDF DEBUG - PDF generation result:', pdfResult);
