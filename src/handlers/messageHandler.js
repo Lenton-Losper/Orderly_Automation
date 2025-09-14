@@ -710,20 +710,20 @@ class MessageHandler {
             
             console.log(`Bot ${botPhoneNumber} determined business: ${businessId} for customer ${phoneNumber}`);
 
-            // DYNAMIC TENANT RESOLUTION: Find tenant based on user's phone number
+            // DYNAMIC TENANT RESOLUTION: Find tenant based on BOT's phone number, not customer's
             let tenantId = 'default';
             let tenantData = null;
             
             try {
-                console.log('🔍 TENANT DEBUG - Looking up tenant for phone number:', phoneNumber);
-                tenantData = await this.tenantFinder.findBestTenantForPhone(phoneNumber);
+                console.log('🔍 TENANT DEBUG - Looking up tenant for BOT phone number:', botPhoneNumber);
+                tenantData = await this.tenantFinder.findBestTenantForPhone(botPhoneNumber);
                 
                 if (tenantData) {
                     tenantId = tenantData.id;
-                    console.log('🔍 TENANT DEBUG - Found tenant:', tenantId, 'for phone:', phoneNumber);
+                    console.log('🔍 TENANT DEBUG - Found tenant:', tenantId, 'for BOT phone:', botPhoneNumber);
                     console.log('🔍 TENANT DEBUG - Tenant business name:', tenantData.businessName);
                 } else {
-                    console.log('🔍 TENANT DEBUG - No tenant found for phone:', phoneNumber, 'using default');
+                    console.log('🔍 TENANT DEBUG - No tenant found for BOT phone:', botPhoneNumber, 'using default');
                 }
             } catch (tenantError) {
                 console.error('🔍 TENANT DEBUG - Error finding tenant:', tenantError);
