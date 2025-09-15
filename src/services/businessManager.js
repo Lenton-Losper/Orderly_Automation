@@ -571,7 +571,13 @@ class BusinessManager {
             console.log('BUSINESS MANAGER DEBUG - Full path: vendors/' + businessId + '/tenants/' + tenantId + '/orders/' + docRef.id);
             
             // CRITICAL FIX: Update customer statistics after successful order save
-            await this.updateCustomerStatistics(businessId, sender, order.total, tenantId);
+            try {
+                await this.updateCustomerStatistics(businessId, whatsappId, order.total, tenantId);
+                console.log('BUSINESS MANAGER DEBUG - Customer statistics updated successfully');
+            } catch (statsError) {
+                console.error('BUSINESS MANAGER DEBUG - Error updating customer statistics (non-fatal):', statsError);
+                // Don't fail the entire order save if stats update fails
+            }
             
             return true;
         } catch (error) {
