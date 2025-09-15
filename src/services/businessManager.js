@@ -522,11 +522,11 @@ class BusinessManager {
     }
 
     // ORDER MANAGEMENT METHODS - Save orders in vendor subcollection
-    async saveOrder(businessId, sender, order, messageId, tenantId = 'default') {
+    async saveOrder(businessId, whatsappId, order, messageId, tenantId = 'default') {
         console.log('BUSINESS MANAGER DEBUG - saveOrder called');
         console.log('BUSINESS MANAGER DEBUG - Business ID:', businessId);
         console.log('BUSINESS MANAGER DEBUG - Tenant ID:', tenantId);
-        console.log('BUSINESS MANAGER DEBUG - Sender:', sender);
+        console.log('BUSINESS MANAGER DEBUG - WhatsApp ID:', whatsappId);
         console.log('BUSINESS MANAGER DEBUG - Message ID:', messageId);
         
         try {
@@ -543,7 +543,8 @@ class BusinessManager {
             const orderDoc = {
                 vendorId: businessId,
                 tenantId: tenantId, // Include tenantId in order
-                customerName: sender,
+                whatsappId: whatsappId, // Store WhatsApp ID for customer lookup
+                customerName: order.customerInfo?.name || 'Customer', // Use customer name from order info
                 customerInfo: order.customerInfo,
                 items: order.items,
                 total: order.total,
@@ -568,6 +569,9 @@ class BusinessManager {
             const docRef = await tenantOrdersRef.add(orderDoc);
             console.log('BUSINESS MANAGER DEBUG - Order saved with ID:', docRef.id);
             console.log('BUSINESS MANAGER DEBUG - Full path: vendors/' + businessId + '/tenants/' + tenantId + '/orders/' + docRef.id);
+            
+            // CRITICAL FIX: Update customer statistics after successful order save
+            await this.updateCustomerStatistics(businessId, sender, order.total, tenantId);
             
             return true;
         } catch (error) {
@@ -613,6 +617,71 @@ class BusinessManager {
             }
         } catch (error) {
             console.error('BUSINESS MANAGER DEBUG - Error incrementing score in vendor subcollection:', error);
+        }
+    }
+
+    // NEW: Update customer statistics after order completion
+    async updateCustomerStatistics(businessId, whatsappId, orderTotal, tenantId = 'default') {
+        console.log('CUSTOMER STATS DEBUG - updateCustomerStatistics called');
+        console.log('CUSTOMER STATS DEBUG - Business ID:', businessId);
+        console.log('CUSTOMER STATS DEBUG - WhatsApp ID:', whatsappId);
+        console.log('CUSTOMER STATS DEBUG - Order Total:', orderTotal);
+        console.log('CUSTOMER STATS DEBUG - Tenant ID:', tenantId);
+        
+        try {
+            // Handle undefined businessId
+            if (!businessId || businessId === 'undefined') {
+                console.log('CUSTOMER STATS DEBUG - Invalid business ID, cannot update statistics');
+                return false;
+            }
+            
+            const admin = require('firebase-admin');
+            const db = admin.firestore();
+            
+            // Find customer by whatsappId in tenant-scoped collection
+            const customerQuery = await db
+                .collection('vendors')
+                .doc(businessId)
+                .collection('tenants')
+                .doc(tenantId)
+                .collection('customers')
+                .where('whatsappId', '==', whatsappId)
+                .get();
+            
+            if (!customerQuery.empty) {
+                const customerDoc = customerQuery.docs[0];
+                const customerData = customerDoc.data();
+                
+                // Get current statistics
+                const currentTotalOrders = customerData.totalOrders || 0;
+                const currentTotalSpent = customerData.totalSpent || 0;
+                
+                // Calculate new statistics
+                const newTotalOrders = currentTotalOrders + 1;
+                const newTotalSpent = currentTotalSpent + orderTotal;
+                
+                // Update customer statistics
+                await customerDoc.ref.update({
+                    totalOrders: newTotalOrders,
+                    totalSpent: newTotalSpent,
+                    lastOrderDate: new Date().toISOString(),
+                    updatedAt: new Date().toISOString()
+                });
+                
+                console.log('CUSTOMER STATS DEBUG - Customer statistics updated:');
+                console.log('CUSTOMER STATS DEBUG - Total Orders:', currentTotalOrders, '→', newTotalOrders);
+                console.log('CUSTOMER STATS DEBUG - Total Spent:', currentTotalSpent, '→', newTotalSpent);
+                console.log('CUSTOMER STATS DEBUG - Last Order Date:', new Date().toISOString());
+                console.log('CUSTOMER STATS DEBUG - Updated in: vendors/' + businessId + '/tenants/' + tenantId + '/customers/' + customerDoc.id);
+                
+                return true;
+            } else {
+                console.log('CUSTOMER STATS DEBUG - Customer not found with WhatsApp ID:', whatsappId);
+                return false;
+            }
+        } catch (error) {
+            console.error('CUSTOMER STATS DEBUG - Error updating customer statistics:', error);
+            return false;
         }
     }
 

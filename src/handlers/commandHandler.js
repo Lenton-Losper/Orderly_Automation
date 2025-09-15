@@ -384,7 +384,7 @@ class CommandHandler {
             const order = session.generateOrder();
             const saved = await businessManager.saveOrder(
                 session.businessId, 
-                messageData.sender, 
+                messageData.phoneNumber, // Use phoneNumber (WhatsApp ID) instead of sender (display name)
                 order, 
                 messageData.msgId,
                 session.tenantId || 'default' // Include tenantId in order saving
