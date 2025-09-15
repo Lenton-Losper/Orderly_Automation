@@ -33,6 +33,15 @@ class MessageHandler {
         return remoteJid.endsWith('@g.us');
     }
 
+    // Check if the current command indicates a new conversation
+    isNewConversationCommand(session) {
+        // This method will be called from the command handler context
+        // We need to check the current message content to determine if it's a new conversation
+        // For now, we'll implement a simple check based on common welcome commands
+        // This will be enhanced when we have access to the current message content
+        return false; // Default to false, will be enhanced in command handler
+    }
+
     // Check if user has permission for a specific command
     hasPermission(userId, command, businessId) {
         // If public access is enabled and it's not an admin command, allow it
@@ -130,6 +139,9 @@ class MessageHandler {
         console.log('SESSION DEBUG - Existing session found:', !!session);
         console.log('SESSION DEBUG - Session step before:', session?.step);
         
+        // Check if this is a new conversation (welcome commands indicate new conversation)
+        const isNewConversation = this.isNewConversationCommand(session);
+        
         if (!session) {
             console.log('SESSION DEBUG - Creating new session');
             session = { 
@@ -202,6 +214,19 @@ class MessageHandler {
                 clearCart: function() { 
                     console.log('CLEAR_CART DEBUG - Clearing cart');
                     this.cart = []; 
+                },
+                
+                // Reset entire session state for new conversations
+                resetSession: function() {
+                    console.log('SESSION RESET DEBUG - Resetting entire session state');
+                    this.cart = [];
+                    this.customerInfo = {};
+                    this.customerAccount = null;
+                    this.discountCode = null;
+                    this.discountAmount = 0;
+                    this.step = 'start';
+                    this.data = {};
+                    console.log('SESSION RESET DEBUG - Session state reset complete');
                 },
                 
                 // Discount methods
@@ -283,6 +308,15 @@ class MessageHandler {
         } else {
             console.log(`EXISTING Session retrieved: ${sessionKey}`);
             console.log('SESSION DEBUG - Existing session step:', session.step);
+            
+            // CRITICAL FIX: Clear cart for new conversations to prevent cart persistence
+            if (isNewConversation) {
+                console.log('🛒 CART RESET - New conversation detected, clearing cart');
+                console.log('🛒 CART RESET - Cart before clear:', session.cart?.length || 0, 'items');
+                session.clearCart();
+                session.setStep('start');
+                console.log('🛒 CART RESET - Cart cleared and step reset to start');
+            }
             
             // CRITICAL FIX: Always update session with fresh business data
             console.log('🔄 SESSION DEBUG - Updating existing session with fresh business data');

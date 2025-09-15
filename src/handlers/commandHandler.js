@@ -51,6 +51,13 @@ class CommandHandler {
             // Welcome and menu commands
             if (['hi', 'hello', 'start', 'menu', 'main'].includes(command)) {
                 console.log('COMMAND DEBUG - Processing welcome/menu command');
+                
+                // CRITICAL FIX: Reset entire session for new conversations to prevent cart persistence
+                console.log('🛒 SESSION RESET - Welcome command detected, resetting session');
+                console.log('🛒 SESSION RESET - Cart before reset:', session.cart?.length || 0, 'items');
+                session.resetSession();
+                console.log('🛒 SESSION RESET - Session reset complete');
+                
                 return await this.handleWelcome(session, businessManager, messageData.userId);
             }
 
@@ -84,12 +91,24 @@ class CommandHandler {
             // Main menu options - ONLY when in menu step or global context
             if (['1', 'quick'].includes(command) && (session.step === 'menu' || session.step === 'start')) {
                 console.log('COMMAND DEBUG - Processing quick order');
+                
+                // CRITICAL FIX: Reset session for new quick order to prevent cart persistence
+                console.log('🛒 SESSION RESET - Quick order command detected, resetting session');
+                console.log('🛒 SESSION RESET - Cart before reset:', session.cart?.length || 0, 'items');
+                session.resetSession();
+                
                 return this.handleQuickOrder(session);
             }
 
             // FIXED: Only trigger catalog for non-quick_order steps or when explicitly requested
             if (['catalog', 'catalogue'].includes(command) || (command === '2' && session.step === 'menu')) {
                 console.log('COMMAND DEBUG - Processing catalog');
+                
+                // CRITICAL FIX: Reset session for new catalog view to prevent cart persistence
+                console.log('🛒 SESSION RESET - Catalog command detected, resetting session');
+                console.log('🛒 SESSION RESET - Cart before reset:', session.cart?.length || 0, 'items');
+                session.resetSession();
+                
                 return this.handleCatalog(session);
             }
 
@@ -454,7 +473,13 @@ class CommandHandler {
                 }
                 
                 // Clear the session after successful order
-                const sessionKey = `${messageData.userId}_${session.businessId}`;
+                const sessionKey = `${messageData.userId}_${session.businessId}_${session.tenantId || 'default'}`;
+                
+                // CRITICAL FIX: Reset session after order completion to ensure clean state
+                console.log('🛒 SESSION RESET - Order completed, resetting session');
+                console.log('🛒 SESSION RESET - Cart before reset:', session.cart?.length || 0, 'items');
+                session.resetSession();
+                
                 sessionManager.deleteSession(sessionKey);
                 
                 // Return null since we're handling the response sending manually
