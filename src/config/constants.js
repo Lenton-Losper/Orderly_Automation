@@ -186,6 +186,7 @@ const ERROR_CONFIG = {
     FALLBACK_RESPONSES: true
 };
 
+
 // Export all configurations
 module.exports = {
     OWNER_NUMBER,

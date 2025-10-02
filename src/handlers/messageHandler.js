@@ -3,6 +3,7 @@ const OrderSession = require('../models/OrderSession');
 const sessionManager = require('../utils/sessionManager');
 const messageGenerators = require('../utils/messageGenerators');
 const commandHandler = require('./commandHandler');
+const rasaClient = require('../services/rasaClient');
 const { TenantFinder } = require('../utils/tenantFinder');
 const businessManager = require('../services/businessManager');
 
@@ -856,26 +857,61 @@ class MessageHandler {
             // Use the new session management method that persists sessions with tenant support
             let session = this.getOrCreateSession(userId, businessId, businessData, tenantId);
 
-            // Process the message through command handler
-            const response = await commandHandler.handleCommand(
-                messageContent,  // text - first parameter
-                session,         // session - second parameter  
-                businessManager, // businessManager - third parameter
-                {               // messageData - fourth parameter
-                    userId,
-                    businessId,
-                    sender,
-                    phoneNumber,
-                    botPhoneNumber,
-                    whatsappService: this.whatsappService,
-                    msgId
+            // Try Rasa first (if enabled) with safe fallback to command handler
+            let usedRasa = false;
+            let rasaLatency = null;
+            try {
+                const metadata = { businessId, tenantId, sender, botPhoneNumber };
+                const rasaResult = await rasaClient.parseMessage(userId, messageContent, metadata);
+                if (rasaResult && rasaResult.ok) {
+                    rasaLatency = rasaResult.latencyMs || null;
+                    const replies = rasaResult.messages || [];
+                    if (replies.length > 0) {
+                        for (const m of replies) {
+                            if (m.text) {
+                                await this.sendMessage(userId, m.text);
+                            } else if (m.image) {
+                                await this.sendMessage(userId, m.image);
+                            } else if (m.custom) {
+                                const text = typeof m.custom === 'string' ? m.custom : (m.custom.text || JSON.stringify(m.custom));
+                                if (text) await this.sendMessage(userId, text);
+                            }
+                        }
+                        usedRasa = true;
+                    }
+                } else if (rasaResult && !rasaResult.ok) {
+                    console.log('RASA disabled/unavailable:', rasaResult.reason);
                 }
-            );
+            } catch (rerr) {
+                console.log('RASA call error:', rerr.message);
+            }
 
-            // Send the response if we got one
-            if (response && typeof response === 'string') {
-                console.log(`Sending response to ${userId}`);
-                await this.sendMessage(userId, response);
+            if (!usedRasa) {
+                const response = await commandHandler.handleCommand(
+                    messageContent,
+                    session,
+                    businessManager,
+                    {
+                        userId,
+                        businessId,
+                        sender,
+                        phoneNumber,
+                        botPhoneNumber,
+                        whatsappService: this.whatsappService,
+                        msgId
+                    }
+                );
+
+                if (response && typeof response === 'string') {
+                    console.log(`Sending response to ${userId}`);
+                    await this.sendMessage(userId, response);
+                }
+            } else {
+                if (rasaLatency != null) {
+                    console.log(`RASA handled message in ${rasaLatency}ms`);
+                } else {
+                    console.log('RASA handled message');
+                }
             }
 
         } catch (error) {
