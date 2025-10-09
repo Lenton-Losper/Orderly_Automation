@@ -1,0 +1,23 @@
+# Rasa Virtual Environment Requirements
+# Compatible with Python 3.8-3.11
+
+# Core Rasa dependencies
+rasa==3.6.15
+rasa-sdk==3.6.2
+
+# Essential dependencies
+spacy==3.7.2
+transformers==4.35.2
+torch==2.1.0
+numpy==1.24.3
+scikit-learn==1.3.2
+
+# Additional dependencies
+requests==2.31.0
+jieba==0.42.1
+sklearn-crfsuite==0.3.6
+
+# Development and testing
+pytest==7.4.3
+pytest-cov==4.1.0
+pytest-xdist==3.3.1

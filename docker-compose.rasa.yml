@@ -1,0 +1,78 @@
+# Docker Compose for Rasa + Node.js WhatsApp Bot
+version: '3.8'
+
+services:
+  rasa:
+    image: rasa/rasa:3.6.15-full
+    ports:
+      - "5005:5005"
+    volumes:
+      - ./:/app
+    command: ["run", "--enable-api", "--cors", "*", "--port", "5005", "--model", "/app/models/20250924-230207-blistering-graph.tar.gz"]
+    environment:
+      - RASA_ENVIRONMENT=production
+    depends_on:
+      - redis
+    networks:
+      - rasa-network
+
+  rasa-actions:
+    build:
+      context: .
+      dockerfile: Dockerfile.actions
+    ports:
+      - "5055:5055"
+    volumes:
+      - ./actions:/app/actions
+    environment:
+      - NODE_API_URL=http://whatsapp-bot:3000
+    depends_on:
+      - whatsapp-bot
+    networks:
+      - rasa-network
+
+  whatsapp-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.node
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src
+      - ./tenants:/app/tenants
+    environment:
+      - RASA_URL=http://rasa:5005
+      - RASA_ACTION_SERVER_URL=http://rasa-actions:5055
+    depends_on:
+      - redis
+      - mongodb
+    networks:
+      - rasa-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - rasa-network
+
+  mongodb:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=rasa
+    networks:
+      - rasa-network
+
+volumes:
+  redis-data:
+  mongodb-data:
+
+networks:
+  rasa-network:
+    driver: bridge

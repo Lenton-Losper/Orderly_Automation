@@ -64,6 +64,10 @@ class APIServer {
         const userTenantRoutes = require('./routes/userTenant');
         this.app.use('/api/user', userTenantRoutes);
 
+        // Bot training routes
+        const trainingRoutes = require('./routes/training');
+        this.app.use('/api/bot/training', trainingRoutes);
+
         // Vendor signup endpoint
         this.app.post('/auth/signup', async (req, res) => {
             try {
@@ -510,3 +514,12 @@ class APIServer {
 }
 
 module.exports = APIServer;
+
+// Start the server if this file is run directly
+if (require.main === module) {
+    const server = new APIServer();
+    server.start().catch(error => {
+        console.error('Failed to start server:', error);
+        process.exit(1);
+    });
+}

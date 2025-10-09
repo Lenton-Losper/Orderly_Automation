@@ -2,9 +2,11 @@
   "dependencies": {
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "^6.7.18",
+    "axios": "^1.6.0",
     "baileys": "^6.7.16",
     "canvas": "^3.1.2",
     "cors": "^2.8.5",
+    "crypto-js": "^4.2.0",
     "dotenv": "^17.2.0",
     "express": "^4.18.2",
     "firebase": "^12.0.0",
@@ -29,7 +31,12 @@
     "start:api": "node start-api.js",
     "test": "node test-signup.js",
     "deploy:rules": "node deploy-rules.js",
-    "test:signup": "node test-signup.js"
+    "test:signup": "node test-signup.js",
+    "rasa:train": "rasa train",
+    "rasa:run": "rasa run --enable-api --cors \"*\" --port 5005",
+    "rasa:shell": "rasa shell",
+    "rasa:test": "rasa test",
+    "rasa:interactive": "rasa interactive"
   },
   "keywords": [],
   "author": "",

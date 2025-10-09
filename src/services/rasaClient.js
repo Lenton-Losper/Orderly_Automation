@@ -4,7 +4,7 @@ const axios = require('axios');
 const DEFAULT_RESPONSE = { ok: false, reason: 'disabled', messages: [], latencyMs: null };
 
 function getRasaConfig() {
-    const baseUrl = process.env.RASA_URL || process.env.RASA_BASE_URL || null;
+    const baseUrl = process.env.RASA_BASE_URL || process.env.RASA_URL || null;
     const token = process.env.RASA_TOKEN || process.env.RASA_AUTH_TOKEN || null;
     return { baseUrl, token };
 }
@@ -42,17 +42,41 @@ async function callRasaParse(baseUrl, userId, text, metadata) {
 async function parseMessage(userId, text, metadata = {}) {
     const { baseUrl } = getRasaConfig();
     if (!baseUrl) {
+        console.log('RASA: No base URL configured, skipping Rasa processing');
         return { ...DEFAULT_RESPONSE };
     }
+    
     try {
+        console.log(`RASA: Processing message from ${userId}: "${text}"`);
+        
+        // Enhanced metadata for better context
+        const enhancedMetadata = {
+            ...metadata,
+            timestamp: Date.now(),
+            platform: 'whatsapp',
+            userId: userId,
+            sessionId: `${userId}_${Date.now()}`
+        };
+        
         // Prefer webhook which returns full messages
-        return await callRasaWebhook(baseUrl, userId, text, metadata);
+        const result = await callRasaWebhook(baseUrl, userId, text, enhancedMetadata);
+        
+        if (result.ok && result.messages && result.messages.length > 0) {
+            console.log(`RASA: Successfully processed message, got ${result.messages.length} responses`);
+            return result;
+        } else {
+            console.log('RASA: No responses from webhook, trying parse endpoint');
+            // Fallback to model/parse for resilience
+            return await callRasaParse(baseUrl, userId, text, enhancedMetadata);
+        }
     } catch (err1) {
+        console.log('RASA: Webhook failed, trying parse endpoint:', err1.message);
         // Fallback to model/parse for resilience
         try {
             return await callRasaParse(baseUrl, userId, text, metadata);
         } catch (err2) {
             const reason = err1?.response?.status ? `http_${err1.response.status}` : (err1.message || 'error');
+            console.log(`RASA: Both endpoints failed: ${reason}`);
             return { ok: false, reason, messages: [] };
         }
     }

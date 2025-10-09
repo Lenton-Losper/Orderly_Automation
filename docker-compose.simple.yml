@@ -1,0 +1,45 @@
+# Simplified Docker Compose - Only Rasa Core Services
+version: '3.8'
+
+services:
+  rasa:
+    image: rasa/rasa:3.6.15-full
+    ports:
+      - "5005:5005"
+    volumes:
+      - ./:/app
+    command: ["rasa", "run", "--enable-api", "--cors", "*", "--port", "5005", "--model", "/app/models/20250924-230207-blistering-graph.tar.gz"]
+    environment:
+      - RASA_ENVIRONMENT=production
+    depends_on:
+      - redis
+    networks:
+      - rasa-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - rasa-network
+
+  mongodb:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=rasa
+    networks:
+      - rasa-network
+
+volumes:
+  redis-data:
+  mongodb-data:
+
+networks:
+  rasa-network:
+    driver: bridge

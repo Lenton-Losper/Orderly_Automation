@@ -4,6 +4,7 @@ const sessionManager = require('../utils/sessionManager');
 const messageGenerators = require('../utils/messageGenerators');
 const commandHandler = require('./commandHandler');
 const rasaClient = require('../services/rasaClient');
+const IntelligentResponseGenerator = require('../services/intelligentResponseGenerator');
 const { TenantFinder } = require('../utils/tenantFinder');
 const businessManager = require('../services/businessManager');
 
@@ -17,6 +18,9 @@ class MessageHandler {
         
         // Simple in-memory session storage to fix persistence issue
         this.sessions = new Map();
+        
+        // Initialize intelligent response generator
+        this.intelligentResponseGenerator = new IntelligentResponseGenerator();
         
         // Business data cache for products
         this.businessDataCache = new Map();
@@ -857,36 +861,48 @@ class MessageHandler {
             // Use the new session management method that persists sessions with tenant support
             let session = this.getOrCreateSession(userId, businessId, businessData, tenantId);
 
-            // Try Rasa first (if enabled) with safe fallback to command handler
-            let usedRasa = false;
-            let rasaLatency = null;
+            // Try intelligent response generator first for natural language processing
+            let usedIntelligentResponse = false;
+            let intelligentResponse = null;
+            
+            console.log(`DEBUG: About to try intelligent response generator for: "${messageContent}"`);
+            console.log(`DEBUG: Intelligent response generator exists:`, !!this.intelligentResponseGenerator);
+            
             try {
-                const metadata = { businessId, tenantId, sender, botPhoneNumber };
-                const rasaResult = await rasaClient.parseMessage(userId, messageContent, metadata);
-                if (rasaResult && rasaResult.ok) {
-                    rasaLatency = rasaResult.latencyMs || null;
-                    const replies = rasaResult.messages || [];
-                    if (replies.length > 0) {
-                        for (const m of replies) {
-                            if (m.text) {
-                                await this.sendMessage(userId, m.text);
-                            } else if (m.image) {
-                                await this.sendMessage(userId, m.image);
-                            } else if (m.custom) {
-                                const text = typeof m.custom === 'string' ? m.custom : (m.custom.text || JSON.stringify(m.custom));
-                                if (text) await this.sendMessage(userId, text);
-                            }
-                        }
-                        usedRasa = true;
+                console.log(`INTELLIGENT RESPONSE: Processing message: "${messageContent}"`);
+                
+                intelligentResponse = await this.intelligentResponseGenerator.processMessage(
+                    messageContent,
+                    session,
+                    businessManager,
+                    {
+                        userId,
+                        businessId,
+                        sender,
+                        phoneNumber,
+                        botPhoneNumber,
+                        whatsappService: this.whatsappService,
+                        msgId
                     }
-                } else if (rasaResult && !rasaResult.ok) {
-                    console.log('RASA disabled/unavailable:', rasaResult.reason);
+                );
+                
+                if (intelligentResponse) {
+                    console.log(`INTELLIGENT RESPONSE: Generated response: "${intelligentResponse}"`);
+                    await this.sendMessage(userId, intelligentResponse);
+                    usedIntelligentResponse = true;
+                    console.log(`INTELLIGENT RESPONSE: Successfully handled message`);
+                } else {
+                    console.log('INTELLIGENT RESPONSE: No response generated, falling back to command handler');
                 }
-            } catch (rerr) {
-                console.log('RASA call error:', rerr.message);
+            } catch (intelligentError) {
+                console.log('INTELLIGENT RESPONSE: Error:', intelligentError.message);
+                console.log('INTELLIGENT RESPONSE: Falling back to command handler');
             }
 
-            if (!usedRasa) {
+            // Fallback to command handler if intelligent response didn't provide a response
+            if (!usedIntelligentResponse || !intelligentResponse) {
+                console.log('FALLBACK: Using command handler for response');
+                
                 const response = await commandHandler.handleCommand(
                     messageContent,
                     session,
@@ -903,15 +919,11 @@ class MessageHandler {
                 );
 
                 if (response && typeof response === 'string') {
-                    console.log(`Sending response to ${userId}`);
+                    console.log(`FALLBACK: Sending command handler response to ${userId}`);
                     await this.sendMessage(userId, response);
                 }
             } else {
-                if (rasaLatency != null) {
-                    console.log(`RASA handled message in ${rasaLatency}ms`);
-                } else {
-                    console.log('RASA handled message');
-                }
+                console.log('INTELLIGENT RESPONSE: Handled message successfully');
             }
 
         } catch (error) {

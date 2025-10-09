@@ -1,0 +1,22 @@
+# Rasa Core Dependencies - Updated for Python 3.12 compatibility
+rasa>=3.6.15
+rasa-sdk>=3.6.2
+
+# Additional dependencies for enhanced functionality
+spacy>=3.4.0
+transformers>=4.21.0
+torch>=1.12.0
+
+# Optional: For better NLU performance
+jieba>=0.42.1
+sklearn-crfsuite>=0.3.6
+
+# Development and testing
+pytest>=6.0
+pytest-cov>=2.10.0
+pytest-xdist>=2.0.0
+
+# Additional dependencies for Python 3.12 compatibility
+requests>=2.25.0
+numpy>=1.21.0
+scikit-learn>=1.0.0

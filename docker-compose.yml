@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  rasa:
+    image: rasa/rasa:3.6.15-full
+    ports:
+      - "5005:5005"
+    volumes:
+      - ./rasa:/app
+    command: 
+      - run
+      - --enable-api
+      - --cors
+      - "*"
+      - --debug
+    networks:
+      - rasa-network
+
+  rasa-actions:
+    image: rasa/rasa-sdk:latest
+    ports:
+      - "5055:5055"
+    volumes:
+      - ./rasa/actions:/app/actions
+    networks:
+      - rasa-network
+
+networks:
+  rasa-network:
+    driver: bridge
