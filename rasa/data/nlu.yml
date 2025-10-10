@@ -1,0 +1,198 @@
+version: "3.1"
+
+nlu:
+- intent: greet
+  examples: |
+    - hey
+    - hello
+    - hi
+    - hello there
+    - good morning
+    - good evening
+    - moin
+    - hey there
+    - let's go
+    - hey dude
+    - goodmorning
+    - goodevening
+    - good afternoon
+
+- intent: goodbye
+  examples: |
+    - cu
+    - good by
+    - cee you later
+    - good night
+    - bye
+    - goodbye
+    - have a nice day
+    - see you around
+    - bye bye
+    - see you later
+
+- intent: affirm
+  examples: |
+    - yes
+    - y
+    - indeed
+    - of course
+    - that sounds good
+    - correct
+
+- intent: deny
+  examples: |
+    - no
+    - n
+    - never
+    - I don't think so
+    - don't like that
+    - no way
+    - not really
+
+- intent: mood_great
+  examples: |
+    - perfect
+    - great
+    - amazing
+    - feeling like a king
+    - wonderful
+    - I am feeling very good
+    - I am great
+    - I am amazing
+    - I am going to save the world
+    - super stoked
+    - extremely good
+    - so so perfect
+    - so good
+    - so perfect
+
+- intent: mood_unhappy
+  examples: |
+    - my day was horrible
+    - I am sad
+    - I don't feel very well
+    - I am disappointed
+    - super sad
+    - I'm so sad
+    - sad
+    - very sad
+    - unhappy
+    - not good
+    - not very good
+    - extremly sad
+    - so saad
+    - so sad
+
+- intent: bot_challenge
+  examples: |
+    - are you a bot?
+    - are you a human?
+    - am I talking to a bot?
+    - am I talking to a human?
+
+- intent: view_products
+  examples: |
+    - what products do you have?
+    - show me your products
+    - what can I buy?
+    - do you have vegetables?
+    - what's available?
+    - show me the menu
+    - what do you sell?
+    - can I see your catalog?
+
+- intent: place_order
+  examples: |
+    - I want to order [tomatoes](product_name)
+    - can I get [2](quantity) [carrots](product_name)?
+    - I'd like to buy [lettuce](product_name)
+    - order [potatoes](product_name) for me
+    - I need [onions](product_name)
+    - add [cabbage](product_name) to my order
+    - I want [3](quantity) [apples](product_name)
+
+- intent: ask_price
+  examples: |
+    - how much does [tomatoes](product_name) cost?
+    - what's the price of [carrots](product_name)?
+    - how much for [lettuce](product_name)?
+    - price of [potatoes](product_name)?
+    - cost of [onions](product_name)?
+    - how much is [cabbage](product_name)?
+
+- intent: ask_delivery
+  examples: |
+    - do you deliver?
+    - what's your delivery policy?
+    - how much is delivery?
+    - do you deliver to my area?
+    - delivery options?
+    - can you bring it to me?
+    - delivery fee?
+
+- intent: ask_payment
+  examples: |
+    - how can I pay?
+    - payment methods?
+    - do you accept cash?
+    - can I pay by card?
+    - payment options?
+    - how do I pay?
+
+- intent: ask_contact
+  examples: |
+    - what's your phone number?
+    - how can I contact you?
+    - your address?
+    - contact information?
+    - where are you located?
+
+- intent: ask_help
+  examples: |
+    - help
+    - what can you do?
+    - how does this work?
+    - I need assistance
+    - can you help me?
+
+- intent: start_order
+  examples: |
+    - start
+    - menu
+    - main
+    - hi
+    - hello
+    - begin
+    - order
+
+- intent: view_cart
+  examples: |
+    - cart
+    - my cart
+    - show cart
+    - view cart
+    - what's in my cart
+
+- intent: checkout
+  examples: |
+    - checkout
+    - buy
+    - purchase
+    - finish order
+    - complete order
+
+- intent: register
+  examples: |
+    - register
+    - sign up
+    - create account
+    - new account
+    - join
+
+- intent: confirm_order
+  examples: |
+    - confirm
+    - yes
+    - place order
+    - finalize
+    - proceed

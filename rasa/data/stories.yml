@@ -1,0 +1,80 @@
+version: "3.1"
+
+stories:
+
+- story: greet and view products
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: view_products
+  - action: action_get_products
+  - action: utter_products_available
+
+- story: greet and place order
+  steps:
+  - intent: greet
+  - action: utter_greet
+  - intent: place_order
+  - action: action_place_order
+  - action: utter_order_confirmation
+
+- story: ask price
+  steps:
+  - intent: ask_price
+  - action: action_get_price
+  - action: utter_price_info
+
+- story: ask delivery info
+  steps:
+  - intent: ask_delivery
+  - action: utter_delivery_info
+
+- story: ask payment info
+  steps:
+  - intent: ask_payment
+  - action: utter_payment_options
+
+- story: ask contact info
+  steps:
+  - intent: ask_contact
+  - action: utter_contact_info
+
+- story: ask for help
+  steps:
+  - intent: ask_help
+  - action: utter_ask_help
+
+- story: start ordering
+  steps:
+  - intent: start_order
+  - action: utter_greet
+
+- story: view cart
+  steps:
+  - intent: view_cart
+  - action: utter_cart_empty
+
+- story: checkout process
+  steps:
+  - intent: checkout
+  - action: utter_checkout_prompt
+
+- story: register account
+  steps:
+  - intent: register
+  - action: utter_registration_prompt
+
+- story: confirm order
+  steps:
+  - intent: confirm_order
+  - action: utter_order_confirmation
+
+- story: goodbye
+  steps:
+  - intent: goodbye
+  - action: utter_goodbye
+
+- story: bot challenge
+  steps:
+  - intent: bot_challenge
+  - action: utter_iamabot

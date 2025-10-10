@@ -1,0 +1,126 @@
+version: "3.1"
+
+intents:
+  - greet
+  - goodbye
+  - affirm
+  - deny
+  - mood_great
+  - mood_unhappy
+  - bot_challenge
+  # Business-specific intents
+  - view_products
+  - place_order
+  - ask_price
+  - ask_availability
+  - request_catalog
+  - ask_delivery
+  - ask_payment
+  - track_order
+  - cancel_order
+  - ask_hours
+  - ask_location
+  - ask_contact
+  - request_quote
+  - ask_discounts
+  - complain
+  - compliment
+  - ask_help
+  - start_order
+  - view_cart
+  - checkout
+  - register
+  - confirm_order
+
+entities:
+  - product_name
+  - quantity
+  - price
+  - location
+  - phone_number
+  - email
+  - order_id
+
+slots:
+  product_name:
+    type: text
+    mappings:
+    - type: from_entity
+      entity: product_name
+  quantity:
+    type: text
+    mappings:
+    - type: from_entity
+      entity: quantity
+  customer_phone:
+    type: text
+    mappings:
+    - type: from_entity
+      entity: phone_number
+  order_id:
+    type: text
+    mappings:
+    - type: from_entity
+      entity: order_id
+
+responses:
+  utter_greet:
+  - text: "🛍️ *WELCOME TO LLL FARM!* 🛍️\n\nHow can I help you today?"
+
+  utter_goodbye:
+  - text: "Thank you for choosing LLL Farm! Have a great day! 🙏"
+
+  utter_iamabot:
+  - text: "I'm LLL Farm's virtual assistant, here to help you with your orders and questions! 🤖"
+
+  utter_ask_help:
+  - text: "❓ *HOW CAN I HELP?* ❓\n\n🛍️ *ORDERING:*\n• Type *catalog* - View full product catalog\n• Type *quick* - Quick order popular items\n• Type *cart* - View your shopping cart\n• Type *checkout* - Complete your order\n\n📱 *ACCOUNT:*\n• Type *register* - Create account\n• Type *menu* - Main menu\n\n💡 *TIPS:*\n• Register for faster checkout\n• Free delivery on orders over N$50\n• Try discount codes: WELCOME10, SAVE20"
+
+  utter_products_available:
+  - text: "🛍️ *OUR PRODUCTS* 🛍️\n\n{products_list}"
+
+  utter_order_confirmation:
+  - text: "🎉 *ORDER CONFIRMED!* 🎉\n\nGreat! I've noted your order for *{product_name}* x{quantity}.\n\nWould you like to proceed with checkout?"
+
+  utter_price_info:
+  - text: "💰 *PRICE INFORMATION*\n\n*{product_name}* costs N${price} per unit."
+
+  utter_delivery_info:
+  - text: "🚚 *DELIVERY INFORMATION*\n\nWe deliver within 10km radius:\n• Delivery fee: N$5 for orders under N$50\n• FREE delivery for orders N$50 and above\n• Expected delivery: 24-48 hours"
+
+  utter_payment_options:
+  - text: "💳 *PAYMENT OPTIONS*\n\nWe accept:\n• 💵 Cash on delivery\n• 🏦 Bank transfer\n• 📱 Mobile money\n\nWhich payment method would you prefer?"
+
+  utter_contact_info:
+  - text: "📞 *CONTACT INFORMATION*\n\n📞 Phone: +264 81 123 4567\n📧 Email: info@lllfarm.com\n📍 Address: Farm Road, Windhoek\n\nWe're here to help!"
+
+  utter_hours:
+  - text: "🕒 *BUSINESS HOURS*\n\nMonday-Friday: 8AM-6PM\nSaturday: 8AM-4PM\nSunday: Closed\n\nWe're here to serve you!"
+
+  utter_fallback:
+  - text: "I'm not sure I understand. Could you please rephrase that or type *help* for assistance? 🤔"
+
+  utter_welcome_back:
+  - text: "🎉 *WELCOME BACK!* 🎉\n\nGreat to see you again! How can I help you today?"
+
+  utter_cart_empty:
+  - text: "🛒 *YOUR CART IS EMPTY*\n\nReady to start shopping?\n\n• Type *catalog* to browse all products\n• Type *quick* for popular items\n• Type *menu* to return to main menu"
+
+  utter_registration_prompt:
+  - text: "📝 *CREATE YOUR ACCOUNT* 📝\n\nGet faster checkout, order history, and exclusive offers!\n\nPlease enter your details in this format:\n*name|email|phone|address|accountName*\n\n📋 *Example:*\n*Your Name|your.email@example.com|+264000000000|Your Address|YourAccount*"
+
+  utter_checkout_prompt:
+  - text: "📝 *CHECKOUT - CUSTOMER DETAILS* 📝\n\nPlease provide your information for delivery:\n\nFormat: *name|email|phone|address*\n\n📋 *Example:*\n*Your Name|your.email@example.com|+264000000000|Your Address*"
+
+actions:
+  - action_get_products
+  - action_place_order
+  - action_get_price
+  - action_check_availability
+  - action_track_order
+  - action_cancel_order
+  - action_get_customer_info
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true
