@@ -540,21 +540,38 @@ class BusinessManager {
             const admin = require('firebase-admin');
             const db = admin.firestore();
             
+            // Remove undefined values from order object
+            const cleanOrder = JSON.parse(JSON.stringify(order, (key, value) => {
+                return value === undefined ? null : value;
+            }));
+            
+            // Build order document, only including defined fields
             const orderDoc = {
                 vendorId: businessId,
-                tenantId: tenantId, // Include tenantId in order
-                whatsappId: whatsappId, // Store WhatsApp ID for customer lookup
-                customerName: order.customerInfo?.name || 'Customer', // Use customer name from order info
-                customerInfo: order.customerInfo,
-                items: order.items,
-                total: order.total,
-                discountCode: order.discountCode,
-                discountAmount: order.discountAmount,
-                messageId: messageId,
-                status: 'pending',
-                createdAt: new Date().toISOString(),
-                orderSource: 'whatsapp_bot_multi_tenant'
+                tenantId: tenantId,
+                orderId: order.orderId || order.orderId || `ORD-${Date.now()}`,
+                whatsappId: whatsappId,
+                customerPhone: order.customerPhone || whatsappId,
+                customerName: order.customerName || order.customerInfo?.name || 'Customer',
             };
+            
+            // Add optional fields only if they exist
+            if (order.items) orderDoc.items = order.items;
+            if (order.total !== undefined) orderDoc.total = order.total;
+            if (order.discountCode) orderDoc.discountCode = order.discountCode;
+            if (order.discountAmount !== undefined) orderDoc.discountAmount = order.discountAmount;
+            
+            // Add required fields
+            orderDoc.messageId = messageId;
+            orderDoc.status = order.status || 'pending';
+            orderDoc.createdAt = order.createdAt || new Date().toISOString();
+            orderDoc.updatedAt = new Date().toISOString();
+            orderDoc.orderSource = 'whatsapp_bot_multi_tenant';
+            
+            // Only add customerInfo if it exists
+            if (order.customerInfo) {
+                orderDoc.customerInfo = order.customerInfo;
+            }
             
             // Save to tenant-scoped subcollection
             const tenantOrdersRef = db

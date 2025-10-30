@@ -1,0 +1,197 @@
+# Docker Compose for Development Environment
+# Includes hot-reloading, volume mounts, and development-specific configurations
+version: '3.8'
+
+services:
+  # Rasa Server - Development with volume mounts for hot reload
+  rasa:
+    image: rasa/rasa:3.6.15-full
+    ports:
+      - "5005:5005"
+    volumes:
+      - ./rasa:/app
+      - ./models:/app/models
+      - ./data:/app/data
+    command: ["run", "--enable-api", "--cors", "*", "--port", "5005", "--debug", "--model", "/app/models/20250924-230207-blistering-graph.tar.gz"]
+    environment:
+      - RASA_ENVIRONMENT=development
+      - RASA_DEBUG=true
+    depends_on:
+      - redis
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5005/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Rasa Actions Server - Development with hot reload
+  rasa-actions:
+    build:
+      context: .
+      dockerfile: Dockerfile.actions
+    ports:
+      - "5055:5055"
+    volumes:
+      - ./actions:/app/actions
+    environment:
+      - NODE_API_URL=http://backend:3000
+      - RASA_URL=http://rasa:5005
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - rasa
+      - backend
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5055/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Main WhatsApp Bot Backend - Development with hot reload
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src
+      - ./tenants:/app/tenants
+      - ./lllfarming-firebase-adminsdk-fbsvc-c9ce466038.json:/app/firebase-credentials.json:ro
+      - ./logs:/app/logs
+      - /app/node_modules  # Prevent node_modules from being overwritten
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - RASA_URL=http://rasa:5005
+      - RASA_ACTION_SERVER_URL=http://rasa-actions:5055
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://mongodb:27017
+      - FIREBASE_CREDENTIALS_PATH=/app/firebase-credentials.json
+      - WEBSOCKET_PORT=8080
+      - LOG_LEVEL=debug
+      - LOG_FORMAT=pretty
+    depends_on:
+      - redis
+      - mongodb
+      - rasa
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    # Override command for development with nodemon
+    command: ["sh", "-c", "npm install -g nodemon && nodemon --watch src --ext js src/index.js"]
+
+  # Bot Training API Server - Development with hot reload
+  bot-training:
+    build:
+      context: .
+      dockerfile: Dockerfile.bot-training
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./src:/app/src
+      - ./tenants:/app/tenants
+      - ./rasa-models:/app/rasa-models
+      - ./lllfarming-firebase-adminsdk-fbsvc-c9ce466038.json:/app/firebase-credentials.json:ro
+      - ./logs:/app/logs
+      - /app/node_modules  # Prevent node_modules from being overwritten
+    environment:
+      - NODE_ENV=development
+      - API_PORT=3001
+      - RASA_URL=http://rasa:5005
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://mongodb:27017
+      - FIREBASE_CREDENTIALS_PATH=/app/firebase-credentials.json
+      - BACKEND_URL=http://backend:3000
+      - LOG_LEVEL=debug
+      - LOG_FORMAT=pretty
+    depends_on:
+      - backend
+      - redis
+      - mongodb
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    # Override command for development with nodemon
+    command: ["sh", "-c", "npm install -g nodemon && nodemon --watch src --ext js src/server.js"]
+
+  # Redis - Development with persistence
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-dev-data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    command: ["redis-server", "--appendonly", "yes"]
+
+  # MongoDB - Development with persistence
+  mongodb:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-dev-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=rasa
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Optional: Redis Commander for Redis management
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    ports:
+      - "8081:8081"
+    environment:
+      - REDIS_HOSTS=local:redis:6379
+    depends_on:
+      - redis
+    networks:
+      - app-network
+
+  # Optional: Mongo Express for MongoDB management
+  mongo-express:
+    image: mongo-express:latest
+    ports:
+      - "8082:8081"
+    environment:
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+      - ME_CONFIG_MONGODB_PORT=27017
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin
+    depends_on:
+      - mongodb
+    networks:
+      - app-network
+
+volumes:
+  redis-dev-data:
+  mongodb-dev-data:
+
+networks:
+  app-network:
+    driver: bridge
+
+

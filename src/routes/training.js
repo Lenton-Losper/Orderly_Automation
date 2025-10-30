@@ -399,18 +399,23 @@ router.post('/train', verifyTenantAccess, async (req, res) => {
             });
         }
 
-        // Start training pipeline in background
-        botTrainingService.trainBotForTenant(tenantId)
+        // Create training job first to get job ID
+        const job = await trainingDataService.createTrainingJob(tenantId, allExamples.length);
+        console.log(`📋 Created training job: ${job.id}`);
+
+        // Start training pipeline in background with job ID
+        botTrainingService.trainBotForTenant(tenantId, job.id)
             .then(result => {
-                console.log(`🎉 Training completed for tenant ${tenantId}:`, result);
+                console.log(`🎉 Training completed for tenant ${tenantId}, job ${job.id}:`, result);
             })
             .catch(error => {
-                console.error(`❌ Training failed for tenant ${tenantId}:`, error);
+                console.error(`❌ Training failed for tenant ${tenantId}, job ${job.id}:`, error);
             });
 
         res.status(201).json({
             success: true,
             message: 'Training pipeline started successfully',
+            jobId: job.id,
             untrainedCount,
             totalExamples: allExamples.length,
             status: 'training_started'
@@ -421,6 +426,80 @@ router.post('/train', verifyTenantAccess, async (req, res) => {
             success: false,
             error: error.message || 'Failed to start training pipeline'
         });
+    }
+});
+
+/**
+ * GET /api/bot/training/status/:jobId
+ * Get individual training job status
+ */
+router.get('/status/:jobId', verifyTenantAccess, async (req, res) => {
+    try {
+        const { trainingDataService } = await initializeServices();
+        const { jobId } = req.params;
+        const { tenantId } = req.query;
+
+        console.log(`API: GET job status request for job ${jobId}, tenant ${tenantId}`);
+
+        const job = await trainingDataService.getTrainingJobById(jobId, tenantId);
+
+        if (!job) {
+            return res.status(404).json({
+                success: false,
+                error: 'Training job not found',
+                code: 'JOB_NOT_FOUND'
+            });
+        }
+
+        // Calculate progress percentage if job is running
+        let progress = null;
+        if (job.status === 'running' || job.status === 'training') {
+            // Estimate progress based on time elapsed (this is a simple estimation)
+            const now = new Date();
+            const startedAt = job.startedAt ? job.startedAt.toDate() : now;
+            const elapsed = now - startedAt;
+            const estimatedDuration = 5 * 60 * 1000; // 5 minutes estimated duration
+            progress = Math.min(Math.round((elapsed / estimatedDuration) * 100), 95);
+        } else if (job.status === 'completed') {
+            progress = 100;
+        }
+
+        const response = {
+            success: true,
+            job: {
+                id: job.id,
+                status: job.status,
+                progress: progress,
+                startedAt: job.startedAt ? job.startedAt.toDate().toISOString() : null,
+                completedAt: job.completedAt ? job.completedAt.toDate().toISOString() : null,
+                error: job.errorMessage || null,
+                accuracy: job.accuracy || null,
+                modelPath: job.modelPath || null,
+                trainingDataCount: job.trainingDataCount || 0,
+                deployed: job.deployed || false,
+                createdAt: job.createdAt ? job.createdAt.toDate().toISOString() : null,
+                updatedAt: job.updatedAt ? job.updatedAt.toDate().toISOString() : null
+            }
+        };
+
+        console.log(`API: Found training job ${jobId} with status: ${job.status}`);
+        res.json(response);
+    } catch (error) {
+        console.error('API: Error getting job status:', error);
+        
+        if (error.message === 'Access denied: Job does not belong to this tenant') {
+            res.status(403).json({
+                success: false,
+                error: 'Access denied: Job does not belong to this tenant',
+                code: 'ACCESS_DENIED'
+            });
+        } else {
+            res.status(500).json({
+                success: false,
+                error: error.message || 'Failed to get job status',
+                code: 'INTERNAL_ERROR'
+            });
+        }
     }
 });
 
@@ -472,6 +551,37 @@ router.get('/history', verifyTenantAccess, async (req, res) => {
         res.status(500).json({
             success: false,
             error: error.message || 'Failed to get training history'
+        });
+    }
+});
+
+/**
+ * GET /api/bot/training/jobs/:tenantId
+ * Get training jobs for a tenant (alternative to /history)
+ */
+router.get('/jobs/:tenantId', verifyTenantAccess, async (req, res) => {
+    try {
+        const { trainingDataService } = await initializeServices();
+        const { tenantId } = req.params;
+        const { limit = 20 } = req.query;
+
+        console.log(`📋 Fetching training jobs for tenant: ${tenantId}`);
+
+        const jobs = await trainingDataService.getTrainingHistory(tenantId, parseInt(limit));
+
+        console.log(`✅ Found ${jobs.length} training jobs for tenant ${tenantId}`);
+
+        res.json({
+            success: true,
+            jobs,
+            count: jobs.length,
+            tenantId
+        });
+    } catch (error) {
+        console.error('API: Error getting training jobs:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Failed to get training jobs'
         });
     }
 });

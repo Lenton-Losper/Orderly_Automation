@@ -1,0 +1,53 @@
+# Dockerfile for Bot Training API Server
+# Using Python Debian slim for PyTorch compatibility
+
+FROM python:3.9-slim
+
+# Install Node.js and system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    build-essential \
+    gcc \
+    g++ \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy package files and install Node dependencies
+COPY package*.json ./
+RUN npm ci --only=production
+
+# Copy and install Python dependencies
+COPY requirements-rasa.txt ./
+RUN pip install --no-cache-dir --upgrade pip
+RUN pip install --no-cache-dir -r requirements-rasa.txt
+
+# Install spaCy language model
+RUN python -m spacy download en_core_web_sm
+
+# Copy source code
+COPY src/ ./src/
+COPY tenants/ ./tenants/
+COPY rasa-models/ ./rasa-models/
+COPY server-polyfill.js ./
+
+# Create necessary directories
+RUN mkdir -p logs
+
+# Create non-root user for security
+RUN groupadd -r nodejs && useradd -r -g nodejs nodejs
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
+# Expose port
+EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3001/health || exit 1
+
+# Start the bot training API server
+CMD ["node", "src/server.js"]

@@ -5,7 +5,10 @@ const APIServer = require('./src/server');
 
 async function startAPI() {
     try {
-        console.log('🚀 Starting API Server for testing...');
+        // Set the correct port for Bot Training API
+        process.env.API_PORT = '3001';
+        
+        console.log('🚀 Starting Bot Training API Server...');
         const server = new APIServer();
         await server.start();
         

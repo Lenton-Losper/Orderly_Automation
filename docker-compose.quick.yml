@@ -1,0 +1,141 @@
+# Quick Docker Compose for Fast Development
+# Uses existing images and minimal builds
+version: '3.8'
+
+services:
+  # Use existing Rasa image (no build needed)
+  rasa:
+    image: rasa/rasa:3.6.15-full
+    ports:
+      - "5005:5005"
+    volumes:
+      - ./rasa:/app
+      - ./models:/app/models
+    command: ["run", "--enable-api", "--cors", "*", "--port", "5005", "--model", "/app/models/20250924-230207-blistering-graph.tar.gz"]
+    environment:
+      - RASA_ENVIRONMENT=development
+    networks:
+      - app-network
+
+  # Use existing Rasa actions (minimal build)
+  rasa-actions:
+    build:
+      context: .
+      dockerfile: Dockerfile.actions
+    ports:
+      - "5055:5055"
+    volumes:
+      - ./actions:/app/actions
+    environment:
+      - NODE_API_URL=http://backend:3000
+    depends_on:
+      - rasa
+    networks:
+      - app-network
+
+  # Quick backend with volume mounts (no build)
+  backend:
+    image: node:20-alpine
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src:/app/src
+      - ./tenants:/app/tenants
+      - ./package.json:/app/package.json:ro
+      - ./package-lock.json:/app/package-lock.json
+      - ./lllfarming-firebase-adminsdk-fbsvc-c9ce466038.json:/app/firebase-credentials.json:ro
+      - ./logs:/app/logs
+      - /app/node_modules
+    working_dir: /app
+    environment:
+      - NODE_ENV=development
+      - PORT=3000
+      - IS_DOCKER=true
+      - RASA_URL=http://rasa:5005
+      - RASA_ACTION_SERVER_URL=http://rasa-actions:5055
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://mongodb:27017
+      - FIREBASE_CREDENTIALS_PATH=/app/firebase-credentials.json
+      - WEBSOCKET_PORT=8080
+    depends_on:
+      - redis
+      - mongodb
+      - rasa
+    networks:
+      - app-network
+    # Install dependencies and start
+    command: >
+      sh -c "
+        apk add --no-cache python3 make g++ cairo-dev jpeg-dev pango-dev musl-dev giflib-dev pixman-dev pangomm-dev libjpeg-turbo-dev freetype-dev pkgconfig curl &&
+        npm install --only=production &&
+        node src/index.js
+      "
+
+  # Quick bot training with volume mounts (no build)
+  bot-training:
+    image: node:20-alpine
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./src:/app/src
+      - ./tenants:/app/tenants
+      - ./rasa-models:/app/rasa-models
+      - ./package.json:/app/package.json:ro
+      - ./package-lock.json:/app/package-lock.json
+      - ./lllfarming-firebase-adminsdk-fbsvc-c9ce466038.json:/app/firebase-credentials.json:ro
+      - ./logs:/app/logs
+      - /app/node_modules
+    working_dir: /app
+    environment:
+      - NODE_ENV=development
+      - API_PORT=3001
+      - IS_DOCKER=true
+      - RASA_URL=http://rasa:5005
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://mongodb:27017
+      - FIREBASE_CREDENTIALS_PATH=/app/firebase-credentials.json
+      - BACKEND_URL=http://backend:3000
+    depends_on:
+      - backend
+      - redis
+      - mongodb
+    networks:
+      - app-network
+    # Install dependencies and start
+    command: >
+      sh -c "
+        apk add --no-cache python3 make g++ cairo-dev jpeg-dev pango-dev musl-dev giflib-dev pixman-dev pangomm-dev libjpeg-turbo-dev freetype-dev pkgconfig curl &&
+        npm install --only=production &&
+        node src/server.js
+      "
+
+  # Redis
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+
+  # MongoDB
+  mongodb:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=rasa
+    networks:
+      - app-network
+
+volumes:
+  redis-data:
+  mongodb-data:
+
+networks:
+  app-network:
+    driver: bridge
+

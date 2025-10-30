@@ -11,7 +11,8 @@ from typing import Any, Text, Dict, List
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.events import SlotSet, EventType
-from rasa_sdk.forms import FormAction
+# FormAction is deprecated in newer Rasa SDK versions
+# from rasa_sdk.forms import FormAction
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -53,8 +54,8 @@ class ActionGetProducts(Action):
         try:
             import requests
             
-            # Call your Node.js API endpoint
-            api_url = f"http://localhost:3000/api/business/{business_id}/products"
+            # Call your Node.js API endpoint (Docker-aware)
+            api_url = f"http://backend:3000/api/business/{business_id}/products"
             headers = {"Content-Type": "application/json"}
             
             # Add tenant information if available
@@ -182,8 +183,8 @@ class ActionPlaceOrder(Action):
         try:
             import requests
             
-            # Call your Node.js API endpoint
-            api_url = f"http://localhost:3000/api/orders"
+            # Call your Node.js API endpoint (Docker-aware)
+            api_url = f"http://backend:3000/api/orders"
             headers = {"Content-Type": "application/json"}
             
             response = requests.post(api_url, json=order_data, headers=headers, timeout=10)

@@ -1,8 +1,10 @@
 const rasaClient = require('./rasaClient');
+const IntentClassificationService = require('./intentClassificationService');
 
 class IntelligentResponseGenerator {
     constructor() {
         this.rasaClient = rasaClient;
+        this.intentClassifier = new IntentClassificationService();
     }
 
     /**
@@ -15,50 +17,23 @@ class IntelligentResponseGenerator {
      */
     async processMessage(messageContent, session, businessManager, context) {
         try {
-            console.log('INTELLIGENT RESPONSE: Starting message processing...');
+            console.log('INTELLIGENT RESPONSE: Starting message processing with sklearn model...');
             
-            // Check if Rasa client is available
-            if (!this.rasaClient) {
-                console.log('INTELLIGENT RESPONSE: Rasa client not available');
+            // Use our sklearn-based intent classification
+            const tenantId = context.tenantId || '7dx8fLr4OdAPsSDAoTRl';
+            
+            console.log(`INTELLIGENT RESPONSE: Classifying message for tenant: ${tenantId}`);
+            
+            // Classify the message using our trained sklearn model
+            const response = await this.intentClassifier.processMessage(messageContent, tenantId, context.userId);
+            
+            if (response) {
+                console.log(`INTELLIGENT RESPONSE: Generated response: "${response}"`);
+                return response;
+            } else {
+                console.log('INTELLIGENT RESPONSE: No response generated');
                 return null;
             }
-
-            // Prepare the message for Rasa
-            const rasaMessage = {
-                text: messageContent,
-                sender_id: context.userId || 'default_user',
-                metadata: {
-                    businessId: context.businessId,
-                    phoneNumber: context.phoneNumber,
-                    sessionId: session.id
-                }
-            };
-
-            console.log('INTELLIGENT RESPONSE: Sending message to Rasa...');
-            
-            // Send message to Rasa for processing
-            const rasaResponse = await this.rasaClient.parseMessage(context.userId, messageContent, rasaMessage);
-            
-            if (!rasaResponse || !rasaResponse.messages || rasaResponse.messages.length === 0) {
-                console.log('INTELLIGENT RESPONSE: No response from Rasa');
-                return null;
-            }
-
-            // Get the first message from Rasa
-            const firstMessage = rasaResponse.messages[0];
-            console.log(`INTELLIGENT RESPONSE: Rasa response: "${firstMessage.text}"`);
-            
-            // Check if Rasa provided a meaningful response
-            if (firstMessage.text && firstMessage.text.trim().length > 0) {
-                // Handle any custom actions that might be needed
-                if (firstMessage.custom && firstMessage.custom.action) {
-                    await this.handleCustomAction(firstMessage.custom.action, context, businessManager);
-                }
-                
-                return firstMessage.text;
-            }
-
-            return null;
             
         } catch (error) {
             console.error('INTELLIGENT RESPONSE: Error processing message:', error);
@@ -66,38 +41,12 @@ class IntelligentResponseGenerator {
         }
     }
 
+
     /**
-     * Handle custom actions from Rasa
-     * @param {string} action - Action name
-     * @param {Object} context - Context information
-     * @param {Object} businessManager - Business manager instance
+     * Set the WhatsApp service for PDF sending
      */
-    async handleCustomAction(action, context, businessManager) {
-        try {
-            console.log(`INTELLIGENT RESPONSE: Handling custom action: ${action}`);
-            
-            switch (action) {
-                case 'action_create_order':
-                    // Handle order creation
-                    console.log('INTELLIGENT RESPONSE: Order creation action triggered');
-                    break;
-                    
-                case 'action_get_menu':
-                    // Handle menu request
-                    console.log('INTELLIGENT RESPONSE: Menu request action triggered');
-                    break;
-                    
-                case 'action_get_prices':
-                    // Handle price request
-                    console.log('INTELLIGENT RESPONSE: Price request action triggered');
-                    break;
-                    
-                default:
-                    console.log(`INTELLIGENT RESPONSE: Unknown action: ${action}`);
-            }
-        } catch (error) {
-            console.error('INTELLIGENT RESPONSE: Error handling custom action:', error);
-        }
+    setWhatsAppService(whatsappService) {
+        this.intentClassifier.setWhatsAppService(whatsappService);
     }
 
     /**

@@ -1,0 +1,136 @@
+# Docker Compose for Complete LLL Farming WhatsApp Bot System
+# Includes: Rasa, Node.js Backend, Bot Training API, Redis, MongoDB
+version: '3.8'
+
+services:
+  # Rasa Server - Multi-tenant support (handled by Node.js service)
+  # Note: Using multi-tenant Rasa server integrated into bot-training service
+  # instead of separate Rasa container for better tenant isolation
+
+  # Rasa Actions Server - Custom business logic
+  rasa-actions:
+    build:
+      context: .
+      dockerfile: Dockerfile.actions
+    ports:
+      - "5055:5055"
+    volumes:
+      - ./actions:/app/actions
+    environment:
+      - NODE_API_URL=http://backend:3000
+      - RASA_URL=http://rasa:5005
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5055/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Main WhatsApp Bot Backend
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./tenants:/app/tenants
+      - ./lllfarming-firebase-adminsdk-fbsvc-c9ce466038.json:/app/firebase-credentials.json:ro
+      - ./logs:/app/logs
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - IS_DOCKER=true
+      - RASA_URL=http://rasa:5005
+      - RASA_ACTION_SERVER_URL=http://rasa-actions:5055
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://mongodb:27017
+      - FIREBASE_CREDENTIALS_PATH=/app/firebase-credentials.json
+      - WEBSOCKET_PORT=8080
+    depends_on:
+      - redis
+      - mongodb
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Bot Training API Server
+  bot-training:
+    build:
+      context: .
+      dockerfile: Dockerfile.bot-training
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./tenants:/app/tenants
+      - ./lllfarming-firebase-adminsdk-fbsvc-c9ce466038.json:/app/firebase-credentials.json:ro
+      - ./rasa-models:/app/rasa-models
+      - ./logs:/app/logs
+    environment:
+      - NODE_ENV=production
+      - API_PORT=3001
+      - IS_DOCKER=true
+      - RASA_URL=http://rasa:5005
+      - REDIS_URL=redis://redis:6379
+      - MONGODB_URL=mongodb://mongodb:27017
+      - FIREBASE_CREDENTIALS_PATH=/app/firebase-credentials.json
+      - BACKEND_URL=http://backend:3000
+    depends_on:
+      - backend
+      - redis
+      - mongodb
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Redis - Caching and pub/sub messaging
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # MongoDB - Optional data storage
+  mongodb:
+    image: mongo:6
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=rasa
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  redis-data:
+  mongodb-data:
+
+networks:
+  app-network:
+    driver: bridge
+

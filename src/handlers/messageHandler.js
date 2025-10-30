@@ -7,6 +7,7 @@ const rasaClient = require('../services/rasaClient');
 const IntelligentResponseGenerator = require('../services/intelligentResponseGenerator');
 const { TenantFinder } = require('../utils/tenantFinder');
 const businessManager = require('../services/businessManager');
+const fs = require('fs').promises;
 
 class MessageHandler {
     constructor(whatsappService, middleware) {
@@ -21,6 +22,9 @@ class MessageHandler {
         
         // Initialize intelligent response generator
         this.intelligentResponseGenerator = new IntelligentResponseGenerator();
+        
+        // Set WhatsApp service for PDF sending
+        this.intelligentResponseGenerator.setWhatsAppService(whatsappService);
         
         // Business data cache for products
         this.businessDataCache = new Map();
@@ -633,8 +637,8 @@ class MessageHandler {
     }
 
     async handleMessage({ messages, type }) {
-        // Only process new messages
-        if (type !== 'notify') {
+        // Process both 'notify' and 'chat' message types
+        if (type !== 'notify' && type !== 'chat') {
             console.log(`Ignoring message type: ${type}`);
             return;
         }
@@ -871,6 +875,21 @@ class MessageHandler {
             try {
                 console.log(`INTELLIGENT RESPONSE: Processing message: "${messageContent}"`);
                 
+                // Get the latest model path for this tenant
+                let modelPath = null;
+                try {
+                    const modelsDir = `./rasa-models/${tenantId}/models`;
+                    const modelFiles = await fs.readdir(modelsDir);
+                    const tarFiles = modelFiles.filter(file => file.endsWith('.tar.gz'));
+                    if (tarFiles.length > 0) {
+                        const latestModel = tarFiles.sort().pop();
+                        modelPath = `${modelsDir}/${latestModel}`;
+                        console.log(`🎯 Using model for tenant ${tenantId}: ${modelPath}`);
+                    }
+                } catch (error) {
+                    console.log(`⚠️ No model found for tenant ${tenantId}, using default`);
+                }
+
                 intelligentResponse = await this.intelligentResponseGenerator.processMessage(
                     messageContent,
                     session,
@@ -882,13 +901,50 @@ class MessageHandler {
                         phoneNumber,
                         botPhoneNumber,
                         whatsappService: this.whatsappService,
-                        msgId
+                        msgId,
+                        tenantId,
+                        modelPath
                     }
                 );
                 
                 if (intelligentResponse) {
                     console.log(`INTELLIGENT RESPONSE: Generated response: "${intelligentResponse}"`);
-                    await this.sendMessage(userId, intelligentResponse);
+                    
+                    // Check if response contains PDF invoice information
+                    if (intelligentResponse.includes('__PDF_INVOICE__')) {
+                        const pdfMatch = intelligentResponse.match(/__PDF_INVOICE__:(.+):([^:]+)$/);
+                        if (pdfMatch) {
+                            const pdfPath = pdfMatch[1];
+                            const orderId = pdfMatch[2];
+                            
+                            // Remove PDF info from the message
+                            const cleanMessage = intelligentResponse.replace(/__PDF_INVOICE__:.+:[^:]+$/, '');
+                            
+                            // Send the clean message first
+                            await this.sendMessage(userId, cleanMessage);
+                            
+                            // Then send the PDF invoice
+                            try {
+                                const filename = `Invoice-${orderId}.pdf`;
+                                const caption = `Invoice for Order ${orderId}`;
+                                
+                                console.log(`📄 Sending PDF invoice: ${pdfPath}`);
+                                await this.whatsappService.sendDocument(userId, pdfPath, filename, caption);
+                                console.log(`✅ PDF invoice sent successfully to ${userId}`);
+                            } catch (pdfError) {
+                                console.error('❌ Error sending PDF invoice:', pdfError);
+                                // Send fallback message
+                                await this.sendMessage(userId, `⚠️ Invoice could not be sent, but your order is confirmed. Please save this message as your receipt.`);
+                            }
+                        } else {
+                            // Fallback if PDF info format is wrong
+                            await this.sendMessage(userId, intelligentResponse);
+                        }
+                    } else {
+                        // Normal response without PDF
+                        await this.sendMessage(userId, intelligentResponse);
+                    }
+                    
                     usedIntelligentResponse = true;
                     console.log(`INTELLIGENT RESPONSE: Successfully handled message`);
                 } else {

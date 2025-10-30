@@ -1,10 +1,16 @@
 // Rasa REST client with graceful fallback
 const axios = require('axios');
+const { getServiceUrls } = require('../config/docker');
+const MultiTenantRasaServer = require('./multiTenantRasaServer');
 
 const DEFAULT_RESPONSE = { ok: false, reason: 'disabled', messages: [], latencyMs: null };
 
+// Initialize multi-tenant Rasa server
+const multiTenantRasaServer = new MultiTenantRasaServer();
+
 function getRasaConfig() {
-    const baseUrl = process.env.RASA_BASE_URL || process.env.RASA_URL || null;
+    const serviceUrls = getServiceUrls();
+    const baseUrl = process.env.RASA_BASE_URL || process.env.RASA_URL || serviceUrls.rasa.baseUrl;
     const token = process.env.RASA_TOKEN || process.env.RASA_AUTH_TOKEN || null;
     return { baseUrl, token };
 }
@@ -13,7 +19,18 @@ async function callRasaWebhook(baseUrl, userId, text, metadata) {
     const url = `${baseUrl.replace(/\/$/, '')}/webhooks/rest/webhook`;
     const headers = { 'Content-Type': 'application/json' };
     if (getRasaConfig().token) headers['Authorization'] = `Bearer ${getRasaConfig().token}`;
-    const payload = { sender: userId, message: text, metadata };
+    
+    // Include tenant information in the payload for model selection
+    const payload = { 
+        sender: userId, 
+        message: text, 
+        metadata: {
+            ...metadata,
+            tenant_id: metadata.tenantId || metadata.tenant_id,
+            model_path: metadata.modelPath || null
+        }
+    };
+    
     const start = Date.now();
     const { data } = await axios.post(url, payload, { headers, timeout: 7000 });
     const latencyMs = Date.now() - start;
@@ -40,45 +57,27 @@ async function callRasaParse(baseUrl, userId, text, metadata) {
 }
 
 async function parseMessage(userId, text, metadata = {}) {
-    const { baseUrl } = getRasaConfig();
-    if (!baseUrl) {
-        console.log('RASA: No base URL configured, skipping Rasa processing');
-        return { ...DEFAULT_RESPONSE };
-    }
-    
     try {
         console.log(`RASA: Processing message from ${userId}: "${text}"`);
         
-        // Enhanced metadata for better context
-        const enhancedMetadata = {
-            ...metadata,
-            timestamp: Date.now(),
-            platform: 'whatsapp',
-            userId: userId,
-            sessionId: `${userId}_${Date.now()}`
-        };
+        // Extract tenant information from metadata
+        const tenantId = metadata.tenantId || metadata.tenant_id || 'default';
         
-        // Prefer webhook which returns full messages
-        const result = await callRasaWebhook(baseUrl, userId, text, enhancedMetadata);
+        console.log(`RASA: Using tenant: ${tenantId}`);
+        
+        // Use multi-tenant Rasa server
+        const result = await multiTenantRasaServer.processMessage(tenantId, userId, text, metadata);
         
         if (result.ok && result.messages && result.messages.length > 0) {
             console.log(`RASA: Successfully processed message, got ${result.messages.length} responses`);
             return result;
         } else {
-            console.log('RASA: No responses from webhook, trying parse endpoint');
-            // Fallback to model/parse for resilience
-            return await callRasaParse(baseUrl, userId, text, enhancedMetadata);
+            console.log('RASA: No responses from multi-tenant server');
+            return { ...DEFAULT_RESPONSE };
         }
-    } catch (err1) {
-        console.log('RASA: Webhook failed, trying parse endpoint:', err1.message);
-        // Fallback to model/parse for resilience
-        try {
-            return await callRasaParse(baseUrl, userId, text, metadata);
-        } catch (err2) {
-            const reason = err1?.response?.status ? `http_${err1.response.status}` : (err1.message || 'error');
-            console.log(`RASA: Both endpoints failed: ${reason}`);
-            return { ok: false, reason, messages: [] };
-        }
+    } catch (error) {
+        console.error('RASA: Error processing message:', error);
+        return { ok: false, reason: error.message, messages: [] };
     }
 }
 

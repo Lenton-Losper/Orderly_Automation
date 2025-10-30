@@ -6,14 +6,16 @@ const pino = require('pino');
 const { initializeFirebase, getDatabase, getFirebaseAdmin } = require('./config/database');
 const { COLLECTIONS } = require('./config/constants');
 const QRCode = require('qrcode');
-const { makeWASocket, DisconnectReason, useMultiFileAuthState } = require('@whiskeysockets/baileys');
+// Removed Baileys imports - now using whatsapp-web.js
 const fs = require('fs');
 const path = require('path');
 
 class APIServer {
     constructor() {
         this.app = express();
-        this.port = process.env.API_PORT || 3001;
+        const { getServiceUrls } = require('./config/docker');
+        const serviceUrls = getServiceUrls();
+        this.port = process.env.API_PORT || serviceUrls.botTraining.port;
         this.db = null;
         this.admin = null;
         this.isInitialized = false;
@@ -29,9 +31,56 @@ class APIServer {
             this.db = getDatabase();
             this.admin = getFirebaseAdmin();
 
+            // CORS configuration for Docker and local development
+            const corsOptions = {
+                origin: function (origin, callback) {
+                    console.log('🔍 CORS Origin check:', origin);
+                    
+                    // Allow requests with no origin (mobile apps, curl, etc.)
+                    if (!origin) {
+                        console.log('✅ Allowing request with no origin');
+                        return callback(null, true);
+                    }
+                    
+                    // Allow localhost and Docker network origins
+                    const allowedOrigins = [
+                        'http://localhost:3000',  // Frontend (Next.js)
+                        'http://localhost:3001',  // Bot Training API
+                        'http://localhost:3002',  // Main Backend API
+                        'http://localhost:8080',  // WebSocket
+                        'http://backend:3000',
+                        'http://bot-training:3001',
+                        'http://frontend:3000', // If you have a frontend container
+                        /^http:\/\/.*\.localhost:\d+$/, // Local development with subdomains
+                    ];
+                    
+                    if (allowedOrigins.some(allowed => 
+                        typeof allowed === 'string' ? allowed === origin : allowed.test(origin)
+                    )) {
+                        console.log('✅ Origin allowed:', origin);
+                        return callback(null, true);
+                    }
+                    
+                    // In development, allow all origins
+                    if (process.env.NODE_ENV !== 'production') {
+                        console.log('✅ Development mode - allowing all origins:', origin);
+                        return callback(null, true);
+                    }
+                    
+                    console.log('❌ Origin not allowed:', origin);
+                    callback(new Error('Not allowed by CORS'));
+                },
+                credentials: true,
+                methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+                allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+                optionsSuccessStatus: 200 // Some legacy browsers (IE11, various SmartTVs) choke on 204
+            };
+            
+            // Apply CORS middleware BEFORE helmet
+            this.app.use(cors(corsOptions));
+            
             // Middleware
             this.app.use(helmet());
-            this.app.use(cors());
             this.app.use(express.json({ limit: '10mb' }));
             this.app.use(express.urlencoded({ extended: true }));
 
@@ -148,6 +197,182 @@ class APIServer {
             }
         });
 
+        // Create tenant endpoint for frontend
+        this.app.post('/api/tenant/create', async (req, res) => {
+            try {
+                const { userId, phoneId, email, businessName } = req.body;
+
+                // Validate input
+                if (!userId) {
+                    return res.status(400).json({
+                        success: false,
+                        error: 'Missing required field: userId'
+                    });
+                }
+
+                console.log(`📝 Creating tenant for user: ${userId}`);
+                console.log(`📱 Phone: ${phoneId || 'not provided'}`);
+                console.log(`📧 Email: ${email || 'not provided'}`);
+
+                // Generate tenant ID
+                const tenantId = this.generateTenantId();
+
+                // Create tenant document
+                const tenantData = {
+                    id: tenantId,
+                    ownerId: userId,
+                    phone: phoneId || '',
+                    email: email || '',
+                    businessName: businessName || `Business ${phoneId || userId}`,
+                    address: '',
+                    createdAt: this.admin.firestore.FieldValue.serverTimestamp(),
+                    updatedAt: this.admin.firestore.FieldValue.serverTimestamp(),
+                    isActive: true,
+                    setupComplete: false,
+                    status: 'active',
+                    settings: {
+                        allowPublicOrders: true,
+                        requireCustomerRegistration: true,
+                        autoGenerateInvoices: true
+                    }
+                };
+
+                console.log(`💾 Saving tenant to Firestore: ${tenantId}`);
+                console.log(`📋 Tenant data:`, tenantData);
+
+                // Save to Firestore
+                const tenantRef = this.db.collection('tenants').doc(tenantId);
+                await tenantRef.set(tenantData);
+
+                console.log(`✅ Tenant document saved to Firestore`);
+
+                // Verify it was actually saved
+                const verifyDoc = await tenantRef.get();
+                
+                if (!verifyDoc.exists()) {
+                    console.error('❌ Tenant verification failed - document not found after save!');
+                    throw new Error('Tenant creation failed: document not found after save');
+                }
+
+                console.log(`✅ Tenant verified in Firestore`);
+                console.log(`✅ Default tenant created successfully: ${tenantId}`);
+
+                // Add user to tenant members
+                await this.addUserToTenant(tenantId, userId, 'admin');
+
+                res.status(201).json({
+                    success: true,
+                    tenant: {
+                        id: tenantId,
+                        ...tenantData
+                    },
+                    message: 'Tenant created successfully'
+                });
+
+            } catch (error) {
+                console.error('❌ Error creating tenant:', error);
+                console.error('Error details:', {
+                    message: error.message,
+                    code: error.code,
+                    stack: error.stack
+                });
+                
+                res.status(500).json({
+                    success: false,
+                    error: 'Failed to create tenant',
+                    details: process.env.NODE_ENV === 'development' ? error.message : undefined
+                });
+            }
+        });
+
+        // Get tenant by user ID endpoint
+        this.app.get('/api/tenant/user/:userId', async (req, res) => {
+            try {
+                const { userId } = req.params;
+                
+                console.log(`🔍 Looking up tenant for user: ${userId}`);
+                
+                // Query tenants by ownerId
+                const tenantsQuery = this.db.collection('tenants')
+                    .where('ownerId', '==', userId)
+                    .limit(1);
+                
+                const tenantsSnapshot = await tenantsQuery.get();
+                
+                if (tenantsSnapshot.empty) {
+                    console.log(`❌ No tenant found for user: ${userId}`);
+                    return res.status(404).json({
+                        success: false,
+                        error: 'No tenant found for this user'
+                    });
+                }
+                
+                const tenantDoc = tenantsSnapshot.docs[0];
+                const tenantData = tenantDoc.data();
+                
+                console.log(`✅ Found tenant: ${tenantDoc.id}`);
+                
+                res.json({
+                    success: true,
+                    tenant: {
+                        id: tenantDoc.id,
+                        ...tenantData
+                    }
+                });
+                
+            } catch (error) {
+                console.error('❌ Error looking up tenant:', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Failed to lookup tenant'
+                });
+            }
+        });
+
+        // Analytics endpoint for frontend
+        this.app.get('/api/analytics', async (req, res) => {
+            try {
+                const { phoneId, tenantId, start, end, months } = req.query;
+                
+                console.log(`📊 Analytics request: phoneId=${phoneId}, tenantId=${tenantId}`);
+                
+                // For now, return mock analytics data
+                const mockAnalytics = {
+                    success: true,
+                    phoneId: phoneId,
+                    tenantId: tenantId,
+                    period: {
+                        start: start || '2025-05-01',
+                        end: end || '2025-10-31',
+                        months: parseInt(months) || 6
+                    },
+                    metrics: {
+                        totalMessages: 0,
+                        totalOrders: 0,
+                        totalRevenue: 0,
+                        activeCustomers: 0,
+                        responseTime: 0
+                    },
+                    charts: {
+                        messagesOverTime: [],
+                        ordersOverTime: [],
+                        revenueOverTime: []
+                    },
+                    message: 'Analytics endpoint - returning mock data for now'
+                };
+                
+                res.json(mockAnalytics);
+                
+            } catch (error) {
+                console.error('❌ Analytics error:', error);
+                res.status(500).json({
+                    success: false,
+                    error: 'Failed to fetch analytics data',
+                    details: process.env.NODE_ENV === 'development' ? error.message : undefined
+                });
+            }
+        });
+
         // Get tenant info
         this.app.get('/tenant/:tenantId', async (req, res) => {
             try {
@@ -251,6 +476,131 @@ class APIServer {
                 res.status(500).json({
                     success: false,
                     error: 'Failed to retrieve QR code'
+                });
+            }
+        });
+
+        // NEW: WhatsApp QR code endpoints
+        this.app.get('/api/whatsapp/qr', (req, res) => {
+            try {
+                const qrPath = path.join(__dirname, '../public/qr.png');
+                
+                if (fs.existsSync(qrPath)) {
+                    res.sendFile(qrPath);
+                } else {
+                    res.status(404).json({ 
+                        error: 'QR code not available. Is the bot initializing?' 
+                    });
+                }
+            } catch (error) {
+                console.error('❌ QR code endpoint error:', error);
+                res.status(500).json({ error: 'Failed to serve QR code' });
+            }
+        });
+
+        // Get WhatsApp connection status
+        this.app.get('/api/whatsapp/status', async (req, res) => {
+            try {
+                // Use WhatsApp service instance passed from main bot
+                const whatsappService = this.whatsappService;
+                
+                console.log('DEBUG - WhatsApp service type:', typeof whatsappService);
+                console.log('DEBUG - WhatsApp service methods:', whatsappService ? Object.getOwnPropertyNames(Object.getPrototypeOf(whatsappService)) : 'null');
+                
+                if (!whatsappService) {
+                    return res.json({
+                        success: false,
+                        connected: false,
+                        authenticated: false,
+                        error: 'WhatsApp service not available',
+                        timestamp: new Date().toISOString()
+                    });
+                }
+                
+                if (typeof whatsappService.getConnectionStatus !== 'function') {
+                    return res.json({
+                        success: false,
+                        connected: false,
+                        authenticated: false,
+                        error: 'WhatsApp service getConnectionStatus method not available',
+                        timestamp: new Date().toISOString()
+                    });
+                }
+                
+                const status = whatsappService.getConnectionStatus();
+                
+                res.json({
+                    success: true,
+                    connected: status.connected,
+                    authenticated: status.authenticated,
+                    qrCodeGenerated: status.qrCodeGenerated,
+                    retries: status.retries,
+                    maxRetries: status.maxRetries,
+                    botInfo: status.botInfo,
+                    timestamp: new Date().toISOString()
+                });
+            } catch (error) {
+                console.error('❌ WhatsApp status error:', error);
+                res.json({
+                    success: false,
+                    connected: false,
+                    authenticated: false,
+                    error: error.message,
+                    timestamp: new Date().toISOString()
+                });
+            }
+        });
+
+        // Force WhatsApp reconnect endpoint
+        this.app.post('/api/whatsapp/reconnect', async (req, res) => {
+            try {
+                console.log('🔄 Forcing WhatsApp reconnection...');
+                
+                // Import WhatsApp service
+                const whatsappService = require('./services/whatsappWeb');
+                
+                const success = await whatsappService.forceReconnect();
+                
+                if (success) {
+                    res.json({ 
+                        success: true, 
+                        message: 'Reconnection initiated successfully' 
+                    });
+                } else {
+                    res.status(500).json({ 
+                        success: false, 
+                        error: 'Reconnection failed' 
+                    });
+                }
+            } catch (error) {
+                console.error('❌ Force reconnect error:', error);
+                res.status(500).json({ 
+                    success: false, 
+                    error: error.message 
+                });
+            }
+        });
+
+        // Get WhatsApp bot info
+        this.app.get('/api/whatsapp/info', async (req, res) => {
+            try {
+                // Import WhatsApp service
+                const whatsappService = require('./services/whatsappWeb');
+                
+                const botInfo = whatsappService.getBotInfo();
+                const vendorMappingStatus = whatsappService.getVendorMappingStatus();
+                
+                res.json({
+                    success: true,
+                    botInfo: botInfo,
+                    vendorMapping: vendorMappingStatus,
+                    timestamp: new Date().toISOString()
+                });
+            } catch (error) {
+                console.error('❌ WhatsApp info error:', error);
+                res.status(500).json({ 
+                    success: false, 
+                    error: error.message 
                 });
             }
         });

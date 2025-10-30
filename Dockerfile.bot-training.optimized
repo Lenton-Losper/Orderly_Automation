@@ -1,0 +1,83 @@
+# Optimized Dockerfile for Bot Training API Server
+# Multi-stage build for faster builds and smaller images
+
+# Stage 1: Build dependencies
+FROM node:20-alpine AS builder
+
+WORKDIR /app
+
+# Install system dependencies for canvas and other native modules
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++ \
+    cairo-dev \
+    jpeg-dev \
+    pango-dev \
+    musl-dev \
+    giflib-dev \
+    pixman-dev \
+    pangomm-dev \
+    libjpeg-turbo-dev \
+    freetype-dev \
+    pkgconfig \
+    curl
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies with cache mount
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --only=production
+
+# Stage 2: Runtime
+FROM node:20-alpine AS runtime
+
+WORKDIR /app
+
+# Install only runtime dependencies (no dev tools)
+RUN apk add --no-cache \
+    cairo \
+    jpeg \
+    pango \
+    giflib \
+    pixman \
+    libjpeg-turbo \
+    freetype \
+    curl
+
+# Copy node_modules from builder
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copy source code
+COPY src/ ./src/
+COPY tenants/ ./tenants/
+COPY rasa-models/ ./rasa-models/
+COPY server-polyfill.js ./
+
+# Create necessary directories
+RUN mkdir -p logs
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodejs -u 1001 && \
+    chown -R nodejs:nodejs /app
+USER nodejs
+
+# Expose port
+EXPOSE 3001
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:3001/health || exit 1
+
+# Start the bot training API server
+CMD ["node", "src/server.js"]
+
+
+
+
+
+
+
+

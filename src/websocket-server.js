@@ -1,9 +1,11 @@
 const WebSocket = require('ws');
 const redis = require('redis');
+const { getServiceUrls } = require('./config/docker');
 
 class WhatsAppWebSocketServer {
   constructor(options = {}) {
-    const { port = 8080, redisUrl = 'redis://localhost:6379' } = options;
+    const serviceUrls = getServiceUrls();
+    const { port = serviceUrls.websocket.port, redisUrl = serviceUrls.redis.url } = options;
 
     this.port = port;
 

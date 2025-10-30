@@ -9,6 +9,10 @@ const { makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whis
 const redis = require('redis');
 const { Boom } = require('@hapi/boom');
 const pino = require('pino');
+const QRCode = require('qrcode');
+const qrcodeTerminal = require('qrcode-terminal');
+const fs = require('fs');
+const path = require('path');
 const { getSocketConfig, getHealthCheckQuery } = require('../config/socket');
 const { CONNECTION_CONFIG, CACHE_CONFIG, WHATSAPP_CONFIG } = require('../config/constants');
 const { getDatabase, getFirebaseAdmin } = require('../config/database');
@@ -17,7 +21,9 @@ class WhatsAppService {
     constructor() {
         this.socket = null;
         this.connectionRetries = 0;
-        this.maxRetries = CONNECTION_CONFIG.MAX_RETRIES;
+        this.maxRetries = parseInt(process.env.WHATSAPP_MAX_RETRIES) || CONNECTION_CONFIG?.MAX_RETRIES || 5;
+        this.authTimeoutMs = parseInt(process.env.WHATSAPP_AUTH_TIMEOUT) || 60000; // 60 seconds
+        this.qrMaxRetries = parseInt(process.env.WHATSAPP_QR_MAX_RETRIES) || 5;
         this.reconnectTimeout = null;
         this.connectionCheckInterval = null;
         this.botStartTime = null;
@@ -26,27 +32,25 @@ class WhatsAppService {
         this.vendorMappingAttempted = false; // Track if we've tried mapping this session
         this.redisPublisher = null;
         this.redisConnected = false;
+        this.qrCodeGenerated = false;
+        this.isAuthenticated = false;
         
         // Firebase will be initialized when needed
         
         // Resolve tenant-specific auth directory once
-        const path = require('path');
-        const authFolder = WHATSAPP_CONFIG && WHATSAPP_CONFIG.AUTH_FOLDER ? WHATSAPP_CONFIG.AUTH_FOLDER : 'auth';
+        const authFolder = process.env.WHATSAPP_SESSION_PATH || 
+            (WHATSAPP_CONFIG && WHATSAPP_CONFIG.AUTH_FOLDER ? WHATSAPP_CONFIG.AUTH_FOLDER : 'auth');
         this.authDir = path.isAbsolute(authFolder) ? authFolder : path.join(process.cwd(), authFolder);
         
-        // Validate imports are available
-        if (!makeWASocket || typeof makeWASocket !== 'function') {
-            throw new Error('makeWASocket function not available from Baileys');
-        }
-        if (!useMultiFileAuthState || typeof useMultiFileAuthState !== 'function') {
-            throw new Error('useMultiFileAuthState function not available from Baileys');
-        }
-        if (!DisconnectReason || typeof DisconnectReason !== 'object') {
-            throw new Error('DisconnectReason object not available from Baileys');
+        // Create public directory for QR code storage
+        this.publicDir = path.join(process.cwd(), 'public');
+        if (!fs.existsSync(this.publicDir)) {
+            fs.mkdirSync(this.publicDir, { recursive: true });
         }
         
-        console.log('All Baileys imports validated successfully');
         console.log('✅ WhatsApp service constructor initialized');
+        console.log(`📁 Auth directory: ${this.authDir}`);
+        console.log(`📁 Public directory: ${this.publicDir}`);
     }
 
     async initialize() {
@@ -105,31 +109,57 @@ class WhatsAppService {
             console.log('Testing minimal socket configuration...');
             
             try {
-                // Try minimal config first (removed deprecated printQRInTerminal)
+                // Enhanced socket configuration with proper authentication settings
+                const socketConfig = {
+                    auth: state,
+                    browser: ['WhatsApp Bot', 'Chrome', '120.0.0'],
+                    syncFullHistory: false,
+                    logger: pino({ level: 'silent' }),
+                    printQRInTerminal: false, // We'll handle QR display ourselves
+                    // Add timeout settings
+                    connectTimeoutMs: this.authTimeoutMs,
+                    defaultQueryTimeoutMs: 60000,
+                    // Add retry settings
+                    retryRequestDelayMs: 250,
+                    maxMsgRetryCount: 5,
+                    // Add user agent to avoid detection
+                    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                    // Add keep alive settings
+                    keepAliveIntervalMs: 30000,
+                    // Add connection settings
+                    markOnlineOnConnect: true,
+                    // Add message settings
+                    shouldSyncHistoryMessage: () => false,
+                    shouldIgnoreJid: () => false,
+                    // Add authentication settings
+                    generateHighQualityLinkPreview: false,
+                    // Add connection retry settings
+                    connectionOptions: {
+                        timeout: this.authTimeoutMs,
+                        retries: this.maxRetries
+                    }
+                };
+                
+                console.log('Creating WhatsApp socket with enhanced config...');
+                this.socket = makeWASocket(socketConfig);
+                console.log('Enhanced socket created successfully');
+                
+            } catch (socketError) {
+                console.error('Enhanced socket failed, trying with minimal config...');
+                console.error('Socket error:', socketError.message);
+                
+                // Fall back to minimal config
                 const minimalConfig = {
                     auth: state,
                     browser: ['WhatsApp Bot', 'Chrome', '120.0.0'],
-                    syncFullHistory: false
+                    syncFullHistory: false,
+                    logger: pino({ level: 'silent' }),
+                    printQRInTerminal: false
                 };
                 
                 console.log('Creating WhatsApp socket with minimal config...');
                 this.socket = makeWASocket(minimalConfig);
                 console.log('Minimal socket created successfully');
-                
-            } catch (minimalError) {
-                console.error('Minimal socket failed, trying with full config...');
-                console.error('Minimal error:', minimalError.message);
-                
-                // Fall back to full config
-                const socketConfig = {
-                    auth: state,
-                    ...getSocketConfig()
-                };
-                
-                console.log('Creating WhatsApp socket with full config...');
-                console.log('Full config keys:', Object.keys(socketConfig));
-                
-                this.socket = makeWASocket(socketConfig);
             }
             
             if (!this.socket) {
@@ -192,17 +222,47 @@ class WhatsAppService {
             
             // ENHANCED: Display QR code with dynamic mapping info
             if (qr) {
-                console.log('\nQR CODE TO SCAN:');
+                this.qrCodeGenerated = true;
+                console.log('\n📱 QR CODE TO SCAN:');
                 console.log('='.repeat(50));
-                console.log(qr);
+                
+                // Display QR code in terminal
+                try {
+                    qrcodeTerminal.generate(qr, { small: true });
+                } catch (qrError) {
+                    console.log('QR Code (text):');
+                    console.log(qr);
+                }
+                
                 console.log('='.repeat(50));
-                console.log('OPTION 1: Copy the text above and paste into WhatsApp Web');
-                console.log('OPTION 2: Visit this URL to see QR code:');
-                console.log(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(qr)}`);
-                console.log('OPTION 3: Open WhatsApp > Settings > Linked Devices > Link a Device');
+                console.log('📱 SCAN THIS QR CODE WITH YOUR PHONE:');
+                console.log('1. Open WhatsApp on your phone');
+                console.log('2. Go to Settings → Linked Devices');
+                console.log('3. Tap "Link a Device"');
+                console.log('4. Scan the QR code above');
                 console.log('='.repeat(50));
-                console.log('Once connected, bot will auto-discover vendor mapping...');
+                console.log('🌐 OR VISIT THIS URL:');
+                console.log(`http://localhost:3000/qr`);
+                console.log('='.repeat(50));
+                console.log('⏰ You have 60 seconds to scan the QR code');
+                console.log('🔄 Bot will auto-retry if needed');
                 console.log('='.repeat(50) + '\n');
+
+                // Save QR code to file for web access
+                try {
+                    const qrImagePath = path.join(this.publicDir, 'qr.png');
+                    await QRCode.toFile(qrImagePath, qr, { 
+                        width: 300, 
+                        margin: 2,
+                        color: {
+                            dark: '#000000',
+                            light: '#FFFFFF'
+                        }
+                    });
+                    console.log(`📁 QR code saved to: ${qrImagePath}`);
+                } catch (fileError) {
+                    console.error('❌ Error saving QR code to file:', fileError.message);
+                }
 
                 // Get the correct vendor and tenant IDs for this bot
                 const { vendorId, tenantId } = await this.getBotTenantInfo();
@@ -221,8 +281,38 @@ class WhatsAppService {
         // Credentials handler
         this.socket.ev.on('creds.update', ({ creds }) => {
             if (creds) {
-                console.log('Credentials updated');
+                console.log('✅ Credentials updated successfully');
+                this.isAuthenticated = true;
+                this.qrCodeGenerated = false;
             }
+        });
+
+        // Authentication success handler
+        this.socket.ev.on('auth_failure', (message) => {
+            console.error('❌ WhatsApp authentication failed:', message);
+            console.log('🔄 Clearing session data and restarting...');
+            
+            // Clear corrupted session
+            this.clearCorruptedAuth().then(() => {
+                console.log('✅ Session data cleared. Please restart the bot.');
+            }).catch(err => {
+                console.error('❌ Error clearing session:', err.message);
+            });
+        });
+
+        // Disconnection handler
+        this.socket.ev.on('disconnected', (reason) => {
+            console.log('⚠️ WhatsApp client disconnected:', reason);
+            console.log('Attempting to reconnect...');
+            this.isAuthenticated = false;
+        });
+
+        // Ready handler
+        this.socket.ev.on('ready', () => {
+            console.log('✅ WhatsApp client is ready!');
+            console.log('📱 Connected as:', this.socket.user?.name || 'Unknown');
+            this.isAuthenticated = true;
+            this.qrCodeGenerated = false;
         });
     }
 
@@ -964,6 +1054,100 @@ class WhatsAppService {
             businessName: this.botInfo?.businessName || 'Unknown',
             botPhoneNumber: this.getBotPhoneNumber(),
             canRetryMapping: !this.vendorMappingAttempted || this.botInfo?.mappedBusinessId === 'default'
+        };
+    }
+
+    // NEW: Initialize WhatsApp with retry logic and exponential backoff
+    async initializeWhatsAppWithRetry(maxRetries = 3) {
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                console.log(`🔄 WhatsApp connection attempt ${attempt}/${maxRetries}`);
+                
+                await this.initialize();
+                
+                // Wait for ready event with timeout
+                await new Promise((resolve, reject) => {
+                    const timeout = setTimeout(() => {
+                        reject(new Error('WhatsApp initialization timeout'));
+                    }, this.authTimeoutMs);
+                    
+                    const readyHandler = () => {
+                        clearTimeout(timeout);
+                        this.socket.ev.off('ready', readyHandler);
+                        this.socket.ev.off('auth_failure', authFailureHandler);
+                        resolve();
+                    };
+                    
+                    const authFailureHandler = (msg) => {
+                        clearTimeout(timeout);
+                        this.socket.ev.off('ready', readyHandler);
+                        this.socket.ev.off('auth_failure', authFailureHandler);
+                        reject(new Error(`Auth failure: ${msg}`));
+                    };
+                    
+                    this.socket.ev.on('ready', readyHandler);
+                    this.socket.ev.on('auth_failure', authFailureHandler);
+                });
+                
+                console.log('✅ WhatsApp connected successfully!');
+                return true;
+                
+            } catch (error) {
+                console.error(`❌ Attempt ${attempt} failed:`, error.message);
+                
+                if (attempt < maxRetries) {
+                    const delay = Math.pow(2, attempt) * 1000; // Exponential backoff
+                    console.log(`⏳ Waiting ${delay/1000}s before retry...`);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    
+                    // Clear session before retry
+                    await this.clearCorruptedAuth();
+                } else {
+                    console.error('❌ All connection attempts failed');
+                    throw error;
+                }
+            }
+        }
+    }
+
+    // NEW: Force reconnect method
+    async forceReconnect() {
+        try {
+            console.log('🔄 Forcing WhatsApp reconnection...');
+            
+            // Destroy current client
+            if (this.socket) {
+                await this.socket.end();
+                this.socket = null;
+            }
+            
+            // Clear session
+            await this.clearCorruptedAuth();
+            
+            // Reset flags
+            this.isAuthenticated = false;
+            this.qrCodeGenerated = false;
+            this.connectionRetries = 0;
+            
+            // Reinitialize
+            await this.initializeWhatsAppWithRetry(3);
+            
+            return true;
+        } catch (error) {
+            console.error('❌ Force reconnect failed:', error.message);
+            return false;
+        }
+    }
+
+    // NEW: Get connection status
+    getConnectionStatus() {
+        return {
+            connected: this.isConnected(),
+            authenticated: this.isAuthenticated,
+            qrCodeGenerated: this.qrCodeGenerated,
+            retries: this.connectionRetries,
+            maxRetries: this.maxRetries,
+            botInfo: this.getBotInfo()
         };
     }
 

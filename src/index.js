@@ -6,11 +6,12 @@ globalThis.crypto = require('crypto').webcrypto;
 // Core imports
 const { initializeFirebase } = require('./config/database');
 const { OWNER_NUMBER } = require('./config/constants');
+const { LOCAL_BOT_PORT, LOCAL_API_PORT, LOCAL_WEBSOCKET_PORT } = require('./config/ports');
 
 // Services
 const businessManager = require('./services/businessManager');
-// Import WhatsApp service correctly - it might be a default export or instance
-const whatsappService = require('./services/whatsapp');
+// Import the WhatsApp Web service
+const WhatsAppWebService = require('./services/whatsappWeb');
 const { getTenantConfig } = require('./config/tenant');
 const WhatsAppWebSocketServer = require('./websocket-server');
 const APIServer = require('./server');
@@ -105,24 +106,32 @@ class WhatsAppBot {
 
     async startAPIServer() {
         try {
-            console.log('🌐 Starting API Server...');
+            // Set the correct port for Main Backend API
+            process.env.API_PORT = '3002';
+            
+            console.log('🌐 Starting Main Backend API Server...');
             this.apiServer = new APIServer();
+            // Pass WhatsApp service instance to API server
+            this.apiServer.whatsappService = this.whatsappService;
             await this.apiServer.start();
-            console.log('✅ API Server started successfully');
+            console.log('✅ Main Backend API Server started successfully on port 3002');
         } catch (error) {
-            console.error('❌ Failed to start API Server:', error.message);
+            console.error('❌ Failed to start Main Backend API Server:', error.message);
             // Don't throw error - continue without API server
-            console.log('⚠️ Continuing without API Server - some features may be limited');
+            console.log('⚠️ Continuing without Main Backend API Server - some features may be limited');
         }
     }
 
     async startWebSocketServer() {
         try {
+            const { getServiceUrls } = require('./config/docker');
+            const serviceUrls = getServiceUrls();
+            
             const tenantId = process.env.TENANT_ID || 'default';
             const tenantConfig = getTenantConfig(tenantId);
             // Use environment variable for WebSocket port with fallback
-            const port = parseInt(process.env.WEBSOCKET_PORT) || tenantConfig.websocketPort || 8080;
-            const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+            const port = parseInt(process.env.WEBSOCKET_PORT) || tenantConfig.websocketPort || serviceUrls.websocket.port;
+            const redisUrl = serviceUrls.redis.url;
 
             console.log(`🔧 Starting WebSocket server on port ${port} for tenant ${tenantId}`);
             this.wsServer = new WhatsAppWebSocketServer({ port, redisUrl });
@@ -177,20 +186,12 @@ class WhatsAppBot {
 
     async initializeWhatsApp() {
         try {
-            console.log('📱 Initializing WhatsApp service...');
+            console.log('📱 Initializing WhatsApp Web service...');
             
-            // Check if whatsappService is a class or an instance
-            if (typeof whatsappService === 'function') {
-                // It's a class, instantiate it
-                this.whatsappService = new whatsappService();
-            } else if (whatsappService && typeof whatsappService === 'object') {
-                // It's already an instance
-                this.whatsappService = whatsappService;
-            } else {
-                throw new Error('WhatsApp service import is not valid');
-            }
+            // Create new instance of WhatsApp Web service
+            this.whatsappService = new WhatsAppWebService();
             
-            // Pass database instance to WhatsApp service
+            // Pass database instance to WhatsApp service if needed
             if (this.firebaseService && this.firebaseService.db) {
                 this.whatsappService.db = this.firebaseService.db;
                 this.whatsappService.FieldValue = this.firebaseService.FieldValue;
@@ -200,14 +201,12 @@ class WhatsAppBot {
             }
             
             // Initialize the service
-            if (typeof this.whatsappService.initialize === 'function') {
-                await this.whatsappService.initialize();
-            }
+            await this.whatsappService.initialize();
             
-            console.log('✅ WhatsApp service initialized');
+            console.log('✅ WhatsApp Web service initialized');
         } catch (error) {
-            console.error('❌ WhatsApp service initialization failed:', error.message);
-            throw new Error(`WhatsApp service initialization failed: ${error.message}`);
+            console.error('❌ WhatsApp Web service initialization failed:', error.message);
+            throw new Error(`WhatsApp Web service initialization failed: ${error.message}`);
         }
     }
 

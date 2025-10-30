@@ -742,6 +742,51 @@ class TrainingDataService {
     }
 
     /**
+     * Get training job by ID
+     * @param {string} jobId - Training job ID
+     * @param {string} tenantId - Tenant ID for verification
+     * @returns {Promise<Object|null>} Training job or null if not found
+     */
+    async getTrainingJobById(jobId, tenantId) {
+        try {
+            console.log(`TRAINING: Getting training job ${jobId} for tenant ${tenantId}`);
+            
+            if (!jobId) {
+                throw new Error('jobId is required');
+            }
+            
+            if (!tenantId) {
+                throw new Error('tenantId is required');
+            }
+
+            const doc = await this.db.collection('bot_training_jobs').doc(jobId).get();
+            
+            if (!doc.exists) {
+                console.log(`TRAINING: Training job ${jobId} not found`);
+                return null;
+            }
+            
+            const jobData = doc.data();
+            
+            // Verify the job belongs to the requesting tenant
+            if (jobData.tenantId !== tenantId) {
+                console.log(`TRAINING: Job ${jobId} does not belong to tenant ${tenantId}`);
+                throw new Error('Access denied: Job does not belong to this tenant');
+            }
+            
+            console.log(`TRAINING: Found training job ${jobId} for tenant ${tenantId}`);
+            
+            return {
+                id: doc.id,
+                ...jobData
+            };
+        } catch (error) {
+            console.error('TRAINING: Error getting training job by ID:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Get training history for a tenant
      * @param {string} tenantId - Tenant ID
      * @param {number} limit - Maximum number of jobs to return
