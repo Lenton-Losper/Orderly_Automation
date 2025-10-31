@@ -818,19 +818,26 @@ class ScalableFirebaseService {
 
     // Subscribe to real-time updates for a vendor's products
     // Returns an unsubscribe function
-    subscribeToVendorProducts(businessId, onProductsChanged) {
+    subscribeToVendorProducts(businessId, onProductsChanged, tenantId = null) {
         try {
             if (!businessId || businessId === 'undefined') {
                 console.log('SCALABLE: Invalid business ID for product subscription');
                 return () => {};
             }
 
-            const productsRef = this.db
+            // Try tenant path first if tenantId is provided
+            const effectiveTenantId = tenantId || process.env.TENANT_ID || 'default';
+            let productsRef = this.db
                 .collection('vendors')
                 .doc(businessId)
+                .collection('tenants')
+                .doc(effectiveTenantId)
                 .collection('products');
 
-            const unsubscribe = productsRef.onSnapshot(
+            console.log(`SCALABLE: Subscribing to products for vendor ${businessId}, tenant ${effectiveTenantId}`);
+            
+            // Subscribe to tenant-specific products
+            const tenantUnsubscribe = productsRef.onSnapshot(
                 (snapshot) => {
                     const products = {};
 
@@ -851,6 +858,8 @@ class ScalableFirebaseService {
                         }
                     });
 
+                    console.log(`🔄 SCALABLE: Tenant products updated (${Object.keys(products).length} products)`);
+
                     try {
                         if (typeof onProductsChanged === 'function') {
                             onProductsChanged(products);
@@ -860,11 +869,60 @@ class ScalableFirebaseService {
                     }
                 },
                 (error) => {
-                    console.error(`SCALABLE: Product subscription error for ${businessId}:`, error);
+                    console.error(`SCALABLE: Tenant product subscription error for ${businessId}:`, error);
                 }
             );
 
-            console.log(`SCALABLE: Subscribed to products for vendor ${businessId}`);
+            // Also subscribe to legacy path as fallback (only if tenant is not 'default')
+            let legacyUnsubscribe = () => {};
+            if (effectiveTenantId !== 'default') {
+                const legacyProductsRef = this.db
+                    .collection('vendors')
+                    .doc(businessId)
+                    .collection('products');
+                
+                legacyUnsubscribe = legacyProductsRef.onSnapshot(
+                    (snapshot) => {
+                        const products = {};
+                        snapshot.forEach((doc) => {
+                            const data = doc.data();
+                            if (data && data.isActive !== false && data.isAvailable !== false) {
+                                products[doc.id] = {
+                                    name: data.name || 'Product',
+                                    price: parseFloat(data.price) || 0,
+                                    description: data.description || '',
+                                    category: data.category || 'general',
+                                    stock: parseInt(data.stockQuantity || data.stock) || 99,
+                                    image: data.image || data.imageUrl || '🛍️',
+                                    isActive: data.isActive !== false,
+                                    isAvailable: data.isAvailable !== false
+                                };
+                            }
+                        });
+
+                        console.log(`🔄 SCALABLE: Legacy products updated (${Object.keys(products).length} products)`);
+
+                        try {
+                            if (typeof onProductsChanged === 'function') {
+                                onProductsChanged(products);
+                            }
+                        } catch (cbErr) {
+                            console.error('SCALABLE: Error in legacy onProductsChanged callback:', cbErr);
+                        }
+                    },
+                    (error) => {
+                        console.error(`SCALABLE: Legacy product subscription error for ${businessId}:`, error);
+                    }
+                );
+            }
+
+            // Return a combined unsubscribe function
+            const unsubscribe = () => {
+                tenantUnsubscribe();
+                legacyUnsubscribe();
+            };
+
+            console.log(`SCALABLE: Subscribed to products for vendor ${businessId}, tenant ${effectiveTenantId}`);
             return unsubscribe;
         } catch (error) {
             console.error('SCALABLE: Failed to subscribe to vendor products:', error);
