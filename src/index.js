@@ -191,8 +191,13 @@ class WhatsAppBot {
         try {
             console.log('📧 Initializing Email Service...');
             const emailService = require('./services/emailService');
-            await emailService.initialize();
-            console.log('✅ Email Service initialized');
+            const initialized = await emailService.initialize();
+            if (initialized) {
+                console.log('✅ Email Service initialized successfully');
+            } else {
+                console.log('⚠️ Email Service not configured - invoice email notifications will be disabled');
+                console.log('   Add SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS to .env to enable');
+            }
         } catch (error) {
             console.error('❌ Email Service initialization failed:', error.message);
             // Don't throw error - email is optional, continue without it

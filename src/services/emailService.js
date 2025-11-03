@@ -2,6 +2,9 @@ const nodemailer = require('nodemailer');
 const fs = require('fs').promises;
 const path = require('path');
 
+// Singleton instance
+let emailServiceInstance = null;
+
 class EmailService {
     constructor() {
         this.transporter = null;
@@ -290,6 +293,11 @@ class EmailService {
     }
 }
 
-module.exports = new EmailService();
+// Export singleton instance
+if (!emailServiceInstance) {
+    emailServiceInstance = new EmailService();
+}
+
+module.exports = emailServiceInstance;
 
 
