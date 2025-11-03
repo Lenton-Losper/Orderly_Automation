@@ -5,6 +5,7 @@
 
 const ProductService = require('./productService');
 const pdfInvoiceGenerator = require('./pdfInvoiceGenerator');
+const firebaseService = require('./firebase');
 
 class ExplicitOrderHandlers {
     constructor() {
@@ -202,7 +203,16 @@ class ExplicitOrderHandlers {
             subtotal: subtotal
         });
         
-        // Ask if they want more items
+        // Check if this is the last item (check cart after adding)
+        const cart = explicitService.getUserCart(from);
+        
+        // If cart has items, ask for delivery method before final confirmation
+        if (cart.length > 0) {
+            // Ask if they want more items OR proceed to delivery selection
+            return await this.askForMoreItems(from, tenantId, explicitService);
+        }
+        
+        // This shouldn't happen, but fallback
         return await this.askForMoreItems(from, tenantId, explicitService);
     }
 
@@ -252,18 +262,141 @@ class ExplicitOrderHandlers {
             // Customer wants to add more items
             return await this.startOrderProcess(tenantId, userId, explicitService);
         } else {
-            // Customer is done shopping - proceed to checkout
-            return await this.showFinalOrderSummary(userId, tenantId, explicitService);
+            // Customer is done shopping - proceed to delivery method selection
+            return await this.askForDeliveryMethod(userId, tenantId, explicitService);
         }
+    }
+
+    /**
+     * Ask for delivery method
+     */
+    async askForDeliveryMethod(userId, tenantId, explicitService) {
+        console.log(`🚚 Asking for delivery method for user: ${userId}`);
+        
+        const cart = explicitService.getUserCart(userId);
+        
+        if (cart.length === 0) {
+            explicitService.clearUserExpectation(userId);
+            return "Your cart is empty! Type *PRODUCTS* to browse our catalog. 😊";
+        }
+        
+        let response = "🚚 *Delivery Method*\n\n";
+        response += "How would you like to receive your order?\n\n";
+        response += "1️⃣ *PICKUP* - Collect from our store\n";
+        response += "2️⃣ *DELIVERY* - We'll deliver to you\n\n";
+        response += "👉 Reply with *PICKUP* or *DELIVERY*\n";
+        response += "_(Or type CANCEL to go back)_";
+        
+        // Set expectation for delivery method
+        explicitService.setUserExpectation(userId, 'delivery_method', { 
+            cart, 
+            tenantId
+        });
+        
+        return response;
+    }
+
+    /**
+     * Handle delivery method selection
+     */
+    async handleDeliveryMethod(userMessage, userId, tenantId, explicitService) {
+        console.log(`🚚 Handling delivery method: "${userMessage}"`);
+        
+        const message = userMessage.trim().toLowerCase();
+        
+        // Check for cancel
+        if (message === 'cancel') {
+            return await this.askForMoreItems(userId, tenantId, explicitService);
+        }
+        
+        // Parse delivery method
+        let deliveryMethod = null;
+        let needsAddress = false;
+        
+        if (message.includes('pickup') || message === '1' || message === '1️⃣') {
+            deliveryMethod = 'pickup';
+            needsAddress = false;
+        } else if (message.includes('delivery') || message === '2' || message === '2️⃣') {
+            deliveryMethod = 'delivery';
+            needsAddress = true;
+        } else {
+            return `Please choose a delivery method:\n\n` +
+                   `👉 Reply *PICKUP* for store pickup\n` +
+                   `👉 Reply *DELIVERY* for home delivery\n` +
+                   `_(Or type CANCEL to go back)_`;
+        }
+        
+        // Store delivery method
+        const expectation = explicitService.getUserExpectation(userId);
+        if (expectation && expectation.context) {
+            expectation.context.deliveryMethod = deliveryMethod;
+        }
+        
+        // If delivery, ask for address
+        if (needsAddress) {
+            let response = `✅ Delivery selected!\n\n`;
+            response += `Please provide your delivery address:\n`;
+            response += `_(Type your full address, or type CANCEL to change delivery method)_`;
+            
+            explicitService.setUserExpectation(userId, 'delivery_address', {
+                ...expectation?.context,
+                deliveryMethod
+            });
+            
+            return response;
+        } else {
+            // Pickup - no address needed, proceed to summary
+            return await this.showFinalOrderSummary(userId, tenantId, explicitService, deliveryMethod);
+        }
+    }
+
+    /**
+     * Handle delivery address input
+     */
+    async handleDeliveryAddress(userMessage, userId, tenantId, explicitService) {
+        console.log(`📍 Handling delivery address: "${userMessage}"`);
+        
+        const message = userMessage.trim();
+        
+        // Check for cancel
+        if (message.toLowerCase() === 'cancel') {
+            return await this.askForDeliveryMethod(userId, tenantId, explicitService);
+        }
+        
+        // Validate address (min length check)
+        if (message.length < 10) {
+            return `Please provide a complete address (at least 10 characters).\n\n` +
+                   `Example: "123 Main Street, Windhoek, Namibia"\n\n` +
+                   `_(Or type CANCEL to go back)_`;
+        }
+        
+        // Store address
+        const expectation = explicitService.getUserExpectation(userId);
+        if (expectation && expectation.context) {
+            expectation.context.deliveryAddress = message;
+            expectation.context.deliveryMethod = 'delivery';
+        }
+        
+        // Proceed to order summary
+        return await this.showFinalOrderSummary(userId, tenantId, explicitService, 'delivery', message);
     }
 
     /**
      * Show final order summary before confirmation
      */
-    async showFinalOrderSummary(userId, tenantId, explicitService) {
+    async showFinalOrderSummary(userId, tenantId, explicitService, deliveryMethod = null, deliveryAddress = null) {
         console.log(`📋 Showing final order summary for user: ${userId}`);
         
         const cart = explicitService.getUserCart(userId);
+        const expectation = explicitService.getUserExpectation(userId);
+        
+        // Get delivery info from expectation if not provided
+        if (!deliveryMethod && expectation?.context?.deliveryMethod) {
+            deliveryMethod = expectation.context.deliveryMethod;
+        }
+        if (!deliveryAddress && expectation?.context?.deliveryAddress) {
+            deliveryAddress = expectation.context.deliveryAddress;
+        }
         
         if (cart.length === 0) {
             explicitService.clearUserExpectation(userId);
@@ -279,16 +412,27 @@ class ExplicitOrderHandlers {
         });
         
         response += `\n*Total: N$${total}*\n\n`;
+        
+        // Add delivery info
+        if (deliveryMethod) {
+            response += `🚚 *Delivery Method:* ${deliveryMethod.toUpperCase()}\n`;
+            if (deliveryMethod === 'delivery' && deliveryAddress) {
+                response += `📍 *Delivery Address:* ${deliveryAddress}\n\n`;
+            }
+        }
+        
         response += "Please confirm your order:\n\n";
         response += "👉 Reply *YES* to confirm and receive your invoice\n";
         response += "👉 Reply *NO* to cancel this order\n\n";
         response += "_(YES or NO - capital letters don't matter!)_";
         
-        // Set expectation
+        // Set expectation with delivery info
         explicitService.setUserExpectation(userId, 'final_confirmation', { 
             cart, 
             total,
-            tenantId
+            tenantId,
+            deliveryMethod: deliveryMethod || 'pickup',
+            deliveryAddress: deliveryAddress || ''
         });
         
         return response;
@@ -362,7 +506,9 @@ class ExplicitOrderHandlers {
                 total: orderData.total,
                 status: 'confirmed',
                 createdAt: new Date(),
-                tenantId: tenantId
+                tenantId: tenantId,
+                deliveryMethod: orderData.deliveryMethod || 'pickup',
+                deliveryAddress: orderData.deliveryAddress || ''
             };
             
             console.log(`💾 Processing order ${orderId} for user ${from}:`, orderToSave);
@@ -384,8 +530,99 @@ class ExplicitOrderHandlers {
                 
                 if (saved) {
                     console.log(`✅ Order ${orderId} saved successfully to Firebase!`);
+                    
+                    // NOTIFY BUSINESS OWNER VIA WHATSAPP
+                    try {
+                        if (whatsappService && typeof whatsappService.sendTextMessage === 'function') {
+                            const tenantRef = firebaseService.db.collection('tenants').doc(tenantId);
+                            const tenantSnap = await tenantRef.get();
+                            const tenantData = tenantSnap.exists ? tenantSnap.data() : {};
+                            const businessPhone = tenantData?.phoneId || businessId;
+                            const ownerJid = `${businessPhone}@s.whatsapp.net`;
+                            
+                            // Build order summary for owner
+                            let orderSummary = `📦 *New Order Received!*\n\n`;
+                            orderSummary += `Order ID: *${orderId}*\n`;
+                            orderSummary += `Customer: ${from}\n`;
+                            orderSummary += `Total: N$${orderData.total}\n\n`;
+                            orderSummary += `*Items:*\n`;
+                            orderData.cart.forEach((item, idx) => {
+                                orderSummary += `${idx + 1}. ${item.quantity}x ${item.product.name} - N$${item.subtotal}\n`;
+                            });
+                            orderSummary += `\nStatus: *Confirmed* ✅`;
+                            
+                            try {
+                                await whatsappService.sendTextMessage(ownerJid, orderSummary);
+                                console.log(`✅ Order notification sent to business owner: ${ownerJid}`);
+                            } catch (notifError) {
+                                console.error(`❌ Failed to notify owner via WhatsApp:`, notifError.message);
+                                // Don't fail the order if notification fails
+                            }
+                        }
+                    } catch (notifErr) {
+                        console.error('❌ Error in owner notification:', notifErr.message);
+                        // Don't fail the order if notification fails
+                    }
                 } else {
                     console.error(`❌ Failed to save order ${orderId} to Firebase`);
+                }
+
+                // DEDUCT STOCK AND ALERT OWNER IF LOW
+                try {
+                    const db = firebaseService.db;
+                    if (db) {
+                        console.log('📦 Updating inventory for ordered items...');
+                        const tenantRef = db.collection('tenants').doc(tenantId);
+                        const tenantSnap = await tenantRef.get();
+                        const tenantData = tenantSnap.exists ? tenantSnap.data() : {};
+                        const businessPhone = tenantData?.phoneId || businessId; // fallback to businessId
+
+                        const lowStockWarnings = [];
+
+                        for (const item of orderToSave.items) {
+                            const prodRef = db
+                                .collection('vendors')
+                                .doc(businessPhone)
+                                .collection('tenants')
+                                .doc(tenantId)
+                                .collection('products')
+                                .doc(item.productId);
+
+                            const prodSnap = await prodRef.get();
+                            if (!prodSnap.exists) {
+                                console.log(`⚠️ Product doc missing for ${item.productId}, skipping stock update`);
+                                continue;
+                            }
+
+                            const prod = prodSnap.data();
+                            const currentStock = parseInt(prod.stock || prod.stockQuantity || 0);
+                            const newStock = Math.max(0, currentStock - item.quantity);
+
+                            await prodRef.update({
+                                stock: newStock,
+                                lastStockUpdate: new Date().toISOString()
+                            });
+
+                            if (newStock <= 5) {
+                                lowStockWarnings.push({ name: prod.name || item.productName, stock: newStock });
+                            }
+                        }
+
+                        // Send low stock alert to business owner via WhatsApp
+                        if (lowStockWarnings.length > 0 && whatsappService && typeof whatsappService.sendTextMessage === 'function') {
+                            const ownerJid = `${businessPhone}@s.whatsapp.net`;
+                            let alertMsg = '🔔 Low Stock Alert\n\n';
+                            lowStockWarnings.forEach(w => {
+                                alertMsg += `• ${w.name}: ${w.stock} left\n`;
+                            });
+                            alertMsg += `\nOrder ID: ${orderId}`;
+                            try { await whatsappService.sendTextMessage(ownerJid, alertMsg); } catch (_) {}
+                        }
+                    } else {
+                        console.log('⚠️ Firebase DB not initialized, skipping stock updates');
+                    }
+                } catch (invErr) {
+                    console.error('❌ Inventory update error:', invErr.message);
                 }
                 
                 // Generate PDF invoice

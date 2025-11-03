@@ -318,6 +318,12 @@ class IntentClassificationService {
                     case 'continue_shopping':
                         return await this.orderHandlers.handleContinueShopping(message, userId, tenantId, this.explicitService);
                     
+                    case 'delivery_method':
+                        return await this.orderHandlers.handleDeliveryMethod(message, userId, tenantId, this.explicitService);
+                    
+                    case 'delivery_address':
+                        return await this.orderHandlers.handleDeliveryAddress(message, userId, tenantId, this.explicitService);
+                    
                     case 'final_confirmation':
                         return await this.orderHandlers.processFinalConfirmation(message, tenantId, userId, this.explicitService, this.whatsappService);
                     

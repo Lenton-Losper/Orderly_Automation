@@ -72,6 +72,9 @@ class WhatsAppBot {
             // Step 3: Initialize Business Manager (depends on Firebase service)
             await this.initializeBusinessManager();
 
+            // Step 3.5: Initialize Email Service
+            await this.initializeEmailService();
+
             // Step 4: Initialize WhatsApp service
             await this.initializeWhatsApp();
 
@@ -181,6 +184,19 @@ class WhatsAppBot {
         } catch (error) {
             console.error('❌ Business Manager initialization failed:', error.message);
             throw new Error(`Business Manager initialization failed: ${error.message}`);
+        }
+    }
+
+    async initializeEmailService() {
+        try {
+            console.log('📧 Initializing Email Service...');
+            const emailService = require('./services/emailService');
+            await emailService.initialize();
+            console.log('✅ Email Service initialized');
+        } catch (error) {
+            console.error('❌ Email Service initialization failed:', error.message);
+            // Don't throw error - email is optional, continue without it
+            console.log('⚠️ Continuing without email service - invoice notifications will be disabled');
         }
     }
 

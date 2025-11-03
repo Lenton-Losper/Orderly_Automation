@@ -931,6 +931,36 @@ class MessageHandler {
                                 console.log(`📄 Sending PDF invoice: ${pdfPath}`);
                                 await this.whatsappService.sendDocument(userId, pdfPath, filename, caption);
                                 console.log(`✅ PDF invoice sent successfully to ${userId}`);
+                                
+                                // Send email notification to business owner
+                                try {
+                                    const emailService = require('../services/emailService');
+                                    const businessEmail = await emailService.getBusinessEmail(businessId, tenantId);
+                                    
+                                    if (businessEmail) {
+                                        // Get order details from session if available
+                                        const orderItems = session.cart?.map(item => ({
+                                            name: item.product?.name || 'Product',
+                                            quantity: item.quantity || 1,
+                                            price: item.product?.price || 0
+                                        })) || [];
+                                        
+                                        await emailService.sendInvoiceEmail({
+                                            businessEmail,
+                                            orderId,
+                                            customerName: sender || phoneNumber,
+                                            total: session.total || session.cartTotal || 0,
+                                            pdfPath,
+                                            businessName: session.businessData?.profile?.businessName || 'Your Business',
+                                            items: orderItems
+                                        });
+                                    } else {
+                                        console.log('⚠️ No business email found. Invoice email notification skipped.');
+                                    }
+                                } catch (emailError) {
+                                    console.error('❌ Error sending invoice email notification:', emailError);
+                                    // Don't fail the whole process if email fails
+                                }
                             } catch (pdfError) {
                                 console.error('❌ Error sending PDF invoice:', pdfError);
                                 // Send fallback message
