@@ -55,6 +55,58 @@ class EmailService {
     }
 
     /**
+     * Send invoice notification email to business owner when order is placed
+     * This is called after invoice PDF is sent to customer via WhatsApp
+     * 
+     * @param {Object} options
+     * @param {string} options.tenantId - Tenant ID (for getting business email if not provided)
+     * @param {string} options.businessPhone - Business phone number
+     * @param {string} options.businessEmail - Business owner email (optional, will fetch if not provided)
+     * @param {string} options.orderId - Order ID
+     * @param {string} options.customerPhone - Customer phone number
+     * @param {number} options.total - Order total
+     * @param {string} options.pdfPath - Path to PDF invoice file
+     * @param {string} options.businessName - Business name
+     * @param {Array} options.items - Order items array with name, quantity, price, subtotal
+     * @param {string} options.deliveryMethod - 'delivery' or 'pickup'
+     * @param {string} options.deliveryAddress - Delivery address (if delivery method)
+     * @param {string} options.paymentMethod - Payment method (default: 'Cash on delivery')
+     * @returns {Promise<Object>} { success: boolean, messageId?: string, recipient?: string, error?: string }
+     */
+    async sendInvoiceNotification({
+        tenantId = null,
+        businessPhone = null,
+        businessEmail = null,
+        orderId,
+        customerPhone,
+        total,
+        pdfPath,
+        businessName = 'Your Business',
+        items = [],
+        deliveryMethod = 'pickup',
+        deliveryAddress = '',
+        paymentMethod = 'Cash on delivery'
+    }) {
+        // If businessEmail not provided, fetch it
+        if (!businessEmail && (tenantId || businessPhone)) {
+            businessEmail = await this.getBusinessEmail(businessPhone || '264813141453', tenantId);
+        }
+        
+        return await this.sendInvoiceEmail({
+            businessEmail,
+            orderId,
+            customerName: customerPhone,
+            total,
+            pdfPath,
+            businessName,
+            items,
+            deliveryMethod,
+            deliveryAddress,
+            paymentMethod
+        });
+    }
+
+    /**
      * Send invoice email to business owner when invoice is sent to customer
      * @param {Object} options
      * @param {string} options.businessEmail - Business owner email
@@ -64,6 +116,9 @@ class EmailService {
      * @param {string} options.pdfPath - Path to PDF invoice file
      * @param {string} options.businessName - Business name
      * @param {Array} options.items - Order items array
+     * @param {string} options.deliveryMethod - Delivery method
+     * @param {string} options.deliveryAddress - Delivery address
+     * @param {string} options.paymentMethod - Payment method
      */
     async sendInvoiceEmail({
         businessEmail,
@@ -72,7 +127,10 @@ class EmailService {
         total,
         pdfPath,
         businessName = 'Your Business',
-        items = []
+        items = [],
+        deliveryMethod = 'pickup',
+        deliveryAddress = '',
+        paymentMethod = 'Cash on delivery'
     }) {
         try {
             if (!this.isInitialized || !this.transporter) {
@@ -88,7 +146,9 @@ class EmailService {
             console.log(`📧 Sending invoice email to business owner: ${businessEmail}`);
 
             // Prepare email content
-            const emailSubject = `📄 New Order Invoice - ${orderId}`;
+            const emailSubject = `🔔 New Order #${orderId} - N$${total.toFixed(2)}`;
+            const fromName = process.env.SMTP_FROM_NAME || 'LLL Farming Automation';
+            const fromEmail = process.env.SMTP_FROM_EMAIL || process.env.SMTP_USER;
             
             const emailHtml = `
 <!DOCTYPE html>
@@ -118,21 +178,28 @@ class EmailService {
             
             <div class="order-info">
                 <h3>Order Details</h3>
-                <p><strong>Order ID:</strong> ${orderId}</p>
+                <p><strong>Order #:</strong> ${orderId}</p>
                 <p><strong>Customer:</strong> ${customerName}</p>
                 <p><strong>Date:</strong> ${new Date().toLocaleString()}</p>
+                <p><strong>Payment Method:</strong> ${paymentMethod}</p>
             </div>
 
             ${items.length > 0 ? `
             <div class="order-info">
                 <h3>Order Items</h3>
-                ${items.map(item => `
+                ${items.map(item => {
+                    const itemTotal = (item.subtotal || (item.price || 0) * (item.quantity || 1));
+                    const unit = item.unit || '';
+                    return `
                     <div class="order-item">
-                        <strong>${item.name}</strong> × ${item.quantity}<br>
-                        N$${(item.price * item.quantity).toFixed(2)}
+                        <strong>${item.name}</strong> × ${item.quantity}${unit ? ` ${unit}` : ''}<br>
+                        <span style="color: #666;">N$${(item.price || 0).toFixed(2)} each</span> → N$${itemTotal.toFixed(2)}
                     </div>
-                `).join('')}
-                <div class="total">Total: N$${total.toFixed(2)}</div>
+                `;
+                }).join('')}
+                <div class="total" style="margin-top: 15px; padding-top: 15px; border-top: 2px solid #4CAF50;">
+                    <strong>Total: N$${total.toFixed(2)}</strong>
+                </div>
             </div>
             ` : `
             <div class="order-info">
@@ -140,9 +207,19 @@ class EmailService {
             </div>
             `}
 
-            <p>The invoice PDF is attached to this email for your records.</p>
+            <div class="order-info">
+                <h3>Delivery Information</h3>
+                <p><strong>Method:</strong> ${deliveryMethod.toUpperCase()}</p>
+                ${deliveryMethod === 'delivery' && deliveryAddress ? `
+                <p><strong>Delivery Address:</strong><br>${deliveryAddress}</p>
+                ` : `
+                <p>Customer will collect from store.</p>
+                `}
+            </div>
+
+            <p style="margin-top: 20px;">📄 The invoice PDF is attached to this email for your records.</p>
             
-            <p>You can view and manage orders in your dashboard.</p>
+            <p>You can view and manage this order in your dashboard.</p>
         </div>
         <div class="footer">
             <p>This is an automated notification from ${businessName}</p>
@@ -170,10 +247,12 @@ class EmailService {
 
             // Send email
             const mailOptions = {
-                from: `"${businessName}" <${process.env.SMTP_USER}>`,
+                from: `"${fromName}" <${fromEmail}>`,
                 to: businessEmail,
+                replyTo: fromEmail,
                 subject: emailSubject,
                 html: emailHtml,
+                text: this.generatePlainTextEmail(orderId, customerName, total, items, deliveryMethod, deliveryAddress, paymentMethod),
                 attachments
             };
 
@@ -261,6 +340,35 @@ class EmailService {
             console.error('❌ Error getting business email:', error.message);
             return null;
         }
+    }
+
+    /**
+     * Generate plain text version of email
+     */
+    generatePlainTextEmail(orderId, customerName, total, items, deliveryMethod, deliveryAddress, paymentMethod) {
+        let text = `New Order Received!\n\n`;
+        text += `Order #: ${orderId}\n`;
+        text += `Customer: ${customerName}\n`;
+        text += `Total: N$${total.toFixed(2)}\n\n`;
+        
+        if (items.length > 0) {
+            text += `Items:\n`;
+            items.forEach(item => {
+                const itemTotal = (item.subtotal || (item.price || 0) * (item.quantity || 1));
+                const unit = item.unit || '';
+                text += `- ${item.quantity}${unit ? ` ${unit}` : ''} ${item.name} - N$${itemTotal.toFixed(2)}\n`;
+            });
+            text += `\nTotal: N$${total.toFixed(2)}\n\n`;
+        }
+        
+        text += `Delivery Method: ${deliveryMethod.toUpperCase()}\n`;
+        if (deliveryMethod === 'delivery' && deliveryAddress) {
+            text += `Address: ${deliveryAddress}\n`;
+        }
+        text += `Payment: ${paymentMethod}\n\n`;
+        text += `View full details in your dashboard.\n`;
+        
+        return text;
     }
 
     /**

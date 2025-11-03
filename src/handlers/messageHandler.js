@@ -942,17 +942,23 @@ class MessageHandler {
                                         const orderItems = session.cart?.map(item => ({
                                             name: item.product?.name || 'Product',
                                             quantity: item.quantity || 1,
-                                            price: item.product?.price || 0
+                                            price: item.product?.price || 0,
+                                            subtotal: item.subtotal || (item.product?.price || 0) * (item.quantity || 1)
                                         })) || [];
                                         
-                                        await emailService.sendInvoiceEmail({
-                                            businessEmail,
+                                        await emailService.sendInvoiceNotification({
+                                            tenantId: tenantId,
+                                            businessPhone: businessId,
+                                            businessEmail: businessEmail,
                                             orderId,
-                                            customerName: sender || phoneNumber,
+                                            customerPhone: sender || phoneNumber,
                                             total: session.total || session.cartTotal || 0,
                                             pdfPath,
                                             businessName: session.businessData?.profile?.businessName || 'Your Business',
-                                            items: orderItems
+                                            items: orderItems,
+                                            deliveryMethod: session.deliveryMethod || 'pickup',
+                                            deliveryAddress: session.deliveryAddress || '',
+                                            paymentMethod: 'Cash on delivery'
                                         });
                                     } else {
                                         console.log('⚠️ No business email found. Invoice email notification skipped.');

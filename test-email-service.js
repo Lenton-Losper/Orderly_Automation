@@ -40,8 +40,7 @@ async function testEmailService() {
     // 2. Test email service initialization
     console.log('\n2️⃣ Testing Email Service Initialization:');
     try {
-        const EmailService = require('./src/services/emailService');
-        const emailService = new EmailService();
+        const emailService = require('./src/services/emailService');
         
         const initialized = await emailService.initialize();
         

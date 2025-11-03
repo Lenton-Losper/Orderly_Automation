@@ -628,6 +628,34 @@ class ExplicitOrderHandlers {
                 // Generate PDF invoice
                 const pdfResult = await this.generateAndSendInvoice(orderId, orderData, from, tenantId, whatsappService);
                 
+                // Send email notification to business owner
+                if (pdfResult.success && pdfResult.filepath) {
+                    try {
+                        const emailService = require('./emailService');
+                        await emailService.sendInvoiceNotification({
+                            tenantId: tenantId,
+                            businessPhone: businessId,
+                            orderId: orderId,
+                            customerPhone: from,
+                            total: orderData.total,
+                            pdfPath: pdfResult.filepath,
+                            businessName: tenantData?.businessName || 'Your Business',
+                            items: orderToSave.items.map(item => ({
+                                name: item.productName,
+                                quantity: item.quantity,
+                                price: item.price,
+                                subtotal: item.subtotal
+                            })),
+                            deliveryMethod: orderToSave.deliveryMethod || 'pickup',
+                            deliveryAddress: orderToSave.deliveryAddress || '',
+                            paymentMethod: 'Cash on delivery'
+                        });
+                    } catch (emailError) {
+                        console.error('❌ Error sending invoice email notification:', emailError.message);
+                        // Don't fail the order if email fails
+                    }
+                }
+                
                 // Clear cart and expectations
                 explicitService.clearUserCart(from);
                 explicitService.clearUserExpectation(from);
